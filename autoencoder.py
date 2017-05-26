@@ -14,6 +14,7 @@ from __future__ import division, print_function, absolute_import
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
+from stacked_autoencoder_tf import StackedAutoencoder as SAE
 
 # Import MNIST data
 from tensorflow.examples.tutorials.mnist import input_data
@@ -21,86 +22,72 @@ mnist = input_data.read_data_sets("MNIST_data", one_hot=True)
 
 # Parameters
 learning_rate = 0.01
-training_epochs = 5
+training_epochs = 10
 batch_size = 256
 display_step = 1
 examples_to_show = 10
 
-# Network Parameters
-n_hidden_1 = 256 # 1st layer num features
-n_hidden_2 = 128 # 2nd layer num features
-n_input = 784 # MNIST data input (img shape: 28*28)
+# -90 (cw) to 90 deg (ccw) rotations in 15-deg increments
+rotations = np.deg2rad(np.linspace(-90, 90, 180/(12+1), endpoint=True)).tolist()
 
-# tf Graph input (only pictures)
+n_input = mnist.test.images.shape[-1]
+
 X = tf.placeholder("float", [None, n_input])
 
-weights = {
-    'encoder_h1': tf.Variable(tf.random_normal([n_input, n_hidden_1])),
-    'encoder_h2': tf.Variable(tf.random_normal([n_hidden_1, n_hidden_2])),
-#    'decoder_h1': tf.Variable(tf.random_normal([n_hidden_2, n_hidden_1])),
-#    'decoder_h2': tf.Variable(tf.random_normal([n_hidden_1, n_input])),
-}
-weights['decoder_h1'] = tf.transpose(weights['encoder_h2'])
-weights['decoder_h2'] = tf.transpose(weights['encoder_h1'])
-for k in weights.keys():
-    print(k, weights[k].get_shape())
-            
-biases = {
-    'encoder_b1': tf.Variable(tf.random_normal([n_hidden_1])),
-    'encoder_b2': tf.Variable(tf.random_normal([n_hidden_2])),
-    'decoder_b1': tf.Variable(tf.random_normal([n_hidden_1])),
-    'decoder_b2': tf.Variable(tf.random_normal([n_input])),
-}
+sae = []
 
+sae_params = {
+    'dims': [512],
+    'in_op': X,
+    }
+sae = SAE(sae_params)
+sae.stack()
+cost = sae.cost()
 
-# Building the encoder
-def encoder(x):
-    # Encoder Hidden layer with sigmoid activation #1
-    layer_1 = tf.nn.sigmoid(tf.add(tf.matmul(x, weights['encoder_h1']),
-                                   biases['encoder_b1']))
-    # Decoder Hidden layer with sigmoid activation #2
-    layer_2 = tf.nn.sigmoid(tf.add(tf.matmul(layer_1, weights['encoder_h2']),
-                                   biases['encoder_b2']))
-    return layer_2
-
-
-# Building the decoder
-def decoder(x):
-    # Encoder Hidden layer with sigmoid activation #1
-    layer_1 = tf.nn.sigmoid(tf.add(tf.matmul(x, weights['decoder_h1']),
-                                   biases['decoder_b1']))
-    # Decoder Hidden layer with sigmoid activation #2
-    layer_2 = tf.nn.sigmoid(tf.add(tf.matmul(layer_1, weights['decoder_h2']),
-                                   biases['decoder_b2']))
-    return layer_2
-
-# Construct model
-encoder_op = encoder(X)
-decoder_op = decoder(encoder_op)
-
-# Prediction
-y_pred = decoder_op
-# Targets (Labels) are the input data.
-y_true = X
-
-# Define loss and optimizer, minimize the squared error
-cost = tf.reduce_mean(tf.pow(y_true - y_pred, 2))
 optimizer = tf.train.RMSPropOptimizer(learning_rate).minimize(cost)
 
+
+vars_new = sae.vars_new()
+print('prev', [v.name for v in vars_new])
+
 # Initializing the variables
-init = tf.global_variables_initializer()
+#init_op = tf.global_variables_initializer()
+init_op = tf.variables_initializer(vars_new)
+
+summaries = tf.summary.merge_all()
 
 # Launch the graph
 with tf.Session() as sess:
-    sess.run(init)
+    sess.run(init_op)
+    summary_writer = tf.summary.FileWriter('/home/kashefy/models/ae/log_simple_stats', sess.graph)
     total_batch = int(mnist.train.num_examples/batch_size)
     # Training cycle
     for epoch in range(training_epochs):
         # Loop over all batches
         for i in range(total_batch):
-            batch_xs, batch_ys = mnist.train.next_batch(batch_size)
-            # Run optimization op (backprop) and cost op (to get loss value)
-            _, c = sess.run([optimizer, cost], feed_dict={X: batch_xs})
+            batch_xs, _ = mnist.train.next_batch(batch_size)
+            
+            
+#            batch_xs_as_img = tf.reshape(batch_xs, [-1, 28, 28, 1])
+#            rots_cur = np.random.choice(rotations, batch_size)
+#            batch_xs_as_img_rot = tf.contrib.image.rotate(batch_xs_as_img, rots_cur)
+#            # Run optimization op (backprop) and cost op (to get loss value)
+#            
+#            batch_xs_as_img, batch_xs_as_img_rot = \
+#                sess.run([batch_xs_as_img, batch_xs_as_img_rot],
+#                         feed_dict={ae1.x: batch_xs})
+#            f, a = plt.subplots(2, 10, figsize=(10, 2))
+#            for i in xrange(examples_to_show):
+#                print (batch_xs_as_img[i].shape, np.rad2deg(rots_cur)[i])
+#                a[0][i].imshow(np.squeeze(batch_xs_as_img[i]))
+#                a[1][i].imshow(np.squeeze(batch_xs_as_img_rot[i]))
+#            f.show()
+#            plt.draw()
+#            plt.waitforbuttonpress()
+#            
+            
+            
+            _, c = sess.run([optimizer, cost], feed_dict={sae.x(): batch_xs})
         # Display logs per epoch step
         if epoch % display_step == 0:
             print("Epoch:", '%04d' % (epoch+1),
@@ -110,12 +97,12 @@ with tf.Session() as sess:
 
     # Applying encode and decode over test set
     encode_decode = sess.run(
-        y_pred, feed_dict={X: mnist.test.images[:examples_to_show]})
+        sae.y_pred(), feed_dict={sae.x(): mnist.test.images[:examples_to_show]})
     # Compare original images with their reconstructions
     f, a = plt.subplots(2, 10, figsize=(10, 2))
-    for i in range(examples_to_show):
-        a[0][i].imshow(np.reshape(mnist.test.images[i], (28, 28)))
-        a[1][i].imshow(np.reshape(encode_decode[i], (28, 28)))
+    for i in xrange(examples_to_show):
+        a[0][i].imshow(np.reshape(mnist.test.images[i], (28, 28)), clim=(0.0, 0.1))
+        a[1][i].imshow(np.reshape(encode_decode[i], (28, 28)), clim=(0.0, 0.1))
     f.show()
     plt.draw()
     plt.waitforbuttonpress()
