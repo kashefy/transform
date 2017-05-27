@@ -13,16 +13,16 @@ class StackedAutoencoder(object):
     def _in_op_cur(self):
         
         in_op = None
-        if len(self.sae) > 1:
+        if len(self.sae) > 0:
             in_op = self.sae[-1].representation()
         else:
             in_op = self.in_op
         return in_op
     
-    def stack(self):
+    def stack(self, dim):
         
+        self.dims.append(dim)
         in_op = self._in_op_cur()
-        dim = self.dims[len(self.sae)]
         # Network Parameters
         ae_params = {
             'n_hidden_1':  dim,
@@ -33,7 +33,7 @@ class StackedAutoencoder(object):
         ae.x = in_op
         _, _ = ae.construct_model()
         
-        if len(self.sae) > 1:
+        if len(self.sae) > 0:
             self.sae[-1].decoder(ae.y_pred)
         self.sae.append(ae)
             
@@ -46,14 +46,15 @@ class StackedAutoencoder(object):
     def cost(self):
         return self.sae[0].cost_cross_entropy(self._y_true)
         
-        
     def vars_new(self):
         return tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES,
                                  scope=self.sae[-1].name_scope)
     
+    @property
     def x(self):
-        return self.sae[0].x
+        return self.sae[0].x        
     
+    @property
     def y_pred(self):
         return self.sae[0].y_pred
 
@@ -61,7 +62,7 @@ class StackedAutoencoder(object):
         '''
         Constructor
         '''
-        self.dims = params['dims']
+        self.dims = []
         self.in_op = params['in_op']
         self.sae = []
         
