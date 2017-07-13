@@ -25,9 +25,9 @@ class StackedAutoencoder(object):
         in_op = self._in_op_cur()
         # Network Parameters
         ae_params = {
-            'n_hidden_1':  dim,
-            'n_input'  :   int(in_op.get_shape()[-1]),
-            'depth'    :   len(self.sae)+1
+            'n_hidden'  :  dim,
+            'n_input'   :  int(in_op.get_shape()[-1]),
+            'depth'     :  len(self.sae)+1
              }
         ae = AE(ae_params)
         ae.x = in_op
@@ -38,13 +38,13 @@ class StackedAutoencoder(object):
         self.sae.append(ae)
             
         # Targets (Labels) are the input data.
-        self._y_true = self.sae[0].x
+        self._y_true = self.sae[-1].x
         
     def y_true(self):
         return self._y_true
             
     def cost(self):
-        return self.sae[0].cost_cross_entropy(self._y_true)
+        return self.sae[-1].cost_cross_entropy(self._y_true)
         
     def vars_new(self):
         return tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES,
