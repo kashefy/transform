@@ -115,11 +115,11 @@ def train_layerwise(args, sess, sae):
         encode_decode = sess.run(
             sae.p, feed_dict={sae.x: mnist.test.images[:args.examples_to_show]})
         # Compare original images with their reconstructions
-    fig, a = plt.subplots(2, 10, figsize=(10, 2))
-    for i in xrange(args.examples_to_show):
-        a[0][i].imshow(np.reshape(mnist.test.images[i], (28, 28)), clim=(0.0, 1.0))
-        a[1][i].imshow(np.reshape(encode_decode[i], (28, 28)), clim=(0.0, 1.0))
-    fig.savefig(os.path.join(args.log_dir, run_dir, 'train_layerwise_reconstruct.png'))
+#    fig, a = plt.subplots(2, 10, figsize=(10, 2))
+#    for i in xrange(args.examples_to_show):
+#        a[0][i].imshow(np.reshape(mnist.test.images[i], (28, 28)), clim=(0.0, 1.0))
+#        a[1][i].imshow(np.reshape(encode_decode[i], (28, 28)), clim=(0.0, 1.0))
+#    fig.savefig(os.path.join(args.log_dir, run_dir, 'train_layerwise_reconstruct.png'))
         
 def finetune(args, sess, sae):
     
@@ -257,9 +257,6 @@ def run_autoencoder(args):
         'prefix': 'sae_',
         }
     sae = SAE(sae_params)
-    
-
-    
     
     # Launch the graph
     with tf.Session() as sess:
