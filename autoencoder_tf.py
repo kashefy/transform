@@ -4,20 +4,13 @@ Created on May 26, 2017
 @author: kashefy
 '''
 from __future__ import division, print_function, absolute_import
+from nideep.nets.abstract_net_tf import AbstractNetTF
 import tensorflow as tf
 
-class Autoencoder(object):
+class Autoencoder(AbstractNetTF):
     '''
     classdocs
     '''
-    @staticmethod
-    def _init_weight_op():
-        return tf.random_normal_initializer()
-    
-    @staticmethod
-    def _init_bias_op(value):
-        return tf.constant_initializer(value)
-    
     def _encoder_w_name(self):
         return 'encoder-%d/w' % self.depth
     
@@ -36,25 +29,24 @@ class Autoencoder(object):
     def _reconstruction_name(self):
         return "hd-%d" % self.depth
     
-    def _init_learning_params(self):
-        with tf.variable_scope(self.var_scope):
-            encoder_name = self._encoder_w_name()
-            self.w = {
-                encoder_name: tf.get_variable(encoder_name,
-                                              [self.n_input, self.n_hidden_1],
-                                              initializer=self._init_weight_op(),
-                                              )
-            }
-            decoder_name = self._decoder_w_name()
-            self.w[decoder_name] = tf.transpose(self.w[encoder_name],
-                                                name=decoder_name)
-            self.b = {}
-            for key, value in self.w.iteritems():
-                key_b = key.replace('/w', '/b').replace('_w', '_b').replace('-w', '-b')
-                self.b[key_b] = tf.get_variable(key_b,
-                                                [int(value.get_shape()[-1])],
-                                                initializer=self._init_bias_op(0.))
-                
+    def _init_learning_params_scoped(self):
+        encoder_name = self._encoder_w_name()
+        self.w = {
+            encoder_name: tf.get_variable(encoder_name,
+                                          [self.n_input, self.n_hidden_1],
+                                          initializer=self._init_weight_op(),
+                                          )
+        }
+        decoder_name = self._decoder_w_name()
+        self.w[decoder_name] = tf.transpose(self.w[encoder_name],
+                                            name=decoder_name)
+        self.b = {}
+        for key, value in self.w.iteritems():
+            key_b = key.replace('/w', '/b').replace('_w', '_b').replace('-w', '-b')
+            self.b[key_b] = tf.get_variable(key_b,
+                                            [int(value.get_shape()[-1])],
+                                            initializer=self._init_bias_op(0.))
+            
     def representation(self):
         return self._representation_op
 
@@ -69,11 +61,11 @@ class Autoencoder(object):
         # Encoder Hidden layer with sigmoid activation #1
         self._decoder_logits_op = tf.add(tf.matmul(z, self.w[self._decoder_w_name()]),
                                          self.b[self._decoder_b_name()])
-        self.y_pred = tf.nn.sigmoid(self._decoder_logits_op,
-                                    name=self._reconstruction_name())
-        return self.y_pred, self._decoder_logits_op
+        self.p = tf.nn.sigmoid(self._decoder_logits_op,
+                               name=self._reconstruction_name())
+        return self.p, self._decoder_logits_op
 
-    def construct_model(self):
+    def build(self):
         # Construct model
         with tf.name_scope(self.name_scope + 'encode'):
             encoder_op = self.encoder(self.x)
@@ -96,49 +88,17 @@ class Autoencoder(object):
                           labels=y_true, logits=self._decoder_logits_op, name=name),
                                   name=name)
             return self._cost_op
-        
-    @property
-    def x(self):
-        return self._x
-
-    @x.setter
-    def x(self, value):
-        self._x = value
-
-    @x.deleter
-    def x(self):
-        del self._x
-        
-    @property
-    def y_pred(self):
-        return self._y_pred
-
-    @y_pred.setter
-    def y_pred(self, value):
-        self._y_pred = value
-
-    @y_pred.deleter
-    def y_pred(self):
-        del self._y_pred
     
     def __init__(self, params):
         '''
         Constructor
         '''
-        self._x = None
-        self._y_pred = None
         
         # Network Parameters
         self.n_hidden_1 = params['n_hidden']  # 1st layer num features
         self.n_input = params['n_input'] # MNIST data input (img shape: 28*28)
-        if 'depth' not in params:
-            depth = 1
-        else:
-            depth = params['depth']
-        self.depth = depth
-        self.var_scope = 'layer-%d' %  self.depth
-        self.name_scope = self.var_scope + '/'
-        self._init_learning_params()
+
+        super(Autoencoder, self).__init__(params)
         self._cost_op = None
         
             

@@ -20,7 +20,7 @@ import tensorflow as tf
 from tensorflow.python import debug as tf_debug
 import matplotlib.pyplot as plt
 from stacked_autoencoder_tf import StackedAutoencoder as SAE
-
+from nideep.nets.mlp_tf import MLP
 logging.basicConfig(level=logging.DEBUG)
 
 # Import MNIST data
@@ -39,11 +39,11 @@ def train_layerwise(args, sess, sae):
     summary_writer = tf.summary.FileWriter(os.path.join(args.log_dir, run_dir),
                                            sess.graph)
     itr_exp = 0
-    for dim in [256]:
+    for dim in [256, 128]:
         itr_layer = 0
         sae.stack(dim)
         for itrtemp in xrange(1):
-            cost = sae.cost()
+            cost = sae.cost(name='loss_reconstruction')
             
             vars_new = sae.vars_new()
 #            logging.debug('new vars for optimizer %s' % [v.name for v in vars_new])
@@ -113,7 +113,7 @@ def train_layerwise(args, sess, sae):
 #        if dim == 128:
 #            print('encoder_2',sess.run(sae.sae[1].w['encoder_2/w'][10,5:10]))
         encode_decode = sess.run(
-            sae.y_pred, feed_dict={sae.x: mnist.test.images[:args.examples_to_show]})
+            sae.p, feed_dict={sae.x: mnist.test.images[:args.examples_to_show]})
         # Compare original images with their reconstructions
     f, a = plt.subplots(2, 10, figsize=(10, 2))
     for i in xrange(args.examples_to_show):
@@ -194,47 +194,16 @@ def finetune(args, sess, sae):
         a[1][i].imshow(np.reshape(encode_decode[i], (28, 28)), clim=(0.0, 1.0))
     f.show()
     
-def classification(args, sess, sae):
+def classification(args, sess, net, sae):
     summary_writer = tf.summary.FileWriter(os.path.join(args.log_dir, run_dir),
                                            sess.graph)
     
-    n_classes = mnist.test.labels.shape[-1]
-    
-    y_ = tf.placeholder("float", [None, n_classes])
-    itr_exp = 0
-    depth = 1
-    var_scope = 'dense-%d' %  depth
-    name_scope = var_scope + '/'
-    with tf.variable_scope(var_scope):
-        fc_name_w = 'fc-%d/w' % depth
-        w = {
-            fc_name_w: tf.get_variable(fc_name_w,
-                                       [sae.sae[-1].n_hidden_1, n_classes],
-                                       initializer=tf.random_normal_initializer(),
-                                       )
-        }
-        b = {}
-        for key, value in w.iteritems():
-            key_b = key.replace('/w', '/b').replace('_w', '_b').replace('-w', '-b')
-            b[key_b] = tf.get_variable(key_b,
-                                       [int(value.get_shape()[-1])],
-                                       initializer=tf.constant_initializer(0.)
-                                       )
-    with tf.name_scope(name_scope + 'fc'):
-        fc_name_b = 'fc-%d/b' % depth
-        fc_op = tf.add(tf.matmul(sae.sae[-1].representation(), w[fc_name_w]),
-                       b[fc_name_b],
-                       name='fc-%d' % depth)
-    y = fc_op
-    cost = tf.reduce_mean(
-        tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y))
-        
-    vars_new = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES,
-                                 scope=name_scope)
+    y_ = tf.placeholder("float", [None, net.n_outputs])
 #            logging.debug('new vars for optimizer %s' % [v.name for v in vars_new])
+    cost = net.cost(y_, name="loss_classification")
+    vars_new = net.vars_new()
     optimizer = setup_optimizer_op(cost, args.learning_rate, var_list=vars_new)
-    vars_new = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES,
-                                 scope=name_scope)
+    vars_new = net.vars_new()
             
     # Initializing the variables
     init_op = tf.variables_initializer(vars_new)
@@ -254,6 +223,7 @@ def classification(args, sess, sae):
     
     summaries = tf.summary.merge_all()
         
+    itr_exp = 0
     for epoch in xrange(args.training_epochs):
         # Loop over all batches
         for itr_epoch in xrange(total_batch):
@@ -261,9 +231,7 @@ def classification(args, sess, sae):
             _, c, sess_summary = sess.run([optimizer, cost, summaries],
                                           feed_dict={sae.x: batch_xs,
                                                      y_: batch_ys})
-            
             summary_writer.add_summary(sess_summary, itr_exp)
-            
             itr_exp += 1
             
         # Display logs per epoch step
@@ -281,19 +249,35 @@ def run_autoencoder(args):
     
     n_input = mnist.test.images.shape[-1]
     
+    
     X = tf.placeholder("float", [None, n_input])
     
     sae_params = {
         'in_op': X,
+        'prefix': 'sae_',
         }
     sae = SAE(sae_params)
     
 
+    
+    
     # Launch the graph
     with tf.Session() as sess:
         train_layerwise(args, sess, sae)
-        classification(args, sess, sae)
-        finetune_classification(args, sess, sae)
+            
+        n_classes = mnist.test.labels.shape[-1]
+        classifier_params = {
+            'n_outputs': n_classes,
+            'n_hidden': [sae.sae[-1].n_hidden_1],
+            'prefix': 'mlp_',
+            }
+        classifier = MLP(classifier_params)
+
+        classifier.x = sae.representation
+        classifier.build()
+    
+        classification(args, sess, classifier, sae)
+#        finetune_classification(args, sess, sae)
         #finetune(args, sess, sae)
         
 #    plt.draw()
@@ -305,7 +289,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-a", "--learning_rate", type=float, default=0.01,
                         help="Set base learning rate")
-    parser.add_argument("-e", "--epochs", dest="training_epochs", type=int, default=60, 
+    parser.add_argument("-e", "--epochs", dest="training_epochs", type=int, default=50, 
                         help="Set no. of epochs per layer")
     parser.add_argument("-b", "--batch_size", type=int, default=128,
                         help="Set mini-batch size")

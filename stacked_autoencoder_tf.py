@@ -3,13 +3,17 @@ Created on May 26, 2017
 
 @author: kashefy
 '''
-import tensorflow as tf
+from nideep.nets.abstract_net_tf import AbstractNetTF
 from autoencoder_tf import Autoencoder as AE
+import tensorflow as tf
 
-class StackedAutoencoder(object):
+class StackedAutoencoder(AbstractNetTF):
     '''
     classdocs
     '''
+    def _init_learning_params_scoped(self):
+        pass
+    
     def _in_op_cur(self):
         
         in_op = None
@@ -19,6 +23,9 @@ class StackedAutoencoder(object):
             in_op = self.in_op
         return in_op
     
+    def build(self):
+        pass
+    
     def stack(self, dim):
         
         self.dims.append(dim)
@@ -27,14 +34,15 @@ class StackedAutoencoder(object):
         ae_params = {
             'n_hidden'  :  dim,
             'n_input'   :  int(in_op.get_shape()[-1]),
-            'depth'     :  len(self.sae)+1
+            'depth'     :  len(self.sae)+1,
+            'prefix'    :  self.prefix
              }
         ae = AE(ae_params)
         ae.x = in_op
-        _, _ = ae.construct_model()
+        _, _ = ae.build()
         
         if len(self.sae) > 0:
-            self.sae[-1].decoder(ae.y_pred)
+            self.sae[-1].decoder(ae.p)
         self.sae.append(ae)
             
         # Targets (Labels) are the input data.
@@ -43,20 +51,24 @@ class StackedAutoencoder(object):
     def y_true(self):
         return self._y_true
             
-    def cost(self):
-        return self.sae[-1].cost_cross_entropy(self._y_true)
+    def cost(self, name=None):
+        return self.sae[-1].cost_cross_entropy(self._y_true, name=name)
         
     def vars_new(self):
         return tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES,
                                  scope=self.sae[-1].name_scope)
     
     @property
+    def representation(self):
+        return self.sae[-1].representation()
+    
+    @property
     def x(self):
         return self.sae[0].x        
     
     @property
-    def y_pred(self):
-        return self.sae[0].y_pred
+    def p(self):
+        return self.sae[0].p
 
     def __init__(self, params):
         '''
@@ -64,5 +76,7 @@ class StackedAutoencoder(object):
         '''
         self.dims = []
         self.in_op = params['in_op']
+        params['n_input'] = int(self.in_op.get_shape()[-1])
+        super(StackedAutoencoder, self).__init__(params)
         self.sae = []
         
