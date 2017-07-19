@@ -20,7 +20,10 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 from ae_runner import AERunner
 from mlp_runner import MLPRunner
+from stacked_autoencoder_tf import StackedAutoencoder as SAE
+from nideep.nets.mlp_tf import MLP
 logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 def finetune(args, sess, sae):
     
@@ -94,81 +97,39 @@ def finetune(args, sess, sae):
         a[0][i].imshow(np.reshape(mnist.test.images[i], (28, 28)), clim=(0.0, 1.0))
         a[1][i].imshow(np.reshape(encode_decode[i], (28, 28)), clim=(0.0, 1.0))
 
-    
-def classification(args, sess, net, sae, runner):
-    summary_writer = tf.summary.FileWriter(runner.run_dir,
-                                           sess.graph)
-    
-    y_ = tf.placeholder("float", [None, net.n_outputs])
-#            logging.debug('new vars for optimizer %s' % [v.name for v in vars_new])
-    cost = net.cost(y_, name="loss_classification")
-    vars_new = net.vars_new()
-    optimizer = AERunner.setup_optimizer_op(cost, args.learning_rate, var_list=vars_new)
-    vars_new = net.vars_new()
-            
-    # Initializing the variables
-    init_op = tf.variables_initializer(vars_new)
-    logging.debug('initializing %s' % [v.name for v in vars_new])
-    sess.run(init_op)
-    total_batch = int(runner.data.train.num_examples/args.batch_size)
-            
-    # Training cycle
-#        
-    print('encoder-1', sess.run(sae.sae[0].w['encoder-1/w'][10,5:10]))
-#        if dim == 128:
-#            print('encoder_2', sess.run(sae.sae[1].w['encoder_2/w'][10,5:10]))
-    
-    for value in [cost]:
-        print("log scalar", value.op.name)
-        tf.summary.scalar(value.op.name, value)
-    
-    summaries = tf.summary.merge_all()
-        
-    itr_exp = 0
-    for epoch in xrange(args.training_epochs):
-        # Loop over all batches
-        for itr_epoch in xrange(total_batch):
-            batch_xs, batch_ys = runner.data.train.next_batch(args.batch_size)
-            _, c, sess_summary = sess.run([optimizer, cost, summaries],
-                                          feed_dict={sae.x: batch_xs,
-                                                     y_: batch_ys})
-            summary_writer.add_summary(sess_summary, itr_exp)
-            itr_exp += 1
-            
-        # Display logs per epoch step
-        if epoch % args.display_step == 0:
-            logging.info("Epoch: %04d, cost=%.9f" % (epoch+1, c))
-    print("Classification Optimization Finished!")
-    print('encoder-1',sess.run(sae.sae[0].w['encoder-1/w'][10,5:10]))
-#        if dim == 128:
-#            print('encoder_2',sess.run(sae.sae[1].w['encoder_2/w'][10,5:10]))
-
 def run_autoencoder(args):
     
+    logger.info("Run name: %s" % args.run_name)
     # -90 (cw) to 90 deg (ccw) rotations in 15-deg increments
     rotations = np.deg2rad(np.linspace(-90, 90, 180/(12+1), endpoint=True)).tolist()
-    args['run_name'] = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     ae_runner = AERunner(args)
-    
-    p n_hidden= [ae_runner.sae.sae[-1].n_hidden_1]
-    
+    n_input = ae_runner.data.test.images.shape[-1]
+    sae_params = {
+            'in_op': tf.placeholder("float", [None, n_input]),
+            'prefix': 'sae_',
+            }
+    ae_runner.model = SAE(sae_params)
+    mlp_runner = MLPRunner(args)
+
     # Launch the graph
     with tf.Session() as sess:
-        ae_runner.train_layerwise(sess)
-            
+        ae_runner.learn(sess)
         
-
-        classifier.x = ae_runner.sae.representation
-        classifier.build()
-    
-        classification(args, sess, classifier, ae_runner.sae, ae_runner)
-#        finetune_classification(args, sess, sae)
+        n_classes = mlp_runner.data.test.labels.shape[-1]
+        classifier_params = {
+            'n_outputs': n_classes,
+            'n_input': ae_runner.model.sae[-1].n_hidden_1,
+            'prefix': 'mlp_',
+            }
+        net = MLP(classifier_params)
+        net.x = ae_runner.model.representation
+        net.build()
+        mlp_runner.x = ae_runner.model.x
+        mlp_runner.model = net
+        mlp_runner.learn(sess)
+        
+        logger.debug('encoder-1 %s:' % sess.run(ae_runner.model.sae[0].w['encoder-1/w'][10,5:10]))
         #finetune(args, sess, sae)
-        
-#    plt.draw()
-#    plt.waitforbuttonpress()
-        
-    
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -184,7 +145,7 @@ if __name__ == '__main__':
                         help="Set no. of examples to show after training")
     parser.add_argument("--log_dir", dest="log_dir", type=str, default='/home/kashefy/models/ae/log_simple_stats',
                         help="Set parent log directory for all runs")
-    parser.add_argument("--run_name", dest="log_dir", type=str, default=datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+    parser.add_argument("--run_name", dest="run_name", type=str, default=datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
                         help="Set name for run")
     
     args = parser.parse_args()
