@@ -11,35 +11,39 @@ class Autoencoder(AbstractNetTF):
     '''
     classdocs
     '''
-    def _encoder_w_name(self):
-        return 'encoder-%d/w' % self.depth
+    def _encoder_w_name(self, idx):
+        return 'encoder-%d/w' % idx
     
-    def _decoder_w_name(self):
-        return 'decoder-%d/w' % self.depth
+    def _decoder_w_name(self, idx):
+        return 'decoder-%d/w' % idx
     
-    def _encoder_b_name(self):
-        return 'encoder-%d/b' % self.depth
+    def _encoder_b_name(self, idx):
+        return 'encoder-%d/b' % idx
     
-    def _decoder_b_name(self):
-        return 'decoder-%d/b' % self.depth
+    def _decoder_b_name(self, idx):
+        return 'decoder-%d/b' % idx
     
-    def _representation_name(self):
-        return 'z-%d' % self.depth
+    def _representation_name(self, idx):
+        return 'z-%d' % idx
     
-    def _reconstruction_name(self):
-        return "hd-%d" % self.depth
+    def _reconstruction_name(self, idx):
+        return "hd-%d" % idx
     
     def _init_learning_params_scoped(self):
-        encoder_name = self._encoder_w_name()
-        self.w = {
-            encoder_name: tf.get_variable(encoder_name,
-                                          [self.n_input, self.n_hidden_1],
-                                          initializer=self._init_weight_op(),
-                                          )
-        }
-        decoder_name = self._decoder_w_name()
-        self.w[decoder_name] = tf.transpose(self.w[encoder_name],
-                                            name=decoder_name)
+        for idx, dim in enumerate(self.n_hidden):
+            input_dim = self.n_hidden[idx-1]
+            if idx == 0:
+                input_dim = self.n_input
+            encoder_w_name = self._encoder_w_name(idx)
+            self.w = {
+                encoder_w_name: tf.get_variable(encoder_w_name,
+                                              [input_dim, dim],
+                                              initializer=self._init_weight_op(),
+                                              )
+            }
+            decoder_w_name = self._decoder_w_name(idx)
+            self.w[decoder_w_name] = tf.transpose(self.w[encoder_w_name],
+                                                name=decoder_w_name)
         self.b = {}
         for key, value in self.w.iteritems():
             key_b = key.replace('/w', '/b').replace('_w', '_b').replace('-w', '-b')
@@ -50,28 +54,40 @@ class Autoencoder(AbstractNetTF):
     def representation(self):
         return self._representation_op
 
-    def encoder(self, x):
-        # Building the encoder
-        self._representation_op = tf.nn.sigmoid(tf.add(tf.matmul(x, self.w[self._encoder_w_name()]),
-                                                    self.b[self._encoder_b_name()]),
-                                                name=self._representation_name())
-        return self._representation_op
+    def _encoder_op(self, x, idx):
+        op = tf.nn.sigmoid(tf.add(tf.matmul(x, self.w[self._encoder_w_name(idx)]),
+                                  self.b[self._encoder_b_name(idx)]),
+                           name=self._representation_name(idx))
+        return op
     
+    def _decoder_op(self, z, idx):
+        # Encoder Hidden layer with sigmoid activation
+        logits_op = tf.add(tf.matmul(z, self.w[self._decoder_w_name(idx)]),
+                           self.b[self._decoder_b_name(idx)])
+        op = tf.nn.sigmoid(logits_op, name=self._reconstruction_name(idx))
+        return op, logits_op
+
     def decoder(self, z):
-        # Encoder Hidden layer with sigmoid activation #1
-        self._decoder_logits_op = tf.add(tf.matmul(z, self.w[self._decoder_w_name()]),
-                                         self.b[self._decoder_b_name()])
-        self.p = tf.nn.sigmoid(self._decoder_logits_op,
-                               name=self._reconstruction_name())
+        # Encoder Hidden layer with sigmoid activation
+        self.p, self._decoder_logits_op = \
+            self._decoder_op(z, len(self.n_hidden)-1)
         return self.p, self._decoder_logits_op
 
     def build(self):
         # Construct model
-        with tf.name_scope(self.name_scope + 'encode'):
-            encoder_op = self.encoder(self.x)
-        with tf.name_scope(self.name_scope + 'decode'):
-            decoder_reconstruction_op, decoder_logits_op = self.decoder(encoder_op)
-        return decoder_reconstruction_op, decoder_logits_op
+        for idx in xrange(len(self.n_hidden)):
+            with tf.name_scope(self.name_scope + 'encode'):
+                encoder_op = self._encoder_op(self.x, idx)
+        self._representation_op = encoder_op
+        for idx in xrange(len(self.n_hidden)-1, -1, -1):
+            with tf.name_scope(self.name_scope + 'decode'):
+                if idx == len(self.n_hidden)-1:
+                    self.p, self._decoder_logits_op = \
+                        self.decoder(encoder_op)
+                else:
+                    self.p, self._decoder_logits_op = \
+                        self._decoder_op(self.p, idx)
+        return self.p, self._decoder_logits_op
     
     def cost_euclidean(self, y_true):
         with tf.name_scope(self.name_scope):
@@ -93,11 +109,10 @@ class Autoencoder(AbstractNetTF):
         '''
         Constructor
         '''
-        
         # Network Parameters
-        self.n_hidden_1 = params['n_hidden']  # 1st layer num features
         self.n_input = params['n_input'] # MNIST data input (img shape: 28*28)
-
+        self.n_hidden = params['n_hidden']  # 1st layer num features
+        
         super(Autoencoder, self).__init__(params)
         self._cost_op = None
         

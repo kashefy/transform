@@ -101,12 +101,12 @@ def run_autoencoder(args):
     
     logger.info("Run name: %s" % args.run_name)
     # -90 (cw) to 90 deg (ccw) rotations in 15-deg increments
-    rotations = np.deg2rad(np.linspace(-90, 90, 180/(12+1), endpoint=True)).tolist()
+    rotations = np.deg2rad(np.linspace(-90, 90, 180/(12+1), endpoint=True)).tolist()    
     ae_runner = AERunner(args)
-    n_input = ae_runner.data.test.images.shape[-1]
+    n_input = ae_runner.data.train.images.shape[-1]
     sae_params = {
             'in_op': tf.placeholder("float", [None, n_input]),
-            'prefix': 'sae_',
+            'prefix': 'sae',
             }
     ae_runner.model = SAE(sae_params)
     mlp_runner = MLPRunner(args)
@@ -115,10 +115,10 @@ def run_autoencoder(args):
     with tf.Session() as sess:
         ae_runner.learn(sess)
         
-        n_classes = mlp_runner.data.test.labels.shape[-1]
+        n_classes = mlp_runner.data.train.labels.shape[-1]
         classifier_params = {
             'n_outputs': n_classes,
-            'n_input': ae_runner.model.sae[-1].n_hidden_1,
+            'n_input': ae_runner.model.representation.get_shape()[-1].value,
             'prefix': 'mlp_',
             }
         net = MLP(classifier_params)
@@ -128,7 +128,7 @@ def run_autoencoder(args):
         mlp_runner.model = net
         mlp_runner.learn(sess)
         
-        logger.debug('encoder-1 %s:' % sess.run(ae_runner.model.sae[0].w['encoder-1/w'][10,5:10]))
+        logger.debug('encoder-0 %s:' % sess.run(ae_runner.model.sae[0].w['encoder-0/w'][10,5:10]))
         #finetune(args, sess, sae)
 
 if __name__ == '__main__':

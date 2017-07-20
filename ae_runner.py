@@ -26,7 +26,7 @@ class AERunner(AbstractRunner):
             vars_new = self.model.vars_new()
             self.init_vars(sess, vars_new)
            
-            self.logger.debug('encoder-1: %s' % sess.run(self.model.sae[0].w['encoder-1/w'][10,5:10]))
+            self.logger.debug('encoder-0: %s' % sess.run(self.model.sae[0].w['encoder-0/w'][10,5:10]))
 
             for value in [cost]:
                 self.logger.debug("log scalar: %s" % value.op.name)
@@ -60,7 +60,7 @@ class AERunner(AbstractRunner):
                     itr_exp += 1
                     itr_layer += 1                
             self.logger.info("Optimization Finished!")
-            self.logger.debug('encoder-1: %s' % sess.run(self.model.sae[0].w['encoder-1/w'][10,5:10]))
+            self.logger.debug('encoder-0: %s' % sess.run(self.model.sae[0].w['encoder-0/w'][10,5:10]))
 #        if dim == 128:
 #            print('encoder_2',sess.run(sae.sae[1].w['encoder_2/w'][10,5:10]))
 #            encode_decode = sess.run(

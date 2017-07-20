@@ -32,10 +32,9 @@ class StackedAutoencoder(AbstractNetTF):
         in_op = self._in_op_cur()
         # Network Parameters
         ae_params = {
-            'n_hidden'  :  dim,
+            'n_hidden'  :  [dim],
             'n_input'   :  int(in_op.get_shape()[-1]),
-            'depth'     :  len(self.sae)+1,
-            'prefix'    :  self.prefix
+            'prefix'    :  '%s-%d' % (self.prefix, len(self.sae)+1)
              }
         ae = AE(ae_params)
         ae.x = in_op
