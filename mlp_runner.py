@@ -15,7 +15,7 @@ class MLPRunner(AbstractRunner):
         summary_writer = tf.summary.FileWriter(self.run_dir,
                                                sess.graph)
         
-        y_ = tf.placeholder("float", [None, self.model.n_outputs])
+        y_ = tf.placeholder("float", [None, self.model.n_nodes[-1]])
         cost = self.model.cost(y_, name="loss_classification")
         vars_new = self.model.vars_new()
         optimizer = setup_optimizer(cost, self.learning_rate, var_list=vars_new)
@@ -23,7 +23,7 @@ class MLPRunner(AbstractRunner):
         self.init_vars(sess, vars_new)
         
         for value in [cost]:
-            print("log scalar", value.op.name)
+            self.logger.debug("log scalar: %s" % value.op.name)
             tf.summary.scalar(value.op.name, value)
         
         summaries = tf.summary.merge_all()

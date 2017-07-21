@@ -30,26 +30,20 @@ class Autoencoder(AbstractNetTF):
         return "hd-%d" % idx
     
     def _init_learning_params_scoped(self):
-        for idx, dim in enumerate(self.n_hidden):
-            input_dim = self.n_hidden[idx-1]
+        self.w = {}
+        for idx, dim in enumerate(self.n_nodes):
+            input_dim = self.n_nodes[idx-1]
             if idx == 0:
                 input_dim = self.n_input
             encoder_w_name = self._encoder_w_name(idx)
-            self.w = {
-                encoder_w_name: tf.get_variable(encoder_w_name,
-                                              [input_dim, dim],
-                                              initializer=self._init_weight_op(),
-                                              )
-            }
+            self.w[encoder_w_name] = tf.get_variable(encoder_w_name,
+                                                     [input_dim, dim],
+                                                     initializer=self._init_weight_op(),
+                                                     )
             decoder_w_name = self._decoder_w_name(idx)
             self.w[decoder_w_name] = tf.transpose(self.w[encoder_w_name],
-                                                name=decoder_w_name)
-        self.b = {}
-        for key, value in self.w.iteritems():
-            key_b = key.replace('/w', '/b').replace('_w', '_b').replace('-w', '-b')
-            self.b[key_b] = tf.get_variable(key_b,
-                                            [int(value.get_shape()[-1])],
-                                            initializer=self._init_bias_op(0.))
+                                                  name=decoder_w_name)
+        self._init_bias_vars()
             
     def representation(self):
         return self._representation_op
@@ -70,18 +64,18 @@ class Autoencoder(AbstractNetTF):
     def decoder(self, z):
         # Encoder Hidden layer with sigmoid activation
         self.p, self._decoder_logits_op = \
-            self._decoder_op(z, len(self.n_hidden)-1)
+            self._decoder_op(z, len(self.n_nodes)-1)
         return self.p, self._decoder_logits_op
 
     def build(self):
         # Construct model
-        for idx in xrange(len(self.n_hidden)):
+        for idx in xrange(len(self.n_nodes)):
             with tf.name_scope(self.name_scope + 'encode'):
                 encoder_op = self._encoder_op(self.x, idx)
         self._representation_op = encoder_op
-        for idx in xrange(len(self.n_hidden)-1, -1, -1):
+        for idx in xrange(len(self.n_nodes)-1, -1, -1):
             with tf.name_scope(self.name_scope + 'decode'):
-                if idx == len(self.n_hidden)-1:
+                if idx == len(self.n_nodes)-1:
                     self.p, self._decoder_logits_op = \
                         self.decoder(encoder_op)
                 else:
@@ -111,7 +105,7 @@ class Autoencoder(AbstractNetTF):
         '''
         # Network Parameters
         self.n_input = params['n_input'] # MNIST data input (img shape: 28*28)
-        self.n_hidden = params['n_hidden']  # 1st layer num features
+        self.n_nodes = params['n_nodes']  # 1st layer num features
         
         super(Autoencoder, self).__init__(params)
         self._cost_op = None

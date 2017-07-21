@@ -17,7 +17,7 @@ class AERunner(AbstractRunner):
         itr_exp = 0
         for dim in self.stack_dims:
             itr_layer = 0
-            self.logger.debug('Stacking layer with %d nodes.' % dim)
+            self.logger.debug('Stacking %d nodes.' % dim)
             self.model.stack(dim)
             cost = self.model.cost(name='loss_reconstruction')
             

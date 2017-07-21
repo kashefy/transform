@@ -117,7 +117,7 @@ def run_autoencoder(args):
         
         n_classes = mlp_runner.data.train.labels.shape[-1]
         classifier_params = {
-            'n_outputs': n_classes,
+            'n_nodes': [n_classes],
             'n_input': ae_runner.model.representation.get_shape()[-1].value,
             'prefix': 'mlp_',
             }
@@ -135,7 +135,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-a", "--learning_rate", type=float, default=0.01,
                         help="Set base learning rate")
-    parser.add_argument("-e", "--epochs", dest="training_epochs", type=int, default=5, 
+    parser.add_argument("-e", "--epochs", dest="training_epochs", type=int, default=2, 
                         help="Set no. of epochs per layer")
     parser.add_argument("-b", "--batch_size", type=int, default=128,
                         help="Set mini-batch size")
