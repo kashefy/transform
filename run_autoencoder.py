@@ -99,7 +99,7 @@ def finetune(args, sess, sae):
 
 def run_autoencoder(args):
     
-    logger.info("Run name: %s" % args.run_name)
+    logger.info("Starting run %s" % args.run_name)
     # -90 (cw) to 90 deg (ccw) rotations in 15-deg increments
     rotations = np.deg2rad(np.linspace(-90, 90, 180/(12+1), endpoint=True)).tolist()    
     ae_runner = AERunner(args)
@@ -130,6 +130,7 @@ def run_autoencoder(args):
         
         logger.debug('encoder-0 %s:' % sess.run(ae_runner.model.sae[0].w['encoder-0/w'][10,5:10]))
         #finetune(args, sess, sae)
+    logger.info("Finished run %s" % args.run_name)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
