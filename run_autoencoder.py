@@ -146,6 +146,7 @@ def load_config(fpath):
     return cfg
   
 def run_autoencoder(args):
+    args.run_name = args.run_name_prefix + args.run_name
     run_dir = os.path.join(args.log_dir, args.run_name)
     os.makedirs(run_dir)
     global logger
@@ -202,6 +203,8 @@ if __name__ == '__main__':
                         help="Set parent log directory for all runs")
     parser.add_argument("--run_name", dest="run_name", type=str, default=datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
                         help="Set name for run")    
+    parser.add_argument("--run_name_prefix", dest="run_name_prefix", type=str, default='',
+                        help="Set prefix run name")    
     
     args = parser.parse_args()
     run_autoencoder(args)
