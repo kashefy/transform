@@ -22,21 +22,26 @@ class AERunner(AbstractRunner):
             itr_depth = 0
             self.logger.debug('Stacking %d nodes.' % dim)
             self.model.stack(dim)
-            cost = self.model.cost(name='train/loss_reconstruction')
+            loss = self.model.cost(name='train/loss_reconstruction')
+            if self.lambda_l2 != 0:
+                regularization = self._regularization(name='train/regularization_l2')
+                cost = tf.add(loss, self.lambda_l2 * regularization, name='train/cost')
+            else:
+                cost = loss
             vars_new = self.model.vars_new()
             optimizer = setup_optimizer(cost, self.learning_rate, var_list=vars_new)
             vars_new = self.model.vars_new()
             self.init_vars(sess, vars_new)
            
             self.logger.debug('encoder-0: %s' % sess.run(self.model.sae[0].w['encoder-0/w'][10,5:10]))
-            summaries_merged_train = self._merge_summaries([cost])
+            summaries_merged_train = self._merge_summaries([loss, cost])
             
             self._init_saver()
             
             for epoch in xrange(self.training_epochs):
                 self.logger.info("Epoch %d, step %d" % (epoch, itr_exp))
                 # Loop over all batches
-                for itr_epoch in xrange(5):#self.num_batches):
+                for itr_epoch in xrange(self.num_batches):
                     batch_xs, _ = self.data.train.next_batch(self.batch_size)
         #            batch_xs_as_img = tf.reshape(batch_xs, [-1, 28, 28, 1])
         #            rots_cur = np.random.choice(rotations, batch_size)
@@ -74,7 +79,9 @@ class AERunner(AbstractRunner):
 #        a[0][i].imshow(np.reshape(mnist.test.images[i], (28, 28)), clim=(0.0, 1.0))
 #        a[1][i].imshow(np.reshape(encode_decode[i], (28, 28)), clim=(0.0, 1.0))
 #    fig.savefig(os.path.join(args.log_dir, run_dir, 'train_layerwise_reconstruct.png'))
-        
+    
+
+    
     def __init__(self, params):
         '''
         Constructor

@@ -61,15 +61,31 @@ class AbstractRunner(object):
     def _get_save_name(self):
         return '_'.join(['saved', self.model.prefix]).rstrip('_')
     
+    def _regularization(self, name=None):
+        if self.lambda_l2 != 0:
+            weights = self.model.w
+            w_names = [weights[k].name for k in weights.keys()]
+            self.logger.debug("L2 regularization for %s" % ','.join(w_names))
+            losses = [tf.nn.l2_loss(weights[k]) for k in weights.keys()]
+            regularizers = tf.add_n(losses, name=name)
+            return regularizers
+        else:
+            return None
+    
     def __init__(self, params):
         '''
         Constructor
         '''
         params = Bunch(params)
         self.run_name = params.run_name
-        self.logger = logging.getLogger(__name__)
+        if params.logger_name is None:
+            logger_name = __name__
+        else:
+            logger_name = '.'.join([params.logger_name, __name__])
+        self.logger = logging.getLogger(logger_name)
         self.run_dir = os.path.join(params.log_dir, self.run_name)
         
+        self.prefix = params.prefix
         self.batch_size = params.batch_size
         self.logger.debug("batch_size: %d", self.batch_size)
         self.learning_rate = params.learning_rate
@@ -78,9 +94,11 @@ class AbstractRunner(object):
         self.logger.debug("training epochs: %d", self.training_epochs)
         self.validation_size = params.validation_size
         self.logger.debug("validation size: %d", self.validation_size)
+        self.lambda_l2 = params.lambda_l2
+        if self.lambda_l2 != 0:
+            self.logger.debug("lambda_l2: %f", self.lambda_l2)
+        else:
+            self.logger.debug("No L2 regularization")
         self._model = None
         self.saver = None
-        self.prefix = ''
-        if 'prefix' in params:
-            self.prefix = params['prefix']
         

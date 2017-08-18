@@ -26,12 +26,18 @@ class MLPRunner(AbstractRunner):
         dir_val = os.path.join(self.run_dir, self.prefix, 'validation')
         summary_writer_val = tf.summary.FileWriter(dir_val)
         self.y_ = tf.placeholder("float", [None, self.model.n_nodes[-1]])
-        cost = self.model.cost(self.y_, name="train/loss_classification")
+        
+        loss = self.model.cost(self.y_, name="train/loss_classification")
+        if self.lambda_l2 != 0:
+            regularization = self._regularization(name='train/regularization_l2')
+            cost = tf.add(loss, self.lambda_l2 * regularization, name='train/cost')
+        else:
+            cost = loss
         vars_new = self.model.vars_new()
         optimizer = setup_optimizer(cost, self.learning_rate, var_list=vars_new)
         vars_new = self.model.vars_new()
         self.init_vars(sess, vars_new)
-        summaries_merged_train = self._merge_summaries([cost])
+        summaries_merged_train = self._merge_summaries([loss, cost])
         
         if self._acc_ops is None:
             self._acc_ops =  self._init_acc_ops()
@@ -43,7 +49,7 @@ class MLPRunner(AbstractRunner):
         for epoch in xrange(self.training_epochs):
             self.logger.info("Epoch %d, step %d" % (epoch, itr_exp))
             # Loop over all batches
-            for itr_epoch in xrange(10):#xrange(self.num_batches):
+            for itr_epoch in xrange(self.num_batches):
                 batch_xs, batch_ys = self.data.train.next_batch(self.batch_size)
                 _, c, sess_summary = sess.run([optimizer, cost, summaries_merged_train],
                                               feed_dict={self.x : batch_xs,

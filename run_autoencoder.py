@@ -136,6 +136,9 @@ def load_config(fpath):
                      'training_epochs'  : 2, # no. of epochs per stage
                      'batch_size'       : 16,
                      "num_folds"        : 3,
+                     "prefix"           : '',
+                     "lambda_l2"        : 0.01,
+                     "logger_name"      : logger.name,
                      }
     for k in default_items.keys():
         cfg[k] = cfg.get(k, default_items[k])

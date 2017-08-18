@@ -69,6 +69,14 @@ class StackedAutoencoder(AbstractNetTF):
     def p(self):
         return self.sae[0].p
 
+    @property
+    def w(self):
+        w = {}
+        for ae in self.sae:
+            for k in ae.w:
+                w[k] = ae.w[k]
+        return w
+
     def __init__(self, params):
         '''
         Constructor
