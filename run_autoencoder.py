@@ -132,7 +132,7 @@ def load_config(fpath):
     with open(fpath, 'r') as h:
         cfg = yaml.load(h)
     # set defaults if not already set
-    default_items = {'learning_rate'    : 0.01,
+    default_items = {'learning_rate'    : 0.1,
                      'training_epochs'  : 2, # no. of epochs per stage
                      'batch_size'       : 16,
                      "num_folds"        : 3,
@@ -171,6 +171,7 @@ def run_autoencoder(args):
             'prefix': 'sae',
             }
     ae_runner.model = SAE(sae_params)
+    ae_runner.x = ae_runner.model.x
     mlp_runner = MLPRunner(cfg)
 
     # Launch the graph
