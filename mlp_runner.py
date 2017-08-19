@@ -51,17 +51,23 @@ class MLPRunner(AbstractRunner):
             # Loop over all batches
             for itr_epoch in xrange(self.num_batches):
                 batch_xs, batch_ys = self.data.train.next_batch(self.batch_size)
-                _, c, sess_summary = sess.run([optimizer, cost, summaries_merged_train],
-                                              feed_dict={self.x : batch_xs,
-                                                         self.y_: batch_ys})
+                _, _, sess_summary = sess.run([optimizer,
+                                               cost,
+                                               summaries_merged_train],
+                                               feed_dict={self.x : batch_xs,
+                                                          self.y_: batch_ys}
+                                              )
                 summary_writer_train.add_summary(sess_summary, itr_exp)
+#                self.logger.debug("training batch loss after step %d: %f" % (itr_exp, loss_batch))
                 itr_exp += 1
             self.validate(sess)
             # run metric op one more time, data in feed dict is dummy data, does not influence metric
-            _, sess_summary = sess.run([self._acc_ops.metric, summaries_merged_val],
+            acc, sess_summary = sess.run([self._acc_ops.metric, summaries_merged_val],
                                          feed_dict={self.x  : batch_xs,
-                                                    self.y_ : batch_ys})
+                                                    self.y_ : batch_ys}
+                                         )
             summary_writer_val.add_summary(sess_summary, itr_exp)
+            self.logger.debug("validation accuracy after step %d: %f" % (itr_exp, acc))
             fpath_save = os.path.join(dir_train, self._get_save_name())
             self.logger.debug("Save model at step %d to '%s'" % (itr_exp, fpath_save))
             self.saver.save(sess, fpath_save, global_step=itr_exp)  
@@ -77,8 +83,9 @@ class MLPRunner(AbstractRunner):
 #                             tf.argmax(self.model.p,1), tf.argmax(self.y_,1),
                              ],
                             feed_dict={self.x: batch_xs,
-                                       self.y_: batch_ys})
-
+                                       self.y_: batch_ys}
+                            )
+            
     def _init_acc_ops(self, name='acc'):
         y_class_op = tf.argmax(self.y_, 1)
         predicted_class_op = tf.argmax(self.model.p, 1)
