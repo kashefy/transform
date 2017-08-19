@@ -171,7 +171,6 @@ def run_autoencoder(args):
             'prefix': 'sae',
             }
     ae_runner.model = SAE(sae_params)
-    ae_runner.x = ae_runner.model.x
     mlp_runner = MLPRunner(cfg)
 
     # Launch the graph
