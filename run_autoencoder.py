@@ -142,24 +142,22 @@ def load_config(fpath):
                      }
     for k in default_items.keys():
         cfg[k] = cfg.get(k, default_items[k])
-        
     return cfg
   
-def run_autoencoder(args):
-    args.run_name = args.run_name_prefix + args.run_name
-    run_dir = os.path.join(args.log_dir, args.run_name)
+def run_autoencoder(run_name, log_dir, fpath_cfg):
+    run_dir = os.path.join(log_dir, run_name)
     os.makedirs(run_dir)
     global logger
-    logger = setup_logging(os.path.join(args.log_dir, args.run_name, 'log.txt'))
+    logger = setup_logging(os.path.join(log_dir, run_name, 'log.txt'))
     logger.debug("Create run directory %s", run_dir)
-    logger.info("Starting run %s" % args.run_name)
+    logger.info("Starting run %s" % run_name)
     # -90 (cw) to 90 deg (ccw) rotations in 15-deg increments
     #rotations = np.deg2rad(np.linspace(-90, 90, 180/(12+1), endpoint=True)).tolist()
     
-    logger.debug("Loading config from %s" % args.fpath_cfg)
-    cfg = load_config(args.fpath_cfg)
-    cfg['log_dir'] = os.path.expanduser(args.log_dir)
-    cfg['run_name'] = args.run_name
+    logger.debug("Loading config from %s" % fpath_cfg)
+    cfg = load_config(fpath_cfg)
+    cfg['log_dir'] = os.path.expanduser(log_dir)
+    cfg['run_name'] = run_name
     fname_cfg = 'config.yaml' #os.path.basename(params.fpath_cfg)
     with open(os.path.join(run_dir, fname_cfg), 'w') as h:
         h.write(yaml.dump(cfg))
@@ -192,7 +190,7 @@ def run_autoencoder(args):
         
         logger.debug('encoder-0 %s:' % sess.run(ae_runner.model.sae[0].w['encoder-0/w'][10,5:10]))
         #finetune(args, sess, sae)
-    logger.info("Finished run %s" % args.run_name)
+    logger.info("Finished run %s" % run_name)
     close_logging(logger)
 
 if __name__ == '__main__':
@@ -207,6 +205,8 @@ if __name__ == '__main__':
                         help="Set prefix run name")    
     
     args = parser.parse_args()
-    run_autoencoder(args)
+    run_autoencoder(args.run_name_prefix + args.run_name,
+                    args.log_dir,
+                    args.fpath_cfg)
     
     pass

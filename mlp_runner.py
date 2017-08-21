@@ -47,7 +47,7 @@ class MLPRunner(AbstractRunner):
         self._init_saver()
         itr_exp = 0
         for epoch in xrange(self.training_epochs):
-            self.logger.info("Epoch %d, step %d" % (epoch, itr_exp))
+            self.logger.info("Start epoch %d, step %d" % (epoch, itr_exp))
             # Loop over all batches
             for itr_epoch in xrange(self.num_batches):
                 batch_xs, batch_ys = self.data.train.next_batch(self.batch_size)
