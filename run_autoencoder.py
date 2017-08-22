@@ -134,7 +134,8 @@ def load_config(fpath):
     # set defaults if not already set
     default_items = {'learning_rate'    : 0.1,
                      'training_epochs'  : 2, # no. of epochs per stage
-                     'batch_size'       : 16,
+                     'batch_size_train' : 16,
+                     'batch_size_val'   : 16,
                      "num_folds"        : 3,
                      "prefix"           : '',
                      "lambda_l2"        : 1.0,

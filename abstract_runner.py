@@ -86,7 +86,7 @@ class AbstractRunner(object):
             self.logger.debug("log images: %s" % op.name)
             if np.sqrt(dim_.value) ** 2 == dim_.value:
                 p_img = tf.reshape(op,
-                                   [self.batch_size,
+                                   [self.batch_size_val,
                                     int(np.sqrt(dim_.value)),
                                     int(np.sqrt(dim_.value)),
                                     1])
@@ -114,6 +114,19 @@ class AbstractRunner(object):
         else:
             return None
     
+    def _check_validation_batch_size(self):
+        num_batches_val_real = self.data.validation.num_examples/float(self.batch_size_val)
+        num_batches_val_trunc = int(self.data.validation.num_examples/self.batch_size_val)
+        if num_batches_val_real > num_batches_val_trunc:
+            self.logger.warning("Validation batch size of will shift data every epoch. "
+                                "%d * %d = %d out of %d" % (self.batch_size_val,
+                                                            num_batches_val_trunc,
+                                                            self.batch_size_val * num_batches_val_trunc,
+                                                            self.data.validation.num_examples)
+                                )
+        else:
+            self.logger.debug("Validation data will not shift between epochs.")
+    
     def __init__(self, params):
         '''
         Constructor
@@ -127,8 +140,10 @@ class AbstractRunner(object):
         self.run_dir = os.path.join(params.log_dir, self.run_name)
         
         self.prefix = params.prefix
-        self.batch_size = params.batch_size
-        self.logger.debug("batch_size: %d", self.batch_size)
+        self.batch_size_train = params.batch_size_train
+        self.logger.debug("batch_size (training): %d", self.batch_size_train)
+        self.batch_size_val = params.batch_size_val
+        self.logger.debug("batch_size (validation): %d", self.batch_size_val)
         self.learning_rate = params.learning_rate
         self.logger.debug("initial learning rate: %f", self.learning_rate)
         self.training_epochs = params.training_epochs

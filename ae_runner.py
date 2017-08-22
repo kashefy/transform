@@ -49,25 +49,6 @@ class AERunner(AbstractRunner):
             self.logger.debug("log weights (histograms, images): %s" % self.model.w.keys())
             self._append_summaries_hists(summaries, self.model.w.values())
             self._append_summaries_var_imgs(summaries, self.model.w.values())
-#            for k in self.model.w:
-#                hist = tf.summary.histogram(k, self.model.w[k])
-#                summaries.append(hist)
-#                w_dim, num_filters = self.model.w[k].get_shape()
-#                for fidx in xrange(num_filters):
-#                    w_name = k + '_%d' % fidx
-#                    w_k = self.model.w[k][:, fidx]
-#                    summaries.append(tf.summary.histogram(w_name, w_k))
-#                    if np.sqrt(w_dim.value)** 2 == w_dim.value:
-#                        w_k_img = tf.reshape(w_k,
-#                                             [1, int(np.sqrt(w_dim.value)), int(np.sqrt(w_dim.value)), 1])
-#                        summaries.append(tf.summary.image(w_name, w_k_img))
-#                    else:
-#                        self.logger.debug("Cannot reshape %s %s to a square image. Skipping." % (w_name, w_dim))
-#            _, p_dim = self.model.p.get_shape()
-#            if np.sqrt(p_dim.value)** 2 == p_dim.value:
-#                p_img = tf.reshape(self.model.p,
-#                                   [self.batch_size, int(np.sqrt(p_dim.value)), int(np.sqrt(p_dim.value)), 1])
-#                summaries.append(tf.summary.image(self.model.p.name.replace(':', '_'), p_img))
             self._append_summaries_op_imgs(summaries, [self.model.p])
             summaries_merged_val = tf.summary.merge(summaries)
             
@@ -76,8 +57,8 @@ class AERunner(AbstractRunner):
             for epoch in xrange(self.training_epochs):
                 self.logger.info("Start epoch %d, step %d" % (epoch, itr_exp))
                 # Loop over all batches
-                for itr_epoch in xrange(self.num_batches):
-                    batch_xs, _ = self.data.train.next_batch(self.batch_size)
+                for itr_epoch in xrange(self.num_batches_train):
+                    batch_xs, _ = self.data.train.next_batch(self.num_batches_train)
         #            batch_xs_as_img = tf.reshape(batch_xs, [-1, 28, 28, 1])
         #            rots_cur = np.random.choice(rotations, batch_size)
         #            batch_xs_as_img_rot = tf.contrib.image.rotate(batch_xs_as_img, rots_cur)
@@ -101,7 +82,7 @@ class AERunner(AbstractRunner):
                     itr_depth += 1
                     # run metric op one more time, data in feed dict is dummy data, does not influence metric
                 _, sess_summary = sess.run([cost, summaries_merged_val],
-                                         feed_dict={self.model.x  : batch_xs}
+                                         feed_dict={self.model.x  : self.batch_viz_xs}
                                          )
                 summary_writer_val.add_summary(sess_summary, itr_exp)
                 fpath_save = os.path.join(dir_train, self._get_save_name())
@@ -122,19 +103,6 @@ class AERunner(AbstractRunner):
     def validate(self, sess):
         pass
     
-    def visualize(self, sess):
-        sess.run(self._acc_ops.reset)
-        num_batches = int(self.data.validation.num_examples/self.batch_size)
-        for _ in xrange(num_batches):
-            batch_xs, batch_ys = self.data.validation.next_batch(self.batch_size)
-            _, _ = sess.run(\
-                            [self._acc_ops.metric, self._acc_ops.update,
-#                             tf.argmax(self.model.p,1), tf.argmax(self.y_,1),
-                             ],
-                            feed_dict={self.x: batch_xs,
-                                       self.y_: batch_ys})
-
-    
     def __init__(self, params):
         '''
         Constructor
@@ -142,10 +110,13 @@ class AERunner(AbstractRunner):
         super(AERunner, self).__init__(params)
         self.data = MNIST.read_data_sets("MNIST_data",
                                          validation_size=self.validation_size)
-        self.num_batches = int(self.data.train.num_examples/self.batch_size)
-        self.logger.debug("No. of batches per epoch: %s", self.num_batches)
+        self.num_batches_train = int(self.data.train.num_examples/self.batch_size_train)
+        self.logger.debug("No. of batches per epoch: %s", self.num_batches_train)
+        self._check_validation_batch_size()
         self.stack_dims = params['stack_dims']
         self.logger.debug("Stack dims: %s", self.stack_dims)
         self.prefix = 'reconstruction'
         self._vars_added = []
+        self.batch_size_val = 3
+        self.batch_viz_xs, self.batch_viz_ys = self.data.validation.next_batch(self.batch_size_val, shuffle=False)
         

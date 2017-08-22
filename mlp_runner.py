@@ -50,8 +50,8 @@ class MLPRunner(AbstractRunner):
         for epoch in xrange(self.training_epochs):
             self.logger.info("Start epoch %d, step %d" % (epoch, itr_exp))
             # Loop over all batches
-            for itr_epoch in xrange(self.num_batches):
-                batch_xs, batch_ys = self.data.train.next_batch(self.batch_size)
+            for itr_epoch in xrange(self.num_batches_train):
+                batch_xs, batch_ys = self.data.train.next_batch(self.batch_size_train)
                 _, _, sess_summary = sess.run([optimizer,
                                                cost,
                                                summaries_merged_train],
@@ -76,9 +76,10 @@ class MLPRunner(AbstractRunner):
         
     def validate(self, sess):
         sess.run(self._acc_ops.reset)
-        num_batches = int(self.data.validation.num_examples/self.batch_size)
-        for _ in xrange(num_batches):
-            batch_xs, batch_ys = self.data.validation.next_batch(self.batch_size)
+        num_batches_val = int(self.data.validation.num_examples/self.batch_size_val)
+        for _ in xrange(num_batches_val):
+            batch_xs, batch_ys = self.data.validation.next_batch(self.batch_size_val,
+                                                                 shuffle=False)
             _, _ = sess.run(\
                             [self._acc_ops.metric, self._acc_ops.update,
 #                             tf.argmax(self.model.p,1), tf.argmax(self.y_,1),
@@ -105,8 +106,9 @@ class MLPRunner(AbstractRunner):
         self.data = MNIST.read_data_sets("MNIST_data",
                                          one_hot=True,
                                          validation_size=self.validation_size)
-        self.num_batches = int(self.data.train.num_examples/self.batch_size)
-        self.logger.debug("No. of batches per epoch: %s", self.num_batches)
+        self.num_batches_train = int(self.data.train.num_examples/self.batch_size_train)
+        self.logger.debug("No. of training batches per epoch:", self.num_batches_train)
+        self._check_validation_batch_size()
         self.y_ = None
         self._acc_ops = None
         self.prefix = 'classification'
