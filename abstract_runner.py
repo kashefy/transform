@@ -7,6 +7,7 @@ import os
 import logging
 from abc import ABCMeta, abstractmethod
 from bunch import Bunch
+import numpy as np
 import tensorflow as tf
 
 def setup_optimizer(cost, learning_rate, var_list=None):
@@ -45,12 +46,53 @@ class AbstractRunner(object):
     def _init_learning_params(self):
         pass
     
-    def _merge_summaries(self, ops):
+    def _merge_summaries_scalars(self, ops):
         summaries = []
         for value in ops:
             self.logger.debug("log scalar: %s" % value.op.name)
-            summaries.append(tf.summary.scalar(value.op.name, value))
+            summaries.append(tf.summary.scalar(value.op.name,
+                                               value))
         return tf.summary.merge(summaries)
+    
+    def _append_summaries_hists(self, summaries, t):
+        for value in t:
+            self.logger.debug("log histograms: %s" % value.name)
+            hist = tf.summary.histogram(value.name.replace(':', '_'),
+                                        value)
+            summaries.append(hist)
+        
+    def _append_summaries_var_imgs(self, summaries, vars):
+        for value in vars:
+            name_prefix_ = value.name.replace(':', '_')
+            self.logger.debug("log images: %s" % value.name)
+            dim_, num_filters = value.get_shape()
+            for fidx in xrange(num_filters):
+                name_ = name_prefix_ + '_%d' % fidx
+                img_vals = value[:, fidx]
+                if np.sqrt(dim_.value) ** 2 == dim_.value:
+                    img = tf.reshape(img_vals,
+                                     [1,
+                                      int(np.sqrt(dim_.value)),
+                                      int(np.sqrt(dim_.value)),
+                                      1])
+                    summaries.append(tf.summary.image(name_, img))
+                else:
+                    self.logger.debug("Cannot reshape %s %s to a square image. Skipping." % (name_, dim_))
+    
+    def _append_summaries_op_imgs(self, summaries, t):
+        for op in t:
+            name_prefix_ = op.name.replace(':', '_')
+            _, dim_ = op.get_shape()
+            self.logger.debug("log images: %s" % op.name)
+            if np.sqrt(dim_.value) ** 2 == dim_.value:
+                p_img = tf.reshape(op,
+                                   [self.batch_size,
+                                    int(np.sqrt(dim_.value)),
+                                    int(np.sqrt(dim_.value)),
+                                    1])
+                summaries.append(tf.summary.image(self.model.p.name.replace(':', '_'), p_img))
+            else:
+                self.logger.debug("Cannot reshape %s %s to a square image. Skipping." % (name_prefix_, dim_))
     
     def _init_saver(self, force=False):
         if self.saver is None:
@@ -78,10 +120,9 @@ class AbstractRunner(object):
         '''
         params = Bunch(params)
         self.run_name = params.run_name
-        if params.logger_name is None:
-            logger_name = __name__
-        else:
-            logger_name = '.'.join([params.logger_name, __name__])
+        logger_name = self.__class__.__name__
+        if params.logger_name is not None:
+            logger_name = '.'.join([params.logger_name, logger_name])
         self.logger = logging.getLogger(logger_name)
         self.run_dir = os.path.join(params.log_dir, self.run_name)
         

@@ -27,22 +27,23 @@ class MLPRunner(AbstractRunner):
         summary_writer_val = tf.summary.FileWriter(dir_val)
         self.y_ = tf.placeholder("float", [None, self.model.n_nodes[-1]])
         
-        loss = self.model.cost(self.y_, name="train/loss_classification")
+        loss = self.model.cost(self.y_, name=self.prefix + "/train/loss_classification")
         if self.lambda_l2 != 0:
-            regularization = self._regularization(name='train/regularization_l2')
-            cost = tf.add(loss, self.lambda_l2 * regularization, name='train/cost')
+            regularization = self._regularization(name=self.prefix + '/train/regularization_l2')
+            cost = tf.add(loss, self.lambda_l2 * regularization,
+                          name=self.prefix + 'train/cost')
         else:
             cost = loss
         vars_new = self.model.vars_new()
         optimizer = setup_optimizer(cost, self.learning_rate, var_list=vars_new)
         vars_new = self.model.vars_new()
         self.init_vars(sess, vars_new)
-        summaries_merged_train = self._merge_summaries([loss, cost])
+        summaries_merged_train = self._merge_summaries_scalars([loss, cost])
         
         if self._acc_ops is None:
             self._acc_ops =  self._init_acc_ops()
         sess.run(self._acc_ops.reset)
-        summaries_merged_val = self._merge_summaries([self._acc_ops.metric])
+        summaries_merged_val = self._merge_summaries_scalars([self._acc_ops.metric])
             
         self._init_saver()
         itr_exp = 0

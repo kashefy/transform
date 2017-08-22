@@ -137,7 +137,7 @@ def load_config(fpath):
                      'batch_size'       : 16,
                      "num_folds"        : 3,
                      "prefix"           : '',
-                     "lambda_l2"        : 0.01,
+                     "lambda_l2"        : 1.0,
                      "logger_name"      : logger.name,
                      }
     for k in default_items.keys():

@@ -27,37 +27,48 @@ class AERunner(AbstractRunner):
             self.model.stack(dim)
             loss = self.model.cost(name='train/loss_reconstruction')
             if self.lambda_l2 != 0:
-                regularization = self._regularization(name='train/regularization_l2')
-                cost = tf.add(loss, self.lambda_l2 * regularization, name='train/cost')
+                regularization = self._regularization(name=self.prefix + '/train/regularization_l2')
+                cost = tf.add(loss, self.lambda_l2 * regularization,
+                              name=self.prefix + '/train/cost')
             else:
                 cost = loss
             vars_new = self.model.vars_new()
+            self.logger.debug('Variables added: %s' % [v.name for v in vars_new])
+            self._vars_added.append(vars_new)
             optimizer = setup_optimizer(cost, self.learning_rate, var_list=vars_new)
             vars_new = self.model.vars_new()
             self.init_vars(sess, vars_new)
            
             self.logger.debug('encoder-0: %s' % sess.run(self.model.sae[0].w['encoder-0/w'][10,5:10]))
-            summaries_merged_train = self._merge_summaries([loss, cost])
+            summaries_merged_train = self._merge_summaries_scalars([loss, cost])
             
             summaries = []
 #            for value in [loss, cost]:
 #                self.logger.debug("log scalar: %s" % value.op.name)
 #                summaries.append(tf.summary.scalar(value.op.name, value))
             self.logger.debug("log weights (histograms, images): %s" % self.model.w.keys())
-            for k in self.model.w:
-                hist = tf.summary.histogram(k, self.model.w[k])
-                summaries.append(hist)
-                w_dim, num_filters = self.model.w[k].get_shape()
-                for fidx in xrange(num_filters):
-                    w_name = k + '_%d' % fidx
-                    w_k = self.model.w[k][:, fidx]
-                    summaries.append(tf.summary.histogram(w_name, w_k))
-                    if np.sqrt(w_dim.value)** 2 == w_dim.value:
-                        w_k_img = tf.reshape(w_k,
-                                             [1, int(np.sqrt(w_dim.value)), int(np.sqrt(w_dim.value)), 1])
-                        summaries.append(tf.summary.image(w_name, w_k_img))
-                    else:
-                        self.logger.debug("Cannot reshape %s %s to a square image. Skipping." % (w_name, w_dim))
+            self._append_summaries_hists(summaries, self.model.w.values())
+            self._append_summaries_var_imgs(summaries, self.model.w.values())
+#            for k in self.model.w:
+#                hist = tf.summary.histogram(k, self.model.w[k])
+#                summaries.append(hist)
+#                w_dim, num_filters = self.model.w[k].get_shape()
+#                for fidx in xrange(num_filters):
+#                    w_name = k + '_%d' % fidx
+#                    w_k = self.model.w[k][:, fidx]
+#                    summaries.append(tf.summary.histogram(w_name, w_k))
+#                    if np.sqrt(w_dim.value)** 2 == w_dim.value:
+#                        w_k_img = tf.reshape(w_k,
+#                                             [1, int(np.sqrt(w_dim.value)), int(np.sqrt(w_dim.value)), 1])
+#                        summaries.append(tf.summary.image(w_name, w_k_img))
+#                    else:
+#                        self.logger.debug("Cannot reshape %s %s to a square image. Skipping." % (w_name, w_dim))
+#            _, p_dim = self.model.p.get_shape()
+#            if np.sqrt(p_dim.value)** 2 == p_dim.value:
+#                p_img = tf.reshape(self.model.p,
+#                                   [self.batch_size, int(np.sqrt(p_dim.value)), int(np.sqrt(p_dim.value)), 1])
+#                summaries.append(tf.summary.image(self.model.p.name.replace(':', '_'), p_img))
+            self._append_summaries_op_imgs(summaries, [self.model.p])
             summaries_merged_val = tf.summary.merge(summaries)
             
             self._init_saver()
@@ -136,4 +147,5 @@ class AERunner(AbstractRunner):
         self.stack_dims = params['stack_dims']
         self.logger.debug("Stack dims: %s", self.stack_dims)
         self.prefix = 'reconstruction'
+        self._vars_added = []
         
