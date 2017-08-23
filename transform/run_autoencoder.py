@@ -137,7 +137,7 @@ def load_config(fpath):
                      'batch_size_train' : 16,
                      'batch_size_val'   : 16,
                      "num_folds"        : 3,
-                     "prefix"           : '',
+                     "prefix"           : os.path.splitext(os.path.basename(fpath))[0],
                      "lambda_l2"        : 1.0,
                      "logger_name"      : logger.name,
                      }
@@ -145,7 +145,7 @@ def load_config(fpath):
         cfg[k] = cfg.get(k, default_items[k])
     return cfg
   
-def run_autoencoder(run_name, log_dir, fpath_cfg):
+def run_autoencoder(run_name, log_dir, fpath_cfg_list):
     run_dir = os.path.join(log_dir, run_name)
     os.makedirs(run_dir)
     global logger
@@ -155,32 +155,39 @@ def run_autoencoder(run_name, log_dir, fpath_cfg):
     # -90 (cw) to 90 deg (ccw) rotations in 15-deg increments
     #rotations = np.deg2rad(np.linspace(-90, 90, 180/(12+1), endpoint=True)).tolist()
     
-    logger.debug("Loading config from %s" % fpath_cfg)
-    cfg = load_config(fpath_cfg)
-    cfg['log_dir'] = os.path.expanduser(log_dir)
-    cfg['run_name'] = run_name
-    fname_cfg = 'config.yaml' #os.path.basename(params.fpath_cfg)
-    with open(os.path.join(run_dir, fname_cfg), 'w') as h:
-        h.write(yaml.dump(cfg))
-    
+    cfg_list = []
+    logger.debug("Got %d config files." % len(fpath_cfg_list))
+    for cidx, fpath_cfg in enumerate(fpath_cfg_list):
+        logger.debug("Loading config from %s" % fpath_cfg)
+        cfg = load_config(fpath_cfg)
+        cfg['log_dir'] = os.path.expanduser(log_dir)
+        cfg['run_name'] = run_name
+        fname_cfg = os.path.basename(fpath_cfg)
+        fpath_cfg_dst = os.path.join(run_dir, 'config_%d.yml' % cidx)
+        logger.debug("Write config %s to %s" % (fname_cfg, fpath_cfg_dst))
+        with open(fpath_cfg_dst, 'w') as h:
+            h.write(yaml.dump(cfg))
+        cfg_list.append(cfg)
+        
+    cfg = cfg_list[0]
     ae_runner = AERunner(cfg)
     n_input = ae_runner.data.train.images.shape[-1]
     sae_params = {
-            'in_op': tf.placeholder("float", [None, n_input]),
-            'prefix': 'sae',
+            'in_op'     : tf.placeholder("float", [None, n_input]),
+            'prefix'    : cfg['prefix'],
             }
     ae_runner.model = SAE(sae_params)
+    cfg = cfg_list[1]
     mlp_runner = MLPRunner(cfg)
 
     # Launch the graph
     with tf.Session() as sess:
         ae_runner.learn(sess)
-        
         n_classes = mlp_runner.data.train.labels.shape[-1]
         classifier_params = {
-            'n_nodes': [n_classes],
-            'n_input': ae_runner.model.representation.get_shape()[-1].value,
-            'prefix': 'mlp',
+            'n_nodes'   : [n_classes],
+            'n_input'   : ae_runner.model.representation.get_shape()[-1].value,
+            'prefix'    : cfg['prefix'],
             }
         net = MLP(classifier_params)
         net.x = ae_runner.model.representation
@@ -196,11 +203,14 @@ def run_autoencoder(run_name, log_dir, fpath_cfg):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--config", dest="fpath_cfg", type=str,
-                        help="Path to config file")
-    parser.add_argument("--log_dir", dest="log_dir", type=str, default='/home/kashefy/models/ae/log_simple_stats',
+    parser.add_argument("-c", "--config", action='append',
+                        dest="fpath_cfg_list", type=str, required=True,
+                        help="Paths to config files")
+    parser.add_argument("--log_dir", dest="log_dir", type=str,
+                        default='/home/kashefy/models/ae/log_simple_stats',
                         help="Set parent log directory for all runs")
-    parser.add_argument("--run_name", dest="run_name", type=str, default=datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+    parser.add_argument("--run_name", dest="run_name", type=str,
+                        default=datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
                         help="Set name for run")    
     parser.add_argument("--run_name_prefix", dest="run_name_prefix", type=str, default='',
                         help="Set prefix run name")    
@@ -208,6 +218,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     run_autoencoder(args.run_name_prefix + args.run_name,
                     args.log_dir,
-                    args.fpath_cfg)
+                    args.fpath_cfg_list)
     
     pass
