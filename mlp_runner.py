@@ -107,7 +107,7 @@ class MLPRunner(AbstractRunner):
                                          one_hot=True,
                                          validation_size=self.validation_size)
         self.num_batches_train = int(self.data.train.num_examples/self.batch_size_train)
-        self.logger.debug("No. of training batches per epoch:", self.num_batches_train)
+        self.logger.debug("No. of training batches per epoch: %d" % self.num_batches_train)
         self._check_validation_batch_size()
         self.y_ = None
         self._acc_ops = None

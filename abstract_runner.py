@@ -141,18 +141,18 @@ class AbstractRunner(object):
         
         self.prefix = params.prefix
         self.batch_size_train = params.batch_size_train
-        self.logger.debug("batch_size (training): %d", self.batch_size_train)
+        self.logger.debug("batch_size (training): %d" % self.batch_size_train)
         self.batch_size_val = params.batch_size_val
-        self.logger.debug("batch_size (validation): %d", self.batch_size_val)
+        self.logger.debug("batch_size (validation): %d" % self.batch_size_val)
         self.learning_rate = params.learning_rate
-        self.logger.debug("initial learning rate: %f", self.learning_rate)
+        self.logger.debug("initial learning rate: %f" % self.learning_rate)
         self.training_epochs = params.training_epochs
-        self.logger.debug("training epochs: %d", self.training_epochs)
+        self.logger.debug("training epochs: %d" % self.training_epochs)
         self.validation_size = params.validation_size
-        self.logger.debug("validation size: %d", self.validation_size)
+        self.logger.debug("validation size: %d" % self.validation_size)
         self.lambda_l2 = params.lambda_l2
         if self.lambda_l2 != 0:
-            self.logger.debug("lambda_l2: %f", self.lambda_l2)
+            self.logger.debug("lambda_l2: %f" % self.lambda_l2)
         else:
             self.logger.debug("No L2 regularization")
         self._model = None

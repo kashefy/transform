@@ -111,10 +111,10 @@ class AERunner(AbstractRunner):
         self.data = MNIST.read_data_sets("MNIST_data",
                                          validation_size=self.validation_size)
         self.num_batches_train = int(self.data.train.num_examples/self.batch_size_train)
-        self.logger.debug("No. of batches per epoch: %s", self.num_batches_train)
+        self.logger.debug("No. of batches per epoch: %d" % self.num_batches_train)
         self._check_validation_batch_size()
         self.stack_dims = params['stack_dims']
-        self.logger.debug("Stack dims: %s", self.stack_dims)
+        self.logger.debug("Stack dims: %s" % self.stack_dims)
         self.prefix = 'reconstruction'
         self._vars_added = []
         self.batch_size_val = 3
