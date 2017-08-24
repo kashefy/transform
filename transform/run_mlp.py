@@ -13,55 +13,38 @@ from __future__ import division, print_function, absolute_import
 
 import argparse
 import os
-import logging
 from datetime import datetime
-import numpy as np
 import yaml
 import tensorflow as tf
 from mlp_runner import MLPRunner
 from nideep.nets.mlp_tf import MLP
 import logging_utils as lu
 logger = None
-        
-def load_config(fpath):
-    _, ext = os.path.splitext(fpath)
-    if not (ext.endswith('yml') or ext.endswith('yaml')):
-        logger.warning("Config file does not appear to be a yaml file.")
-    fpath = os.path.expanduser(fpath)
-    with open(fpath, 'r') as h:
-        cfg = yaml.load(h)
-    # set defaults if not already set
-    default_items = {'learning_rate'    : 0.5,
-                     'training_epochs'  : 2, # no. of epochs per stage
-                     'batch_size'       : 64,
-                     "num_folds"        : 3,
-                     "prefix"           : '',
-                     "lambda_l2"        : 0,
-                     "logger_name"      : logger.name,
-                     }
-    for k in default_items.keys():
-        cfg[k] = cfg.get(k, default_items[k])
-    return cfg
+from cfg_utils import load_config
   
-def run_mlp(args):
-    args.run_name = args.run_name_prefix + args.run_name
-    run_dir = os.path.join(args.log_dir, args.run_name)
+def run(run_name, log_dir, fpath_cfg_list):
+    run_dir = os.path.join(log_dir, run_name)
     os.makedirs(run_dir)
     global logger
-    logger = lu.setup_logging(os.path.join(args.log_dir, args.run_name, 'log.txt'))
+    logger = lu.setup_logging(os.path.join(log_dir, run_name, 'log.txt'))
     logger.debug("Create run directory %s", run_dir)
-    logger.info("Starting run %s" % args.run_name)
-    # -90 (cw) to 90 deg (ccw) rotations in 15-deg increments
-    #rotations = np.deg2rad(np.linspace(-90, 90, 180/(12+1), endpoint=True)).tolist()
+    logger.info("Starting run %s" % run_name)
     
-    logger.debug("Loading config from %s" % args.fpath_cfg)
-    cfg = load_config(args.fpath_cfg)
-    cfg['log_dir'] = os.path.expanduser(args.log_dir)
-    cfg['run_name'] = args.run_name
-    fname_cfg = 'config.yaml' #os.path.basename(params.fpath_cfg)
-    with open(os.path.join(run_dir, fname_cfg), 'w') as h:
-        h.write(yaml.dump(cfg))
+    cfg_list = []
+    logger.debug("Got %d config files." % len(fpath_cfg_list))
+    for cidx, fpath_cfg in enumerate(fpath_cfg_list):
+        logger.debug("Loading config from %s" % fpath_cfg)
+        cfg = load_config(fpath_cfg)
+        cfg['log_dir'] = os.path.expanduser(log_dir)
+        cfg['run_name'] = run_name
+        fname_cfg = os.path.basename(fpath_cfg)
+        fpath_cfg_dst = os.path.join(run_dir, 'config_%d.yml' % cidx)
+        logger.debug("Write config %s to %s" % (fname_cfg, fpath_cfg_dst))
+        with open(fpath_cfg_dst, 'w') as h:
+            h.write(yaml.dump(cfg))
+        cfg_list.append(cfg)
     
+    cfg = cfg_list[0]
     mlp_runner = MLPRunner(cfg)
     n_input = mlp_runner.data.train.images.shape[-1]
 
@@ -69,9 +52,9 @@ def run_mlp(args):
     with tf.Session() as sess:
         n_classes = mlp_runner.data.train.labels.shape[-1]
         classifier_params = {
-            'n_nodes': [n_classes],
-            'n_input': n_input,
-            'prefix': 'mlp',
+            'n_nodes'   : [n_classes],
+            'n_input'   : n_input,
+            'prefix'    : cfg['prefix'],
             }
         net = MLP(classifier_params)
         net.x = tf.placeholder("float", [None, n_input])
@@ -79,21 +62,25 @@ def run_mlp(args):
         mlp_runner.x = net.x
         mlp_runner.model = net
         mlp_runner.learn(sess)
-    logger.info("Finished run %s" % args.run_name)
+    logger.info("Finished run %s" % run_name)
     lu.close_logging(logger)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--config", dest="fpath_cfg", type=str,
-                        help="Path to config file")
-    parser.add_argument("--log_dir", dest="log_dir", type=str, default='/home/kashefy/models/ae/log_simple_stats',
+    parser.add_argument("-c", "--config", action='append',
+                        dest="fpath_cfg_list", type=str, required=True,
+                        help="Paths to config files")
+    parser.add_argument("--log_dir", dest="log_dir", type=str,
+                        default='/home/kashefy/models/ae/log_simple_stats',
                         help="Set parent log directory for all runs")
-    parser.add_argument("--run_name", dest="run_name", type=str, default=datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+    parser.add_argument("--run_name", dest="run_name", type=str,
+                        default=datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
                         help="Set name for run")    
     parser.add_argument("--run_name_prefix", dest="run_name_prefix", type=str, default='',
-                        help="Set prefix run name")    
-    
+                        help="Set prefix run name")
     args = parser.parse_args()
-    run_mlp(args)
+    run(args.run_name_prefix + args.run_name,
+        args.log_dir,
+        args.fpath_cfg_list)
     
     pass

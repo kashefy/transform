@@ -23,6 +23,7 @@ from mlp_runner import MLPRunner
 from stacked_autoencoder_tf import StackedAutoencoder as SAE
 from nideep.nets.mlp_tf import MLP
 import logging_utils as lu
+from cfg_utils import load_config
 logger = None
 
 def finetune(args, sess, sae):
@@ -95,29 +96,8 @@ def finetune(args, sess, sae):
     for i in xrange(args.examples_to_show):
         a[0][i].imshow(np.reshape(mnist.test.images[i], (28, 28)), clim=(0.0, 1.0))
         a[1][i].imshow(np.reshape(encode_decode[i], (28, 28)), clim=(0.0, 1.0))
-
-def load_config(fpath):
-    _, ext = os.path.splitext(fpath)
-    if not (ext.endswith('yml') or ext.endswith('yaml')):
-        logger.warning("Config file does not appear to be a yaml file.")
-    fpath = os.path.expanduser(fpath)
-    with open(fpath, 'r') as h:
-        cfg = yaml.load(h)
-    # set defaults if not already set
-    default_items = {'learning_rate'    : 0.1,
-                     'training_epochs'  : 2, # no. of epochs per stage
-                     'batch_size_train' : 16,
-                     'batch_size_val'   : 16,
-                     "num_folds"        : 3,
-                     "prefix"           : os.path.splitext(os.path.basename(fpath))[0],
-                     "lambda_l2"        : 1.0,
-                     "logger_name"      : logger.name,
-                     }
-    for k in default_items.keys():
-        cfg[k] = cfg.get(k, default_items[k])
-    return cfg
   
-def run_autoencoder(run_name, log_dir, fpath_cfg_list):
+def run(run_name, log_dir, fpath_cfg_list):
     run_dir = os.path.join(log_dir, run_name)
     os.makedirs(run_dir)
     global logger
@@ -187,8 +167,8 @@ if __name__ == '__main__':
     parser.add_argument("--run_name_prefix", dest="run_name_prefix", type=str, default='',
                         help="Set prefix run name")
     args = parser.parse_args()
-    run_autoencoder(args.run_name_prefix + args.run_name,
-                    args.log_dir,
-                    args.fpath_cfg_list)
+    run(args.run_name_prefix + args.run_name,
+        args.log_dir,
+        args.fpath_cfg_list)
     
     pass
