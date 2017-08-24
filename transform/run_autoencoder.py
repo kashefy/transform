@@ -13,7 +13,6 @@ from __future__ import division, print_function, absolute_import
 
 import argparse
 import os
-import logging
 from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
@@ -23,35 +22,8 @@ from ae_runner import AERunner
 from mlp_runner import MLPRunner
 from stacked_autoencoder_tf import StackedAutoencoder as SAE
 from nideep.nets.mlp_tf import MLP
+import logging_utils as lu
 logger = None
-#logging.basicConfig(level=logging.DEBUG)
-
-def setup_logging(fpath,
-                  name=None, 
-                  level=logging.DEBUG):
-    if name is None:
-        logger = logging.getLogger()
-    else:
-        logger = logging.getLogger(name)
-    logger.setLevel(level)
-    fh = logging.FileHandler(fpath)
-    ch = logging.StreamHandler()
-    
-    # create formatter and add it to the handlers
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    
-    for h in [fh, ch]:
-        fh.setLevel(level)
-        h.setFormatter(formatter)
-        # add the handlers to the logger
-        logger.addHandler(h)
-    return logger
-    
-def close_logging(logger):
-    # remember to close the handlers
-    for handler in logger.handlers:
-        handler.close()
-        logger.removeFilter(handler)
 
 def finetune(args, sess, sae):
     logging.info("Finetuning!")
@@ -149,7 +121,7 @@ def run_autoencoder(run_name, log_dir, fpath_cfg_list):
     run_dir = os.path.join(log_dir, run_name)
     os.makedirs(run_dir)
     global logger
-    logger = setup_logging(os.path.join(log_dir, run_name, 'log.txt'))
+    logger = lu.setup_logging(os.path.join(log_dir, run_name, 'log.txt'))
     logger.debug("Create run directory %s", run_dir)
     logger.info("Starting run %s" % run_name)
     # -90 (cw) to 90 deg (ccw) rotations in 15-deg increments
@@ -199,7 +171,7 @@ def run_autoencoder(run_name, log_dir, fpath_cfg_list):
         logger.debug('encoder-0 %s:' % sess.run(ae_runner.model.sae[0].w['encoder-0/w'][10,5:10]))
         #finetune(args, sess, sae)
     logger.info("Finished run %s" % run_name)
-    close_logging(logger)
+    lu.close_logging(logger)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

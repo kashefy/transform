@@ -20,34 +20,8 @@ import yaml
 import tensorflow as tf
 from mlp_runner import MLPRunner
 from nideep.nets.mlp_tf import MLP
+import logging_utils as lu
 logger = None
-
-def setup_logging(fpath,
-                  name=None, 
-                  level=logging.DEBUG):
-    if name is None:
-        logger = logging.getLogger()
-    else:
-        logger = logging.getLogger(name)
-    logger.setLevel(level)
-    fh = logging.FileHandler(fpath)
-    ch = logging.StreamHandler()
-    
-    # create formatter and add it to the handlers
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    
-    for h in [fh, ch]:
-        fh.setLevel(level)
-        h.setFormatter(formatter)
-        # add the handlers to the logger
-        logger.addHandler(h)
-    return logger
-    
-def close_logging(logger):
-    # remember to close the handlers
-    for handler in logger.handlers:
-        handler.close()
-        logger.removeFilter(handler)
         
 def load_config(fpath):
     _, ext = os.path.splitext(fpath)
@@ -74,7 +48,7 @@ def run_mlp(args):
     run_dir = os.path.join(args.log_dir, args.run_name)
     os.makedirs(run_dir)
     global logger
-    logger = setup_logging(os.path.join(args.log_dir, args.run_name, 'log.txt'))
+    logger = lu.setup_logging(os.path.join(args.log_dir, args.run_name, 'log.txt'))
     logger.debug("Create run directory %s", run_dir)
     logger.info("Starting run %s" % args.run_name)
     # -90 (cw) to 90 deg (ccw) rotations in 15-deg increments
@@ -106,7 +80,7 @@ def run_mlp(args):
         mlp_runner.model = net
         mlp_runner.learn(sess)
     logger.info("Finished run %s" % args.run_name)
-    close_logging(logger)
+    lu.close_logging(logger)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
