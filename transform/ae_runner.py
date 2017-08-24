@@ -117,6 +117,6 @@ class AERunner(AbstractRunner):
         self.logger.debug("Stack dims: %s" % self.stack_dims)
         self.prefix = 'reconstruction'
         self._vars_added = []
-        self.batch_size_val = 3
-        self.batch_viz_xs, self.batch_viz_ys = self.data.validation.next_batch(self.batch_size_val, shuffle=False)
+        self.batch_viz_xs, self.batch_viz_ys = self.data.validation.next_batch(self.batch_size_val,
+                                                                               shuffle=False)
         
