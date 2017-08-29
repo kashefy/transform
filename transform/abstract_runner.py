@@ -30,10 +30,18 @@ class AbstractRunner(object):
     def learn(self):
         pass
     
-    def init_vars(self, sess, vars):
-        init_op = tf.variables_initializer(vars)
-        self.logger.debug('initializing %s' % [v.name for v in vars])
+    def init_vars(self, sess, vars_):
+        init_op = tf.variables_initializer(vars_)
+        self.logger.debug('initializing %s' % [v.name for v in vars_])
         sess.run(init_op)
+        
+    def dirpath(self, phase, suffix=''):
+        return os.path.join(self.run_dir,
+                            self.dirname(phase, suffix=suffix))
+        
+    def dirname(self, phase, suffix=''):
+        return os.path.join(self.prefix,
+                             '_'.join([phase, suffix]).rstrip('_'))
         
     @property
     def model(self):

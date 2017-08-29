@@ -15,23 +15,17 @@ class AERunner(AbstractRunner):
     classdocs
     '''
     def learn(self, sess):
-        dir_train = os.path.join(self.run_dir, self.prefix,  'train')
+        dir_train = self.dirpath('train')
         summary_writer_train = tf.summary.FileWriter(dir_train,
                                                      sess.graph)
-        dir_val = os.path.join(self.run_dir, self.prefix, 'validation')
+        dir_val = self.dirpath('validation')
         summary_writer_val = tf.summary.FileWriter(dir_val)
         itr_exp = 0
         for dim in self.stack_dims:
             itr_depth = 0
             self.logger.debug('Stacking %d nodes.' % dim)
             self.model.stack(dim)
-            loss = self.model.cost(name='train/loss_reconstruction')
-            if self.lambda_l2 != 0:
-                regularization = self._regularization(name=self.prefix + '/train/regularization_l2')
-                cost = tf.add(loss, self.lambda_l2 * regularization,
-                              name=self.prefix + '/train/cost')
-            else:
-                cost = loss
+            cost, loss = self._cost_loss(self.dirname('train'))
             vars_new = self.model.vars_new()
             self.logger.debug('Variables added: %s' % [v.name for v in vars_new])
             self._vars_added.append(vars_new)
@@ -102,6 +96,16 @@ class AERunner(AbstractRunner):
 #    fig.savefig(os.path.join(args.log_dir, run_dir, 'train_layerwise_reconstruct.png'))
     def validate(self, sess):
         pass
+    
+    def _cost_loss(self, prefix):
+        loss = self.model.cost(name=prefix + '/loss_classification')
+        if self.lambda_l2 != 0:
+            regularization = self._regularization(name=prefix + '/regularization_l2')
+            cost = tf.add(loss, self.lambda_l2 * regularization,
+                          name=prefix + '/cost')
+        else:
+            cost = loss
+        return cost, loss
     
     def __init__(self, params):
         '''

@@ -150,7 +150,8 @@ def run(run_name, log_dir, fpath_cfg_list):
         mlp_runner.learn(sess)
         logger.debug('encoder-0 %s:' % sess.run(ae_runner.model.sae[0].w['encoder-0/w'][10,5:10]))
         
-        mlp_runner.finetune(sess)
+        mlp_runner.do_finetune = True
+        mlp_runner.learn(sess)
         
         logger.debug('encoder-0 %s:' % sess.run(ae_runner.model.sae[0].w['encoder-0/w'][10,5:10]))
         #finetune(args, sess, sae)
