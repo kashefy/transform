@@ -10,9 +10,13 @@ from bunch import Bunch
 import numpy as np
 import tensorflow as tf
 
-def setup_optimizer(cost, learning_rate, var_list=None):
+def setup_optimizer(cost, learning_rate, name=None, var_list=None):
 #    opt = tf.train.RMSPropOptimizer(learning_rate)
-    op = tf.train.GradientDescentOptimizer(learning_rate)
+    if name is None:
+        op = tf.train.GradientDescentOptimizer(learning_rate)
+    else:
+        op = tf.train.GradientDescentOptimizer(learning_rate,
+                                               name=name)
     op_min = op.minimize(cost, var_list=var_list)
     return op_min
 

@@ -16,11 +16,11 @@ import os
 from datetime import datetime
 import yaml
 import tensorflow as tf
-from mlp_runner import MLPRunner
+from transform.mlp_runner import MLPRunner
 from nideep.nets.mlp_tf import MLP
-import logging_utils as lu
+import transform.logging_utils as lu
+from transform.cfg_utils import load_config
 logger = None
-from cfg_utils import load_config
   
 def run(run_name, log_dir, fpath_cfg_list):
     run_dir = os.path.join(log_dir, run_name)
@@ -34,7 +34,7 @@ def run(run_name, log_dir, fpath_cfg_list):
     logger.debug("Got %d config files." % len(fpath_cfg_list))
     for cidx, fpath_cfg in enumerate(fpath_cfg_list):
         logger.debug("Loading config from %s" % fpath_cfg)
-        cfg = load_config(fpath_cfg)
+        cfg = load_config(fpath_cfg, logger)
         cfg['log_dir'] = os.path.expanduser(log_dir)
         cfg['run_name'] = run_name
         fname_cfg = os.path.basename(fpath_cfg)
@@ -51,8 +51,9 @@ def run(run_name, log_dir, fpath_cfg_list):
     # Launch the graph
     with tf.Session() as sess:
         n_classes = mlp_runner.data.train.labels.shape[-1]
+        cfg['n_nodes'].append(n_classes)
         classifier_params = {
-            'n_nodes'   : [n_classes],
+            'n_nodes'   : cfg['n_nodes'],
             'n_input'   : n_input,
             'prefix'    : cfg['prefix'],
             }

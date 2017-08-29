@@ -18,16 +18,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 import yaml
 import tensorflow as tf
-from ae_runner import AERunner
-from mlp_runner import MLPRunner
-from stacked_autoencoder_tf import StackedAutoencoder as SAE
+from transform.ae_runner import AERunner
+from transform.mlp_runner import MLPRunner
+from transform.stacked_autoencoder_tf import StackedAutoencoder as SAE
 from nideep.nets.mlp_tf import MLP
-import logging_utils as lu
-from cfg_utils import load_config
+import transform.logging_utils as lu
+from transform.cfg_utils import load_config
 logger = None
 
-def finetune(args, sess, sae):
-    logging.info("Finetuning!")
+def finetune(args, sess, runner):
+    logger.info("Finetuning!")
 #    print('encoder_1', sess.run(sae.sae[0].w['encoder_1/w'][10,5:10]))
 #    print('encoder_2',sess.run(sae.sae[1].w['encoder_2/w'][10,5:10]))
     vars_old = [var.name for var in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)]
@@ -35,6 +35,7 @@ def finetune(args, sess, sae):
         cost = sae.sae[0].cost_cross_entropy(sae.y_pred, name='cost_finetune')
         optimizer = setup_optimizer_op(cost, args.learning_rate)
     vars_new = [var for var in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES) if var.name not in vars_old]
+    vars_new_2 = vars_old - tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
     
     logging.debug("Initializing %s" % [var.name for var in vars_new])
     init_op = tf.variables_initializer(vars_new)
@@ -111,7 +112,7 @@ def run(run_name, log_dir, fpath_cfg_list):
     logger.debug("Got %d config files." % len(fpath_cfg_list))
     for cidx, fpath_cfg in enumerate(fpath_cfg_list):
         logger.debug("Loading config from %s" % fpath_cfg)
-        cfg = load_config(fpath_cfg)
+        cfg = load_config(fpath_cfg, logger)
         cfg['log_dir'] = os.path.expanduser(log_dir)
         cfg['run_name'] = run_name
         fname_cfg = os.path.basename(fpath_cfg)
@@ -147,6 +148,9 @@ def run(run_name, log_dir, fpath_cfg_list):
         mlp_runner.x = ae_runner.model.x
         mlp_runner.model = net
         mlp_runner.learn(sess)
+        logger.debug('encoder-0 %s:' % sess.run(ae_runner.model.sae[0].w['encoder-0/w'][10,5:10]))
+        
+        mlp_runner.finetune(sess)
         
         logger.debug('encoder-0 %s:' % sess.run(ae_runner.model.sae[0].w['encoder-0/w'][10,5:10]))
         #finetune(args, sess, sae)

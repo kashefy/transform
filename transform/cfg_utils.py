@@ -22,6 +22,7 @@ def load_config(fpath, logger):
                      "prefix"           : os.path.splitext(os.path.basename(fpath))[0],
                      "lambda_l2"        : 1.0,
                      "logger_name"      : logger.name,
+                     "n_nodes"          : [],
                      }
     for k in default_items.keys():
         cfg[k] = cfg.get(k, default_items[k])
