@@ -5,7 +5,6 @@ Created on May 26, 2017
 '''
 from nideep.nets.abstract_net_tf import AbstractNetTF
 from autoencoder_tf import Autoencoder as AE
-import tensorflow as tf
 
 class StackedAutoencoder(AbstractNetTF):
     '''
@@ -14,8 +13,10 @@ class StackedAutoencoder(AbstractNetTF):
     def _init_learning_params_scoped(self):
         pass
     
+    def _init_ops(self):
+        pass
+    
     def _in_op_cur(self):
-        
         in_op = None
         if len(self.sae) > 0:
             in_op = self.sae[-1].representation()
@@ -23,18 +24,15 @@ class StackedAutoencoder(AbstractNetTF):
             in_op = self.in_op
         return in_op
     
-    def build(self):
-        pass
-    
     def stack(self, dim):
-        
         self.dims.append(dim)
         in_op = self._in_op_cur()
         # Network Parameters
         ae_params = {
             'n_nodes'   :  [dim],
             'n_input'   :  int(in_op.get_shape()[-1]),
-            'prefix'    :  '%s-%d' % (self.prefix, len(self.sae)+1)
+            'prefix'    :  '%s-%d' % (self.prefix, len(self.sae)+1),
+            'reuse'     :  self.reuse,
              }
         ae = AE(ae_params)
         ae.x = in_op
@@ -54,8 +52,7 @@ class StackedAutoencoder(AbstractNetTF):
         return self.sae[-1].cost_cross_entropy(self._y_true, name=name)
         
     def vars_new(self):
-        return tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES,
-                                 scope=self.sae[-1].name_scope)
+        return self.sae[-1].vars_new()
     
     @property
     def representation(self):
@@ -70,12 +67,23 @@ class StackedAutoencoder(AbstractNetTF):
         return self.sae[0].p
 
     @property
+    def logits(self):
+        return self.sae[0].logits
+
+    @property
     def w(self):
         w = {}
         for ae in self.sae:
             for k in ae.w:
                 w[k] = ae.w[k]
         return w
+
+    @property
+    def vars_restored(self):
+        self._vars_restored = []
+        for ae in self.sae:
+            self._vars_restored.extend(ae.vars_restored)
+        return self._vars_restored
 
     def __init__(self, params):
         '''

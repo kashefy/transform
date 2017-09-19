@@ -36,13 +36,18 @@ class Autoencoder(AbstractNetTF):
             if idx == 0:
                 input_dim = self.n_input
             encoder_w_name = self._encoder_w_name(idx)
-            self.w[encoder_w_name] = tf.get_variable(encoder_w_name,
-                                                     [input_dim, dim],
-                                                     initializer=self._init_weight_op(),
-                                                     )
             decoder_w_name = self._decoder_w_name(idx)
-            self.w[decoder_w_name] = tf.transpose(self.w[encoder_w_name],
-                                                  name=decoder_w_name)
+            if self.reuse:
+                self.w[encoder_w_name] = self._restore_variable(self.var_scope + '/' + encoder_w_name)
+                self.w[decoder_w_name] = self._restore_variable(self.var_scope + '/' + decoder_w_name)
+            else:
+                self.w[encoder_w_name] = tf.get_variable(encoder_w_name,
+                                                         [input_dim, dim],
+                                                         initializer=self._init_weight_op(),
+                                                         )
+                decoder_w_name = self._decoder_w_name(idx)
+                self.w[decoder_w_name] = tf.transpose(self.w[encoder_w_name],
+                                                      name=decoder_w_name)
         self._init_bias_vars()
             
     def representation(self):
@@ -67,7 +72,7 @@ class Autoencoder(AbstractNetTF):
             self._decoder_op(z, len(self.n_nodes)-1)
         return self.p, self._decoder_logits_op
 
-    def build(self):
+    def _init_ops(self):
         # Construct model
         for idx in xrange(len(self.n_nodes)):
             with tf.name_scope(self.name_scope + 'encode'):
@@ -81,12 +86,13 @@ class Autoencoder(AbstractNetTF):
                 else:
                     self.p, self._decoder_logits_op = \
                         self._decoder_op(self.p, idx)
-        return self.p, self._decoder_logits_op
+        self.logits = self._decoder_logits_op
     
-    def cost_euclidean(self, y_true):
+    def cost_euclidean(self, y_true, name=None):
         with tf.name_scope(self.name_scope):
             if self._cost_op is None:
-                self._cost_op = tf.reduce_mean(tf.pow(y_true - self.y_pred, 2))
+                self._cost_op = tf.reduce_mean(tf.pow(y_true - self.p, 2),
+                                               name=name)
             return self._cost_op
 
     def cost_cross_entropy(self, y_true, name=None):
@@ -106,9 +112,8 @@ class Autoencoder(AbstractNetTF):
         # Network Parameters
         self.n_input = params['n_input'] # MNIST data input (img shape: 28*28)
         self.n_nodes = params['n_nodes']  # 1st layer num features
-        
-        super(Autoencoder, self).__init__(params)
         self._cost_op = None
+        super(Autoencoder, self).__init__(params)
         
             
         

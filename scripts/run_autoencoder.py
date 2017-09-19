@@ -13,6 +13,7 @@ from __future__ import division, print_function, absolute_import
 
 import argparse
 import os
+import shutil
 from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
@@ -98,8 +99,11 @@ def finetune(args, sess, runner):
         a[0][i].imshow(np.reshape(mnist.test.images[i], (28, 28)), clim=(0.0, 1.0))
         a[1][i].imshow(np.reshape(encode_decode[i], (28, 28)), clim=(0.0, 1.0))
   
-def run(run_name, log_dir, fpath_cfg_list):
+def run(run_name, log_dir, fpath_cfg_list,
+        fpath_meta, dir_checkpoints):
     run_dir = os.path.join(log_dir, run_name)
+    if os.path.isdir(run_dir):
+        shutil.rmtree(run_dir)
     os.makedirs(run_dir)
     global logger
     logger = lu.setup_logging(os.path.join(log_dir, run_name, 'log.txt'))
@@ -107,6 +111,7 @@ def run(run_name, log_dir, fpath_cfg_list):
     logger.info("Starting run %s" % run_name)
     # -90 (cw) to 90 deg (ccw) rotations in 15-deg increments
     #rotations = np.deg2rad(np.linspace(-90, 90, 180/(12+1), endpoint=True)).tolist()
+    
     
     cfg_list = []
     logger.debug("Got %d config files." % len(fpath_cfg_list))
@@ -121,6 +126,11 @@ def run(run_name, log_dir, fpath_cfg_list):
         with open(fpath_cfg_dst, 'w') as h:
             h.write(yaml.dump(cfg))
         cfg_list.append(cfg)
+    
+    reuse = fpath_meta is not None and dir_checkpoints is not None
+    if reuse:
+        reuse = True
+        trained_model = tf.train.import_meta_graph(fpath_meta)
         
     cfg = cfg_list[0]
     ae_runner = AERunner(cfg)
@@ -128,13 +138,25 @@ def run(run_name, log_dir, fpath_cfg_list):
     sae_params = {
             'in_op'     : tf.placeholder("float", [None, n_input]),
             'prefix'    : cfg['prefix'],
+            'reuse'     : reuse,
             }
     ae_runner.model = SAE(sae_params)
     cfg = cfg_list[1]
     mlp_runner = MLPRunner(cfg)
+    
 
     # Launch the graph
     with tf.Session() as sess:
+        if fpath_meta is not None and dir_checkpoints is not None:
+            trained_model.restore(sess, tf.train.latest_checkpoint(dir_checkpoints))
+        
+        #logger.debug('encoder-0: %s' % sess.run(ae_runner.model.sae[0].w['encoder-0/w'][10,5:10]))
+            
+        #saver = tf.train.import_meta_graph('/home/kashefy/models/ae/log_simple_stats/pre0_2017-08-30_12-39-52/reconstruction/train/saved_sae0-1718.meta')
+        #saver.restore(sess, tf.train.latest_checkpoint('/home/kashefy/models/ae/log_simple_stats/pre0_2017-08-30_12-39-52/reconstruction/train/'))
+        #print(sess.run('sae0-1/encoder-0/w:0')[10,5:10])
+            
+        
         ae_runner.learn(sess)
         n_classes = mlp_runner.data.train.labels.shape[-1]
         classifier_params = {
@@ -148,17 +170,17 @@ def run(run_name, log_dir, fpath_cfg_list):
         mlp_runner.x = ae_runner.model.x
         mlp_runner.model = net
         mlp_runner.learn(sess)
-        logger.debug('encoder-0 %s:' % sess.run(ae_runner.model.sae[0].w['encoder-0/w'][10,5:10]))
+        logger.debug('encoder-0: %s' % sess.run(ae_runner.model.sae[0].w['encoder-0/w'][10,5:10]))
         
         mlp_runner.do_finetune = True
         mlp_runner.learn(sess)
         
-        logger.debug('encoder-0 %s:' % sess.run(ae_runner.model.sae[0].w['encoder-0/w'][10,5:10]))
+        logger.debug('encoder-0: %s' % sess.run(ae_runner.model.sae[0].w['encoder-0/w'][10,5:10]))
         #finetune(args, sess, sae)
     logger.info("Finished run %s" % run_name)
     lu.close_logging(logger)
-
-if __name__ == '__main__':
+    
+def handleArgs(args=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--config", action='append',
                         dest="fpath_cfg_list", type=str, required=True,
@@ -171,9 +193,19 @@ if __name__ == '__main__':
                         help="Set name for run")    
     parser.add_argument("--run_name_prefix", dest="run_name_prefix", type=str, default='',
                         help="Set prefix run name")
-    args = parser.parse_args()
+    parser.add_argument("--fpath_meta", dest='fpath_meta', type=str, default=None,
+                        help="Path to file with meta graph for restoring trained models.")
+    parser.add_argument("--dir_checkpoints", dest='dir_checkpoints', type=str, default=None,
+                        help="Checkpoint directory for restoring trained models.")
+    return parser.parse_args(args=args)
+
+if __name__ == '__main__':
+
+    args = handleArgs()
     run(args.run_name_prefix + args.run_name,
         args.log_dir,
-        args.fpath_cfg_list)
+        args.fpath_cfg_list,
+        args.fpath_meta, args.dir_checkpoints,
+        )
     
     pass

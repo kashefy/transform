@@ -31,8 +31,10 @@ class AbstractRunner(object):
         pass
     
     def init_vars(self, sess, vars_):
-        init_op = tf.variables_initializer(vars_)
-        self.logger.debug('initializing %s' % [v.name for v in vars_])
+        vars_restored_names = [v.name for v in self.model.vars_restored]
+        vars_sub = [v for v in vars_ if v.name not in vars_restored_names]
+        init_op = tf.variables_initializer(vars_sub)
+        self.logger.debug('initializing: %s' % [v.name for v in vars_sub])
         sess.run(init_op)
         
     def dirpath(self, phase, suffix=''):
@@ -75,6 +77,7 @@ class AbstractRunner(object):
         
     def _append_summaries_var_imgs(self, summaries, vars):
         for value in vars:
+            warn_reshape_done = False
             name_prefix_ = value.name.replace(':', '_')
             self.logger.debug("log images: %s" % value.name)
             dim_, num_filters = value.get_shape()
@@ -88,9 +91,10 @@ class AbstractRunner(object):
                                       int(np.sqrt(dim_.value)),
                                       1])
                     summaries.append(tf.summary.image(name_, img))
-                else:
+                elif not warn_reshape_done:
                     self.logger.debug("Cannot reshape %s %s to a square image. Skipping." % (name_, dim_))
-    
+                    warn_reshape_done = True
+                    
     def _append_summaries_op_imgs(self, summaries, t):
         for op in t:
             name_prefix_ = op.name.replace(':', '_')
@@ -106,11 +110,12 @@ class AbstractRunner(object):
             else:
                 self.logger.debug("Cannot reshape %s %s to a square image. Skipping." % (name_prefix_, dim_))
     
-    def _init_saver(self, force=False):
+    def _init_saver(self, force=False, var_list=None):
         if self.saver is None:
             force = True
         if force:
-            self.saver = tf.train.Saver(max_to_keep=5)
+            self.saver = tf.train.Saver(var_list=var_list,
+                                        max_to_keep=5)
             
     def _get_save_name(self):
         return '_'.join(['saved', self.model.prefix]).rstrip('_')
@@ -157,14 +162,14 @@ class AbstractRunner(object):
         self.batch_size_val = params.batch_size_val
         self.logger.debug("batch_size (validation): %d" % self.batch_size_val)
         self.learning_rate = params.learning_rate
-        self.logger.debug("initial learning rate: %f" % self.learning_rate)
+        self.logger.debug("initial learning rate: %g" % self.learning_rate)
         self.training_epochs = params.training_epochs
         self.logger.debug("training epochs: %d" % self.training_epochs)
         self.validation_size = params.validation_size
         self.logger.debug("validation size: %d" % self.validation_size)
         self.lambda_l2 = params.lambda_l2
         if self.lambda_l2 != 0:
-            self.logger.debug("lambda_l2: %f" % self.lambda_l2)
+            self.logger.debug("lambda_l2: %g" % self.lambda_l2)
         else:
             self.logger.debug("No L2 regularization")
         self._model = None

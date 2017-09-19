@@ -21,18 +21,35 @@ class AERunner(AbstractRunner):
         dir_val = self.dirpath('validation')
         summary_writer_val = tf.summary.FileWriter(dir_val)
         itr_exp = 0
+        
+    
+#        saver = tf.train.import_meta_graph('/home/kashefy/models/ae/log_simple_stats/pre0_t00/reconstruction/train/saved_sae0-20.meta')
+#        saver.restore(sess, tf.train.latest_checkpoint('/home/kashefy/models/ae/log_simple_stats/pre0_t00/reconstruction/train/'))
+#        g = tf.get_default_graph()
+#        op_names = [op.name for op in g.get_operations()
+#                    if op.op_def and 'Variable' in op.op_def.name]
+#        for o in op_names:
+#            print o
+#        print(sess.run('sae0-1/encoder-0/w:0')[10,5:10])
+#        print(sess.run('sae0-2/decoder-0/b:0')[:3])
+        
+#        fpath_save = os.path.join(dir_train, self._get_save_name())
+#        self.logger.debug("Save model at step %d to '%s'" % (itr_exp, fpath_save))
+#        self.saver.save(sess, fpath_save, global_step=itr_exp)
         for dim in self.stack_dims:
             itr_depth = 0
             self.logger.debug('Stacking %d nodes.' % dim)
             self.model.stack(dim)
+                
             cost, loss = self._cost_loss(self.dirname('train'))
             vars_new = self.model.vars_new()
             self.logger.debug('Variables added: %s' % [v.name for v in vars_new])
             self._vars_added.append(vars_new)
             optimizer = setup_optimizer(cost, self.learning_rate, var_list=vars_new)
             vars_new = self.model.vars_new()
+#            self.logger.debug('encoder-0: %s' % sess.run(self.model.sae[0].w['encoder-0/w'][10,5:10]))
+            
             self.init_vars(sess, vars_new)
-           
             self.logger.debug('encoder-0: %s' % sess.run(self.model.sae[0].w['encoder-0/w'][10,5:10]))
             summaries_merged_train = self._merge_summaries_scalars([loss, cost])
             
@@ -47,12 +64,16 @@ class AERunner(AbstractRunner):
             summaries_merged_val = tf.summary.merge(summaries)
             
             self._init_saver()
+        
+            fpath_save = os.path.join(dir_train, self._get_save_name())
+            self.logger.debug("Save model at step %d to '%s'" % (itr_exp, fpath_save))
+            self.saver.save(sess, fpath_save, global_step=itr_exp)   
             
             for epoch in xrange(self.training_epochs):
                 self.logger.info("Start epoch %d, step %d" % (epoch, itr_exp))
                 # Loop over all batches
-                for itr_epoch in xrange(self.num_batches_train):
-                    batch_xs, _ = self.data.train.next_batch(self.num_batches_train)
+                for itr_epoch in range(10):#xrange(self.num_batches_train):
+                    batch_xs, _ = self.data.train.next_batch(self.batch_size_train)
         #            batch_xs_as_img = tf.reshape(batch_xs, [-1, 28, 28, 1])
         #            rots_cur = np.random.choice(rotations, batch_size)
         #            batch_xs_as_img_rot = tf.contrib.image.rotate(batch_xs_as_img, rots_cur)

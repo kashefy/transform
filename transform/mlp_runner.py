@@ -77,6 +77,8 @@ class MLPRunner(AbstractRunner):
         self.logger.info("Classification %s Optimization Finished!" % suffix)
         
     def validate(self, sess):
+        if self._acc_ops is None:
+            self._acc_ops =  self._init_acc_ops()
         sess.run(self._acc_ops.reset)
         num_batches_val = int(self.data.validation.num_examples/self.batch_size_val)
         for _ in xrange(num_batches_val):
