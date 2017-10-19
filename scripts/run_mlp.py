@@ -16,7 +16,7 @@ import os
 from datetime import datetime
 import yaml
 import tensorflow as tf
-from transform.mlp_runner import MLPRunner
+from transform.mlp_runner import MLPRunner, augment_rotation
 from nideep.nets.mlp_tf import MLP
 import transform.logging_utils as lu
 from transform.cfg_utils import load_config
@@ -49,24 +49,32 @@ def run(run_name, log_dir, fpath_cfg_list):
     n_input = mlp_runner.data.train.images.shape[-1]
 
     # Launch the graph
-    with tf.Session() as sess:
-        n_classes = mlp_runner.data.train.labels.shape[-1]
-        cfg['n_nodes'].append(n_classes)
-        classifier_params = {
-            'n_nodes'   : cfg['n_nodes'],
-            'n_input'   : n_input,
-            'prefix'    : cfg['prefix'],
-            }
-        net = MLP(classifier_params)
-        net.x = tf.placeholder("float", [None, n_input])
-        net.build()
-        mlp_runner.x = net.x
-        mlp_runner.model = net
-        mlp_runner.learn(sess)
-    logger.info("Finished run %s" % run_name)
+    result = None
+    grph = tf.Graph()
+    with grph.as_default() as g:
+        with tf.Session(graph=g) as sess:
+            n_classes = mlp_runner.data.train.labels.shape[-1]
+            cfg['n_nodes'].append(n_classes)
+            classifier_params = {
+                'n_nodes'   : cfg['n_nodes'],
+                'n_input'   : n_input,
+                'prefix'    : cfg['prefix'],
+                }
+            net = MLP(classifier_params)
+            in_ = tf.placeholder("float", [None, n_input])
+#            net.x = augment_rotation(in_,
+#                                            -90, 90, 15,
+#                                            cfg['batch_size_train'])
+            net.x = in_
+            net.build()
+            mlp_runner.x = in_
+            mlp_runner.model = net
+            result = mlp_runner.learn(sess)
+        logger.info("Finished run %s" % run_name)
     lu.close_logging(logger)
-
-if __name__ == '__main__':
+    return result
+    
+def handleArgs(args=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--config", action='append',
                         dest="fpath_cfg_list", type=str, required=True,
@@ -79,9 +87,12 @@ if __name__ == '__main__':
                         help="Set name for run")    
     parser.add_argument("--run_name_prefix", dest="run_name_prefix", type=str, default='',
                         help="Set prefix run name")
-    args = parser.parse_args()
+    return parser.parse_args(args=args)
+
+if __name__ == '__main__':
+    args = handleArgs()
     run(args.run_name_prefix + args.run_name,
         args.log_dir,
-        args.fpath_cfg_list)
-    
+        args.fpath_cfg_list
+        )
     pass

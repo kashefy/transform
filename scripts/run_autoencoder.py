@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 import yaml
 import tensorflow as tf
 from transform.ae_runner import AERunner
-from transform.mlp_runner import MLPRunner
+from transform.mlp_runner import MLPRunner, augment_rotation
 from transform.stacked_autoencoder_tf import StackedAutoencoder as SAE
 from nideep.nets.mlp_tf import MLP
 import transform.logging_utils as lu
@@ -167,7 +167,10 @@ def run(run_name, log_dir, fpath_cfg_list,
         net = MLP(classifier_params)
         net.x = ae_runner.model.representation
         net.build()
-        mlp_runner.x = ae_runner.model.x
+        
+        mlp_runner.x = augment_rotation(ae_runner.model.x,
+                                        -90, 90, 15,
+                                        cfg['batch_size_train'])
         mlp_runner.model = net
         mlp_runner.learn(sess)
         logger.debug('encoder-0: %s' % sess.run(ae_runner.model.sae[0].w['encoder-0/w'][10,5:10]))

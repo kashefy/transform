@@ -16,6 +16,20 @@ from nideep.eval.metric_tf import resettable_metric
 
 MetricOps = collections.namedtuple('MetricOps', ['metric', 'update', 'reset'])
 
+def rotation_rad(min_deg, max_deg, delta_deg):
+    return np.deg2rad(np.arange(min_deg, max_deg+delta_deg, delta_deg)).tolist()
+
+def augment_rotation(x, 
+                     min_deg, max_deg, delta_deg,
+                     batch_sz
+                     ):
+    reshape_op = tf.reshape(x, [-1, 28, 28, 1])
+    rotations_rad = rotation_rad(min_deg, max_deg, delta_deg)
+    rots_cur = np.random.choice(rotations_rad, batch_sz)
+    rot_op = tf.contrib.image.rotate(reshape_op, rots_cur)
+    flatten_op = tf.reshape(rot_op, [-1, x.get_shape()[-1].value])
+    return flatten_op
+
 class MLPRunner(AbstractRunner):
     '''
     classdocs
@@ -47,13 +61,23 @@ class MLPRunner(AbstractRunner):
             self._acc_ops =  self._init_acc_ops()
         sess.run(self._acc_ops.reset)
         summaries_merged_val = self._merge_summaries_scalars([self._acc_ops.metric])
+#        
+#        in_ = self.model.x
+        xx = tf.placeholder("float", [None, 784])
+        augment_op = augment_rotation(xx,
+                                      -90, 90, 15,
+                                      self.batch_size_train)
+#        self.model.x = augment_op
         self._init_saver()
         itr_exp = 0
+        result = collections.namedtuple('Result', ['min', 'last'])
+        result.min = 9999999
         for epoch in xrange(self.training_epochs):
             self.logger.info("Start %s epoch %d, step %d" % (suffix, epoch, itr_exp))
             # Loop over all batches
             for itr_epoch in xrange(self.num_batches_train):
                 batch_xs, batch_ys = self.data.train.next_batch(self.batch_size_train)
+                f = sess.run([augment_op], feed_dict={xx:batch_xs})
                 _, _, sess_summary = sess.run([optimizer,
                                                cost,
                                                summaries_merged_train],
@@ -73,8 +97,11 @@ class MLPRunner(AbstractRunner):
             self.logger.debug("validation accuracy after %s step %d: %f" % (suffix, itr_exp, acc))
             fpath_save = os.path.join(dir_train, self._get_save_name())
             self.logger.debug("Save model at %s step %d to '%s'" % (suffix, itr_exp, fpath_save))
-            self.saver.save(sess, fpath_save, global_step=itr_exp)  
+            self.saver.save(sess, fpath_save, global_step=itr_exp)
+            result.last = acc
+            result.min = min(result.min, acc)
         self.logger.info("Classification %s Optimization Finished!" % suffix)
+        return result
         
     def validate(self, sess):
         if self._acc_ops is None:

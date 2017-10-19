@@ -115,7 +115,7 @@ def handleArgs(args=None):
 
 if __name__ == '__main__':
 
-    args= handleArgs()
+    args = handleArgs()
     run(args.run_name_prefix + args.run_name,
         args.log_dir,
         args.fpath_cfg_list,
