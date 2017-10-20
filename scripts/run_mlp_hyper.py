@@ -36,7 +36,7 @@ def update_cfg(base, params):
             base[key] = value
             items_new.append([key, value])
     for key, value in base.items():
-        if isinstance(value, tuple()):
+        if isinstance(value, tuple):
             base[key] = list(value)
     suffix = get_items_suffix(items_new)
     base['log_dir'] = os.path.join(params['run_dir'], suffix)
