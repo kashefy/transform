@@ -22,20 +22,28 @@ import transform.logging_utils as lu
 from transform.cfg_utils import load_config
 logger = None
   
-def run(run_name, log_dir, fpath_cfg_list):
-    run_dir = os.path.join(log_dir, run_name)
-    os.makedirs(run_dir)
+def run(run_name, args):
+    run_dir = os.path.join(args.log_dir, run_name)
+    run_dir_already_exists = False
+    if not os.path.isdir(run_dir):
+        os.makedirs(run_dir)
+    else:
+        run_dir_already_exists = True
     global logger
-    logger = lu.setup_logging(os.path.join(log_dir, run_name, 'log.txt'))
-    logger.debug("Create run directory %s", run_dir)
+    logger = lu.setup_logging(os.path.join(args.log_dir, run_name, 'log.txt'),
+                              name=[args.logger_name, None][args.logger_name_none])
+    if run_dir_already_exists:
+        logger.debug("Found run directory %s", run_dir)
+    else:
+        logger.debug("Created run directory %s", run_dir)
     logger.info("Starting run %s" % run_name)
     
     cfg_list = []
-    logger.debug("Got %d config files." % len(fpath_cfg_list))
-    for cidx, fpath_cfg in enumerate(fpath_cfg_list):
+    logger.debug("Got %d config files." % len(args.fpath_cfg_list))
+    for cidx, fpath_cfg in enumerate(args.fpath_cfg_list):
         logger.debug("Loading config from %s" % fpath_cfg)
         cfg = load_config(fpath_cfg, logger)
-        cfg['log_dir'] = os.path.expanduser(log_dir)
+        cfg['log_dir'] = os.path.expanduser(args.log_dir)
         cfg['run_name'] = run_name
         fname_cfg = os.path.basename(fpath_cfg)
         fpath_cfg_dst = os.path.join(run_dir, 'config_%d.yml' % cidx)
@@ -50,9 +58,11 @@ def run(run_name, log_dir, fpath_cfg_list):
 
     # Launch the graph
     result = None
+    config = tf.ConfigProto()
+    config.gpu_options.per_process_gpu_memory_fraction = 0.4
     grph = tf.Graph()
     with grph.as_default() as g:
-        with tf.Session(graph=g) as sess:
+        with tf.Session(graph=g, config=config) as sess:
             n_classes = mlp_runner.data.train.labels.shape[-1]
             cfg['n_nodes'].append(n_classes)
             classifier_params = {
@@ -82,6 +92,10 @@ def handleArgs(args=None):
     parser.add_argument("--log_dir", dest="log_dir", type=str,
                         default='/home/kashefy/models/ae/log_simple_stats',
                         help="Set parent log directory for all runs")
+    parser.add_argument("--logger_name", dest="logger_name", type=str,
+                        default=__name__,
+                        help="Set name for process logging")
+    parser.add_argument('--logger_name_none', action='store_true')
     parser.add_argument("--run_name", dest="run_name", type=str,
                         default=datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
                         help="Set name for run")    
@@ -92,7 +106,6 @@ def handleArgs(args=None):
 if __name__ == '__main__':
     args = handleArgs()
     run(args.run_name_prefix + args.run_name,
-        args.log_dir,
-        args.fpath_cfg_list
+        args
         )
     pass

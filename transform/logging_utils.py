@@ -31,3 +31,6 @@ def close_logging(logger):
     for handler in logger.handlers:
         handler.close()
         logger.removeFilter(handler)
+    while logger.handlers:
+        logger.handlers.pop()
+    
