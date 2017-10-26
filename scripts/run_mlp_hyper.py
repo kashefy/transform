@@ -30,7 +30,7 @@ def get_items_suffix(items):
     return '_'.join(['-'.join([k, str(v)]) for k, v in items])
 
 def update_cfg(base, params):
-    excl = ['base', 'run_dir', 'run_name', 'log_dir']
+    excl = ['base', 'run_dir', 'run_name', 'log_dir', 'pass_on_arg']
     items_new = []
     for key, value in params.items():
         if key not in excl:
@@ -67,8 +67,10 @@ def objective(params):
                   '--log_dir', cfg['log_dir'],
                   '--run_name', suffix,
                   '--run_dir', cfg['run_dir'],
-                  '--per_process_gpu_memory_fraction', str(cfg['per_process_gpu_memory_fraction']),
                   ]
+    for k, v in cfg['pass_on_args']:
+        logger.debug("Passing on %s %s" % (k, str(v)))
+        ch_args_in.extend([k, str(v)])
     args_ch = script.handleArgs(args=ch_args_in)
     result_run = \
         script.run(args_ch.run_name,
@@ -150,7 +152,9 @@ def run(run_name, args):
         'run_dir' : run_dir,
         'run_name': run_name,
         'base'  : cfg,
-        'per_process_gpu_memory_fraction' : args.per_process_gpu_memory_fraction,
+        'pass_on_args' : [
+            ['--per_process_gpu_memory_fraction', args.per_process_gpu_memory_fraction],
+            ]
 #        'learning_rate' : hp.choice('learning_rate', [0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005, 0.00001, 0.000005, 0.000001]),
 #        'lambda_l2' : hp.choice('lambda_l2', [0.0, 0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001]),
         }
