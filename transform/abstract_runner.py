@@ -145,10 +145,10 @@ class AbstractRunner(object):
             self.logger.debug("Validation data will not shift between epochs.")
             
     def is_time_to_track_train(self, itr):
-        return AbstractRunner.time_to_track(self.track_interval_train, itr)
+        return AbstractRunner.is_time_to_track(self.track_interval_train, itr)
         
     def is_time_to_track_val(self, itr):
-        return AbstractRunner.time_to_track(self.track_interval_val, itr)
+        return AbstractRunner.is_time_to_track(self.track_interval_val, itr)
         
     @staticmethod
     def is_time_to_track(interval, itr):

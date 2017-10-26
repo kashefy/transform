@@ -20,6 +20,7 @@ import json
 import yaml
 import numpy as np
 from hyperopt import hp, fmin, tpe, space_eval, Trials
+from hyperopt import STATUS_OK, STATUS_FAIL
 import transform.logging_utils as lu
 from transform.cfg_utils import load_config
 import run_mlp as script
@@ -38,29 +39,50 @@ def update_cfg(base, params):
     for key, value in base.items():
         if isinstance(value, tuple):
             base[key] = list(value)
-    suffix = get_items_suffix(items_new)
+    suffix = params['run_name'] + '_' + get_items_suffix(items_new).replace(' ', '')
     base['log_dir'] = os.path.join(params['run_dir'], suffix)
     base['run_dir'] = os.path.join(params['run_dir'], suffix)
     return base, items_new, suffix
 
+def increment_dirname(p):
+    p0 = p
+    idx = 1
+    while os.path.isdir(p):
+        p = '%s_%d' % (p, idx)
+        idx += 1
+    if idx > 1:
+        logger.debug("Changed directory name %s to %s to avoid duplicates." % (p0, p))
+    return p
+
 def objective(params):
+    status = STATUS_OK
     cfg, _, suffix = update_cfg(params['base'], params)
     fpath_cfg_dst = os.path.join(params['run_dir'], 'config_%s.yml' % suffix)
     logger.debug("Write config %s" % (fpath_cfg_dst))
     with open(fpath_cfg_dst, 'w') as h:
         h.write(yaml.dump(cfg))
+    cfg['log_dir'] = increment_dirname(cfg['log_dir'])
+    cfg['run_dir'] = increment_dirname(cfg['run_dir'])
     ch_args_in = ['-c', fpath_cfg_dst,
                   '--log_dir', cfg['log_dir'],
-                  '--run_name', params['run_name'] + '_' + suffix
+                  '--run_name', suffix,
+                  '--run_dir', cfg['run_dir']
                   ]
     args_ch = script.handleArgs(args=ch_args_in)
-    result = \
+    result_run = \
         script.run(args_ch.run_name,
            args_ch
            )
-    if result is None:
-        raise(TypeError, "No result.")
-    return result.min
+    if result_run is None:
+        status = STATUS_FAIL
+    result = {
+        "name"      : result_run.name,
+        "loss"      : -result_run.max, 
+        "performance" : result_run.max, 
+        "status"    : status,
+        "space"     : cfg,
+    }
+    return result
 
 if sys.version_info.major < 3:  # Python 2?
     # Using exec avoids a SyntaxError in Python 3.
@@ -93,7 +115,10 @@ def add_space(space_base, space_dir):
     return space_base
 
 def run(run_name, args):
-    run_dir = os.path.join(args.log_dir, run_name)
+    if args.run_dir is None:
+        run_dir = os.path.join(args.log_dir, run_name)
+    else:
+        run_dir = args.run_dir
     run_dir_already_exists = False
     if not os.path.isdir(run_dir):
         os.makedirs(run_dir)
@@ -124,10 +149,16 @@ def run(run_name, args):
         'run_dir' : run_dir,
         'run_name': run_name,
         'base'  : cfg,
-#        'learning_rate' : hp.loguniform('learning_rate', -7*np.log(10), -1*np.log(10))
-#         'learning_rate' : hp.choice('learning_rate', [0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001]),
+        'per_process_gpu_memory_fraction' : args.per_process_gpu_memory_fraction,
+#        'learning_rate' : hp.choice('learning_rate', [0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005, 0.00001, 0.000005, 0.000001]),
+#        'lambda_l2' : hp.choice('lambda_l2', [0.0, 0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001]),
         }
     space = add_space(space, args.space_dir)
+    import pprint
+    pp = pprint.PrettyPrinter(indent=4, width=100)
+    from hyperopt import pyll
+    for _ in range(10):
+        pp.pprint(pyll.stochastic.sample(space))
     fpath_space = os.path.join(run_dir, "space.pkl")
     logger.debug("Save space to %s" % fpath_space)
     with open(fpath_space, "wb") as h:
@@ -144,7 +175,7 @@ def run(run_name, args):
     logger.info("Best results obtained via %s" % best_eval)
     with open(fpath_best_results, "wb") as h:
         json.dump(best_eval, h)
-    logger.info("Save trials to %s" % fpath_trials)
+    logger.info("Save %d trials to %s" % (len(trials), fpath_trials))
     with open(fpath_trials, "wb") as h:
         pickle.dump(trials, h)
     logger.info("Done.")
@@ -172,7 +203,11 @@ def handleArgs(args=None):
     parser.add_argument("--space_dir", dest="space_dir", type=str,
                         required=True,
                         help="Path to directory with module for space definition")
-    
+    parser.add_argument("--run_dir", dest="run_dir", type=str, default=None,
+                        help="Set run directory")
+    parser.add_argument("--per_process_gpu_memory_fraction", dest="per_process_gpu_memory_fraction",
+                        type=float, default=1.,
+                        help="Tensorflow's gpu option per_process_gpu_memory_fraction")
     return parser.parse_args(args=args)
 
 if __name__ == '__main__':

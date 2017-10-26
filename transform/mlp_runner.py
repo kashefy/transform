@@ -84,7 +84,8 @@ class MLPRunner(AbstractRunner):
                                                feed_dict={self.x : batch_xs,
                                                           self.y_: batch_ys}
                                               )
-                summary_writer_train.add_summary(sess_summary, itr_exp)
+                if self.is_time_to_track_val(itr_exp):
+                    summary_writer_train.add_summary(sess_summary, itr_exp)
 #                self.logger.debug("training batch loss after step %d: %f" % (itr_exp, loss_batch))
                 itr_exp += 1
             self.validate(sess)
@@ -93,7 +94,8 @@ class MLPRunner(AbstractRunner):
                                          feed_dict={self.x  : batch_xs,
                                                     self.y_ : batch_ys}
                                          )
-            summary_writer_val.add_summary(sess_summary, itr_exp)
+            if self.is_time_to_track_val(itr_exp):
+                summary_writer_val.add_summary(sess_summary, itr_exp)
             self.logger.debug("validation accuracy after %s step %d: %f" % (suffix, itr_exp, acc))
             fpath_save = os.path.join(dir_train, self._get_save_name())
             self.logger.debug("Save model at %s step %d to '%s'" % (suffix, itr_exp, fpath_save))
