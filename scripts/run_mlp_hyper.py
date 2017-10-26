@@ -66,7 +66,8 @@ def objective(params):
     ch_args_in = ['-c', fpath_cfg_dst,
                   '--log_dir', cfg['log_dir'],
                   '--run_name', suffix,
-                  '--run_dir', cfg['run_dir']
+                  '--run_dir', cfg['run_dir'],
+                  '--per_process_gpu_memory_fraction', str(cfg['per_process_gpu_memory_fraction']),
                   ]
     args_ch = script.handleArgs(args=ch_args_in)
     result_run = \
