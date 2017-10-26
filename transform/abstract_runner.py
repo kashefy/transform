@@ -143,6 +143,16 @@ class AbstractRunner(object):
                                 )
         else:
             self.logger.debug("Validation data will not shift between epochs.")
+            
+    def is_time_to_track_train(self, itr):
+        return AbstractRunner.time_to_track(self.track_interval_train, itr)
+        
+    def is_time_to_track_val(self, itr):
+        return AbstractRunner.time_to_track(self.track_interval_val, itr)
+        
+    @staticmethod
+    def is_time_to_track(interval, itr):
+        return interval > 0 and itr % interval == 0
     
     def __init__(self, params):
         '''
@@ -174,4 +184,6 @@ class AbstractRunner(object):
             self.logger.debug("No L2 regularization")
         self._model = None
         self.saver = None
+        self.track_interval_train = params.track_interval_train
+        self.track_interval_val = params.track_interval_val
         

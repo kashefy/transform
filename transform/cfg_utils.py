@@ -23,6 +23,8 @@ def load_config(fpath, logger):
                      "lambda_l2"        : 1.0,
                      "logger_name"      : logger.name,
                      "n_nodes"          : [],
+                     "track_interval_train" : 1,
+                     "track_interval_val"   : 1,
                      }
     for k in default_items.keys():
         cfg[k] = cfg.get(k, default_items[k])
