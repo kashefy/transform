@@ -154,7 +154,7 @@ class AbstractRunner(object):
         if params.logger_name is not None:
             logger_name = '.'.join([params.logger_name, logger_name])
         self.logger = logging.getLogger(logger_name)
-        self.run_dir = os.path.join(params.log_dir, self.run_name)
+        self.run_dir = params.run_dir
         
         self.prefix = params.prefix
         self.batch_size_train = params.batch_size_train
