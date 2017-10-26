@@ -30,7 +30,7 @@ def get_items_suffix(items):
     return '_'.join(['-'.join([k, str(v)]) for k, v in items])
 
 def update_cfg(base, params):
-    excl = ['base', 'run_dir', 'run_name', 'log_dir', 'pass_on_arg']
+    excl = ['base', 'run_dir', 'run_name', 'log_dir', 'pass_on_args']
     items_new = []
     for key, value in params.items():
         if key not in excl:
@@ -68,7 +68,7 @@ def objective(params):
                   '--run_name', suffix,
                   '--run_dir', cfg['run_dir'],
                   ]
-    for k, v in cfg['pass_on_args']:
+    for k, v in params['pass_on_args']:
         logger.debug("Passing on %s %s" % (k, str(v)))
         ch_args_in.extend([k, str(v)])
     args_ch = script.handleArgs(args=ch_args_in)
