@@ -70,8 +70,9 @@ class MLPRunner(AbstractRunner):
 #        self.model.x = augment_op
         self._init_saver()
         itr_exp = 0
-        result = collections.namedtuple('Result', ['min', 'last'])
-        result.min = 9999999
+        result = collections.namedtuple('Result', ['max', 'last', 'name'])
+        result.name = self._acc_ops.metric.name
+        result.max = 0
         for epoch in xrange(self.training_epochs):
             self.logger.info("Start %s epoch %d, step %d" % (suffix, epoch, itr_exp))
             # Loop over all batches
@@ -84,7 +85,7 @@ class MLPRunner(AbstractRunner):
                                                feed_dict={self.x : batch_xs,
                                                           self.y_: batch_ys}
                                               )
-                if self.is_time_to_track_val(itr_exp):
+                if self.is_time_to_track_train(itr_exp):
                     summary_writer_train.add_summary(sess_summary, itr_exp)
 #                self.logger.debug("training batch loss after step %d: %f" % (itr_exp, loss_batch))
                 itr_exp += 1
@@ -101,7 +102,7 @@ class MLPRunner(AbstractRunner):
             self.logger.debug("Save model at %s step %d to '%s'" % (suffix, itr_exp, fpath_save))
             self.saver.save(sess, fpath_save, global_step=itr_exp)
             result.last = acc
-            result.min = min(result.min, acc)
+            result.max = max(result.max, acc)
         self.logger.info("Classification %s Optimization Finished!" % suffix)
         return result
         

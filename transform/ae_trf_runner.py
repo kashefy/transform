@@ -107,13 +107,15 @@ class AETRFRunner(AERunner):
 #                f.show()
 #                plt.draw()
 #                plt.waitforbuttonpress()
-                summary_writer_train.add_summary(sess_summary, itr_exp)
+                if self.is_time_to_track_train(itr_exp):
+                    summary_writer_train.add_summary(sess_summary, itr_exp)
                 itr_exp += 1
                 # run metric op one more time, data in feed dict is dummy data, does not influence metric
             _, sess_summary = sess.run([cost, summaries_merged_val],
                                      feed_dict={self.model.x  : self.batch_viz_xs}
                                      )
-            summary_writer_val.add_summary(sess_summary, itr_exp)
+            if self.is_time_to_track_val(itr_exp):
+                summary_writer_val.add_summary(sess_summary, itr_exp)
             fpath_save = os.path.join(dir_train, self._get_save_name())
             self.logger.debug("Save model at step %d to '%s'" % (itr_exp, fpath_save))
             self.saver.save(sess, fpath_save, global_step=itr_exp)               
