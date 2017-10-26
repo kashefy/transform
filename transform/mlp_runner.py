@@ -77,7 +77,7 @@ class MLPRunner(AbstractRunner):
             # Loop over all batches
             for itr_epoch in xrange(self.num_batches_train):
                 batch_xs, batch_ys = self.data.train.next_batch(self.batch_size_train)
-                f = sess.run([augment_op], feed_dict={xx:batch_xs})
+#                f = sess.run([augment_op], feed_dict={xx:batch_xs})
                 _, _, sess_summary = sess.run([optimizer,
                                                cost,
                                                summaries_merged_train],
