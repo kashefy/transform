@@ -17,6 +17,7 @@ import sys
 from datetime import datetime
 import pickle
 import json
+import tempfile
 import yaml
 import numpy as np
 from hyperopt import hp, fmin, tpe, space_eval, Trials
@@ -44,14 +45,14 @@ def update_cfg(base, params):
     base['run_dir'] = os.path.join(params['run_dir'], suffix)
     return base, items_new, suffix
 
-def increment_dirname(p):
-    p0 = p
+def increment_dirname(p0):
+    p = p0
     idx = 1
     while os.path.isdir(p):
-        p = '%s_%d' % (p, idx)
+        p = '%s_%d' % (p0, idx)
         idx += 1
     if idx > 1:
-        logger.debug("Changed directory name %s to %s to avoid duplicates." % (p0, p))
+        logger.debug("Add suffix to directory name to avoid duplicates (%s -> %s)." % (p0, p))
     return p
 
 def objective(params):
@@ -173,7 +174,6 @@ def run(run_name, args):
                 algo=tpe.suggest,
                 trials=trials,
                 max_evals=max_evals)
-#    print(best)
     fpath_best_results = os.path.join(run_dir, 'best_results.txt.json')
     logger.info("Best results saved to %s" % fpath_best_results)
     best_eval = space_eval(space, best)
@@ -183,7 +183,7 @@ def run(run_name, args):
     logger.info("Save %d trials to %s" % (len(trials), fpath_trials))
     with open(fpath_trials, "wb") as h:
         pickle.dump(trials, h)
-    logger.info("Done.")
+    logger.info("finished hyper run %s" % run_name)
 
 def handleArgs(args=None):
     parser = argparse.ArgumentParser()
