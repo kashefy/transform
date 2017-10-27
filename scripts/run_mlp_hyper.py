@@ -45,15 +45,12 @@ def update_cfg(base, params):
     base['run_dir'] = os.path.join(params['run_dir'], suffix)
     return base, items_new, suffix
 
-def increment_dirname(p0):
-    p = p0
-    idx = 1
-    while os.path.isdir(p):
-        p = '%s_%d' % (p0, idx)
-        idx += 1
-    if idx > 1:
-        logger.debug("Add suffix to directory name to avoid duplicates (%s -> %s)." % (p0, p))
-    return p
+def unique_dirname(dir_):
+    dir_parent = os.path.dirname(dir_)
+    prefix = os.path.basename(dir_) + '_'
+    dir_ = tempfile.mkdtemp(suffix='', prefix=prefix, dir=dir_parent)
+    logger.debug("Created directory %s", dir_)
+    return dir_
 
 def objective(params):
     status = STATUS_OK
@@ -62,8 +59,8 @@ def objective(params):
     logger.debug("Write config %s" % (fpath_cfg_dst))
     with open(fpath_cfg_dst, 'w') as h:
         h.write(yaml.dump(cfg))
-    cfg['log_dir'] = increment_dirname(cfg['log_dir'])
-    cfg['run_dir'] = increment_dirname(cfg['run_dir'])
+    cfg['log_dir'] = unique_dirname(cfg['log_dir'])
+    cfg['run_dir'] = unique_dirname(cfg['run_dir'])
     ch_args_in = ['-c', fpath_cfg_dst,
                   '--log_dir', cfg['log_dir'],
                   '--run_name', suffix,
