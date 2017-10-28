@@ -27,6 +27,18 @@ from transform.cfg_utils import load_config
 import run_mlp as script
 logger = None
 
+if sys.version_info.major < 3:  # Python 2?
+    # Using exec avoids a SyntaxError in Python 3.
+    exec("""def reraise(exc_type, exc_value, exc_traceback=None):
+                raise exc_type, exc_value, exc_traceback""")
+else:
+    def reraise(exc_type, exc_value, exc_traceback=None):
+        if exc_value is None:
+            exc_value = exc_type()
+        if exc_value.__traceback__ is not exc_traceback:
+            raise exc_value.with_traceback(exc_traceback)
+        raise exc_value
+
 def get_items_suffix(items):
     return '_'.join(['-'.join([k, str(v)]) for k, v in items])
 
@@ -85,18 +97,6 @@ def objective(params):
         "space"     : cfg,
     }
     return result
-
-if sys.version_info.major < 3:  # Python 2?
-    # Using exec avoids a SyntaxError in Python 3.
-    exec("""def reraise(exc_type, exc_value, exc_traceback=None):
-                raise exc_type, exc_value, exc_traceback""")
-else:
-    def reraise(exc_type, exc_value, exc_traceback=None):
-        if exc_value is None:
-            exc_value = exc_type()
-        if exc_value.__traceback__ is not exc_traceback:
-            raise exc_value.with_traceback(exc_traceback)
-        raise exc_value
     
 def add_space(space_base, space_dir):
     sys.path.append(args.space_dir)
