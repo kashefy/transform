@@ -75,6 +75,8 @@ def objective(params):
            )
     if result_run is None:
         status = STATUS_FAIL
+    if status == STATUS_FAIL:
+        logger.error("fmin failed with params: %s" % params)
     result = {
         "name"      : result_run.name,
         "loss"      : -result_run.max, 
