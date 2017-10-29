@@ -110,6 +110,14 @@ def handleArgs(args=None):
     parser.add_argument("--per_process_gpu_memory_fraction", dest="per_process_gpu_memory_fraction",
                         type=float, default=1.,
                         help="Tensorflow's gpu option per_process_gpu_memory_fraction")
+    parser.add_argument("--data_dir", dest="data_dir", type=str,
+                        required=True,
+                        help="Path to data directory")
+    parser.add_argument("--tf_record_prefix", dest="tf_record_prefix", type=str,
+                        help="filename prefix for tf records files")
+    parser.add_argument("--data_seed", dest="data_seed", type=int,
+                        default=None,
+                        help="seed for data generation")
     return parser.parse_args(args=args)
 
 if __name__ == '__main__':

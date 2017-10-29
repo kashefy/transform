@@ -211,6 +211,9 @@ def handleArgs(args=None):
     parser.add_argument("--per_process_gpu_memory_fraction", dest="per_process_gpu_memory_fraction",
                         type=float, default=1.,
                         help="Tensorflow's gpu option per_process_gpu_memory_fraction")
+    parser.add_argument("--data_dir", dest="data_dir", type=str,
+                        required=True,
+                        help="Path to data directory")
     return parser.parse_args(args=args)
 
 if __name__ == '__main__':
