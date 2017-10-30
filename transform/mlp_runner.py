@@ -6,6 +6,8 @@ Created on Jul 19, 2017
 import numpy as np
 import os
 import collections
+import yaml
+import zlib
 import tensorflow as tf
 #from tensorflow.python import debug as tf_debug
 from abstract_runner import setup_optimizer
@@ -63,11 +65,25 @@ class MLPRunner(AbstractRunner):
         summaries_merged_val = self._merge_summaries_scalars([self._acc_ops.metric])
 #        
 #        in_ = self.model.x
-        xx = tf.placeholder("float", [None, 784])
-        augment_op = augment_rotation(xx,
-                                      -90, 90, 15,
-                                      self.batch_size_train)
+#        xx = tf.placeholder("float", [None, 784])
+#        augment_op = augment_rotation(xx,
+#                                      -90, 90, 15,
+#                                      self.batch_size_train)
 #        self.model.x = augment_op
+        if self.tf_record_prefix is not None:
+            img, label, label_orient = MNIST.read_and_decode_ops(\
+                                self.data.train.path,
+                                one_hot=self.data.train.one_hot,
+                                num_orientations=len(self.data.train.orientations))
+            batch_xs_op, batch_ys_op, batch_os_op = tf.train.shuffle_batch([img, label, label_orient],
+                                                    batch_size=self.batch_size_train,
+                                                    capacity=2000,
+                                                    min_after_dequeue=1000,
+                                                    num_threads=8
+                                                    )
+            coord = tf.train.Coordinator()
+            threads = tf.train.start_queue_runners(sess=sess, coord=coord)
+
         self._init_saver()
         itr_exp = 0
         result = collections.namedtuple('Result', ['max', 'last', 'name'])
@@ -77,7 +93,10 @@ class MLPRunner(AbstractRunner):
             self.logger.info("Start %s epoch %d, step %d" % (suffix, epoch, itr_exp))
             # Loop over all batches
             for itr_epoch in xrange(self.num_batches_train):
-                batch_xs, batch_ys = self.data.train.next_batch(self.batch_size_train)
+                if self.tf_record_prefix is None:
+                    batch_xs, batch_ys = self.data.train.next_batch(self.batch_size_train)
+                else:
+                    batch_xs, batch_ys, batch_os = sess.run([batch_xs_op, batch_ys_op, batch_os_op])
 #                f = sess.run([augment_op], feed_dict={xx:batch_xs})
                 _, _, sess_summary = sess.run([optimizer,
                                                cost,
@@ -103,6 +122,9 @@ class MLPRunner(AbstractRunner):
             self.saver.save(sess, fpath_save, global_step=itr_exp)
             result.last = acc
             result.max = max(result.max, acc)
+        if self.tf_record_prefix is None:
+            coord.request_stop()
+            coord.join(threads)
         self.logger.info("Classification %s Optimization Finished!" % suffix)
         return result
         
@@ -111,9 +133,28 @@ class MLPRunner(AbstractRunner):
             self._acc_ops =  self._init_acc_ops()
         sess.run(self._acc_ops.reset)
         num_batches_val = int(self.data.validation.num_examples/self.batch_size_val)
+        if self.tf_record_prefix is not None:
+            tmp = sum(1 for _ in tf.python_io.tf_record_iterator(self.data.validation.path))
+            assert(num_batches_val == tmp)
+            img, label, label_orient = MNIST.read_and_decode_ops(\
+                                self.data.validation.path,
+                                one_hot=self.data.validation.one_hot,
+                                num_orientations=len(self.data.validation.orientations))
+            batch_xs_op, batch_ys_op, batch_os_op = tf.train.batch([img, label, label_orient],
+                                                    batch_size=self.batch_size_val,
+                                                    capacity=2000,
+                                                    min_after_dequeue=1000,
+                                                    num_threads=8
+                                                    )
+            coord = tf.train.Coordinator()
+            threads = tf.train.start_queue_runners(sess=sess, coord=coord)
+            
         for _ in xrange(num_batches_val):
-            batch_xs, batch_ys = self.data.validation.next_batch(self.batch_size_val,
-                                                                 shuffle=False)
+            if self.tf_record_prefix is None:
+                batch_xs, batch_ys = self.data.validation.next_batch(self.batch_size_val,
+                                                                     shuffle=False)
+            else:
+                batch_xs, batch_ys, batch_os = sess.run([batch_xs_op, batch_ys_op, batch_os_op])
             _, _ = sess.run(\
                             [self._acc_ops.metric, self._acc_ops.update,
 #                             tf.argmax(self.model.p,1), tf.argmax(self.y_,1),
@@ -121,6 +162,9 @@ class MLPRunner(AbstractRunner):
                             feed_dict={self.x: batch_xs,
                                        self.y_: batch_ys}
                             )
+        if self.tf_record_prefix is None:
+            coord.request_stop()
+            coord.join(threads)
         
     def _cost_loss(self, prefix):
         loss = self.model.cost(self.y_, name=prefix + '/loss_classification')
@@ -147,14 +191,39 @@ class MLPRunner(AbstractRunner):
         Constructor
         '''
         super(MLPRunner, self).__init__(params)
-        self.data = MNIST.read_data_sets("MNIST_data",
-                                         one_hot=True,
-                                         validation_size=self.validation_size)
+        if self.tf_record_prefix is None:
+            self.data = MNIST.read_data_sets(self.data_dir,
+                                             one_hot=True,
+                                             validation_size=self.validation_size,
+                                             seed=self.data_seed)
+        else:
+            tf_record_descr = {'prefix'     : self.tf_record_prefix,
+                               'data_seed'  : self.data_seed,
+                               'one_hot'    : True,
+                               'orientations' : sorted(range(-60, 75, 15)),
+                               'validation_size' : self.validation_size
+                               }
+            descr_str = '_'.join(['-'.join([k, str(tf_record_descr[k])])
+                                  for k in sorted(tf_record_descr.keys())])
+            self.logger.debug("TF Record description: '%s'" % descr_str)
+            descr_hash = zlib.adler32(descr_str)
+            self.logger.debug("TF Record description hash: '%s'" % descr_hash)
+            tf_record_name = '%s_%s' % (self.tf_record_prefix, descr_hash)
+            fpath_tf_record_descr = os.path.join(self.data_dir, tf_record_name + '.yml')
+            self.logger.debug("Save TF Record description to %s" % fpath_tf_record_descr)
+            with open(fpath_tf_record_descr, 'w') as h:
+                h.write(yaml.dump(tf_record_descr))
+            self.data = MNIST.to_tf_record(os.path.join(self.data_dir, tf_record_name + '.tfrecords'),
+                           self.data_dir,
+                           one_hot=tf_record_descr['one_hot'],
+                           orientations=tf_record_descr['orientations'],
+                           seed=tf_record_descr['data_seed'])
+            self.logger.debug("Data will be loaded from TF Records: %s" % self.data)
         self.num_batches_train = int(self.data.train.num_examples/self.batch_size_train)
         self.logger.debug("No. of training batches per epoch: %d" % self.num_batches_train)
         self._check_validation_batch_size()
         self.y_ = None
         self._acc_ops = None
-        self.prefix = 'classification'
+#        self.prefix = 'classification'
         self.do_finetune = False
         

@@ -167,6 +167,7 @@ class AbstractRunner(object):
         self.run_dir = params.run_dir
         
         self.prefix = params.prefix
+        self.logger.debug("Runner prefix: '%s'" % self.prefix)
         self.batch_size_train = params.batch_size_train
         self.logger.debug("batch_size (training): %d" % self.batch_size_train)
         self.batch_size_val = params.batch_size_val
@@ -186,4 +187,18 @@ class AbstractRunner(object):
         self.saver = None
         self.track_interval_train = params.track_interval_train
         self.track_interval_val = params.track_interval_val
+        self.data_dir = params.data_dir
+        self.logger.debug("Data dir: %s" % self.data_dir)
+        self.data_seed = params.data_seed
+        if self.data_seed is None:
+            self.logger.debug("Generate new data seed")
+        else:
+            self.logger.debug("Data seed: %d" % self.data_seed)
+        self.tf_record_prefix = params.tf_record_prefix
+        if self.tf_record_prefix is not None:
+            self.logger.debug("Use tf records prefix '%s'" % self.tf_record_prefix)
+        else:
+            self.logger.debug("No tf records prefix provided. Don't load data from tf records")
+            
+            
         

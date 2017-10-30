@@ -25,6 +25,9 @@ def load_config(fpath, logger):
                      "n_nodes"          : [],
                      "track_interval_train" : 1,
                      "track_interval_val"   : 1,
+                     'data_dir'         : 'MNIST_data',
+                     'data_seed'        : None, # None to generate new seed
+                     'tf_record_prefix' : None, # None -> don't use tf records
                      }
     for k in default_items.keys():
         cfg[k] = cfg.get(k, default_items[k])

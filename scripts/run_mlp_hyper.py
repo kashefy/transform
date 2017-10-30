@@ -153,7 +153,9 @@ def run(run_name, args):
         'base'  : cfg,
         'pass_on_args' : [
             ['--per_process_gpu_memory_fraction', args.per_process_gpu_memory_fraction],
-            ]
+            ['--data_dir', args.data_dir],
+            ],
+        'tf_record_prefix'  : args.tf_record_prefix,
 #        'learning_rate' : hp.choice('learning_rate', [0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005, 0.00001, 0.000005, 0.000001]),
 #        'lambda_l2' : hp.choice('lambda_l2', [0.0, 0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001]),
         }
@@ -214,6 +216,8 @@ def handleArgs(args=None):
     parser.add_argument("--data_dir", dest="data_dir", type=str,
                         required=True,
                         help="Path to data directory")
+    parser.add_argument("--tf_record_prefix", dest="tf_record_prefix", type=str,
+                        help="filename prefix for tf records files")
     return parser.parse_args(args=args)
 
 if __name__ == '__main__':
