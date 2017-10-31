@@ -6,9 +6,12 @@ Created on Jul 19, 2017
 import os
 import logging
 from abc import ABCMeta, abstractmethod
+import yaml
+import zlib
 from bunch import Bunch
 import numpy as np
 import tensorflow as tf
+from nideep.datasets.mnist.mnist_tf import MNIST
 
 def setup_optimizer(cost, learning_rate, name=None, var_list=None):
 #    opt = tf.train.RMSPropOptimizer(learning_rate)
@@ -153,6 +156,38 @@ class AbstractRunner(object):
     @staticmethod
     def is_time_to_track(interval, itr):
         return interval > 0 and itr % interval == 0
+    
+    def _init_data_mnist(self):
+        if self.tf_record_prefix is None:
+            data = MNIST.read_data_sets(self.data_dir,
+                                        one_hot=True,
+                                        validation_size=self.validation_size,
+                                        seed=self.data_seed)
+        else:
+            tf_record_descr = {'data_seed'  : self.data_seed,
+                               'one_hot'    : True,
+                               'orientations' : sorted(range(-60, 90, 30)),
+#                               'orientations' : sorted(range(-60, 75, 15)),
+                               'validation_size' : self.validation_size
+                               }
+            descr_str = '_'.join(['-'.join([k, str(tf_record_descr[k])])
+                                  for k in sorted(tf_record_descr.keys())])
+            descr_hash = zlib.adler32(descr_str)
+            self.logger.debug("TF Record description (hash:%s):'%s'" % (descr_hash, descr_str))
+            tf_record_name = '%s_%s' % (self.tf_record_prefix, descr_hash)
+            fpath_tf_record_descr = os.path.join(self.data_dir, tf_record_name + '.yml')
+            self.logger.debug("Save TF Record description (hash:%s) to %s" % (descr_hash, fpath_tf_record_descr))
+            with open(fpath_tf_record_descr, 'w') as h:
+                h.write(yaml.dump(tf_record_descr))
+            data = MNIST.to_tf_record(os.path.join(self.data_dir, tf_record_name + '.tfrecords'),
+                           self.data_dir,
+                           one_hot=tf_record_descr['one_hot'],
+                           orientations=tf_record_descr['orientations'],
+                           seed=tf_record_descr['data_seed'])
+            self.logger.info("Data will be loaded from TF Records: "
+                             "%s" % ', '.join([':'.join([f,str(getattr(data, f).path)]) for f in data._fields])
+                             )
+        return data 
     
     def __init__(self, params):
         '''

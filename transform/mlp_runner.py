@@ -6,15 +6,13 @@ Created on Jul 19, 2017
 import numpy as np
 import os
 import collections
-import yaml
-import zlib
 import tensorflow as tf
 #from tensorflow.python import debug as tf_debug
 from abstract_runner import setup_optimizer
 #from kfold_cv_runner import KFoldCVRunner
 from abstract_runner import AbstractRunner
-from nideep.datasets.mnist.mnist_tf import MNIST
 from nideep.eval.metric_tf import resettable_metric
+from nideep.datasets.mnist.mnist_tf import MNIST # TODO remove
 
 MetricOps = collections.namedtuple('MetricOps', ['metric', 'update', 'reset'])
 
@@ -134,8 +132,8 @@ class MLPRunner(AbstractRunner):
         sess.run(self._acc_ops.reset)
         num_batches_val = int(self.data.validation.num_examples/self.batch_size_val)
         if self.tf_record_prefix is not None:
-            tmp = sum(1 for _ in tf.python_io.tf_record_iterator(self.data.validation.path))
-            assert(num_batches_val == tmp)
+#            tmp = sum(1 for _ in tf.python_io.tf_record_iterator(self.data.validation.path))
+#            assert(num_batches_val == tmp)
             img, label, label_orient = MNIST.read_and_decode_ops(\
                                 self.data.validation.path,
                                 one_hot=self.data.validation.one_hot,
@@ -143,7 +141,6 @@ class MLPRunner(AbstractRunner):
             batch_xs_op, batch_ys_op, batch_os_op = tf.train.batch([img, label, label_orient],
                                                     batch_size=self.batch_size_val,
                                                     capacity=2000,
-                                                    min_after_dequeue=1000,
                                                     num_threads=8
                                                     )
             coord = tf.train.Coordinator()
@@ -191,34 +188,7 @@ class MLPRunner(AbstractRunner):
         Constructor
         '''
         super(MLPRunner, self).__init__(params)
-        if self.tf_record_prefix is None:
-            self.data = MNIST.read_data_sets(self.data_dir,
-                                             one_hot=True,
-                                             validation_size=self.validation_size,
-                                             seed=self.data_seed)
-        else:
-            tf_record_descr = {'prefix'     : self.tf_record_prefix,
-                               'data_seed'  : self.data_seed,
-                               'one_hot'    : True,
-                               'orientations' : sorted(range(-60, 75, 15)),
-                               'validation_size' : self.validation_size
-                               }
-            descr_str = '_'.join(['-'.join([k, str(tf_record_descr[k])])
-                                  for k in sorted(tf_record_descr.keys())])
-            self.logger.debug("TF Record description: '%s'" % descr_str)
-            descr_hash = zlib.adler32(descr_str)
-            self.logger.debug("TF Record description hash: '%s'" % descr_hash)
-            tf_record_name = '%s_%s' % (self.tf_record_prefix, descr_hash)
-            fpath_tf_record_descr = os.path.join(self.data_dir, tf_record_name + '.yml')
-            self.logger.debug("Save TF Record description to %s" % fpath_tf_record_descr)
-            with open(fpath_tf_record_descr, 'w') as h:
-                h.write(yaml.dump(tf_record_descr))
-            self.data = MNIST.to_tf_record(os.path.join(self.data_dir, tf_record_name + '.tfrecords'),
-                           self.data_dir,
-                           one_hot=tf_record_descr['one_hot'],
-                           orientations=tf_record_descr['orientations'],
-                           seed=tf_record_descr['data_seed'])
-            self.logger.debug("Data will be loaded from TF Records: %s" % self.data)
+        self.data = self._init_data_mnist()
         self.num_batches_train = int(self.data.train.num_examples/self.batch_size_train)
         self.logger.debug("No. of training batches per epoch: %d" % self.num_batches_train)
         self._check_validation_batch_size()
