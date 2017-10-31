@@ -78,7 +78,6 @@ def run(run_name, args):
                 }
             net = MLP(classifier_params)
             in_ = tf.placeholder("float", [None, n_input])
-            print(n_input,n_classes)
 #            net.x = augment_rotation(in_,
 #                                            -90, 90, 15,
 #                                            cfg['batch_size_train'])
