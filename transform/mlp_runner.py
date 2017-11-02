@@ -120,7 +120,7 @@ class MLPRunner(AbstractRunner):
             self.saver.save(sess, fpath_save, global_step=itr_exp)
             result.last = acc
             result.max = max(result.max, acc)
-        if self.tf_record_prefix is None:
+        if self.tf_record_prefix is not None:
             coord.request_stop()
             coord.join(threads)
         self.logger.info("Classification %s Optimization Finished!" % suffix)
@@ -159,7 +159,7 @@ class MLPRunner(AbstractRunner):
                             feed_dict={self.x: batch_xs,
                                        self.y_: batch_ys}
                             )
-        if self.tf_record_prefix is None:
+        if self.tf_record_prefix is not None:
             coord.request_stop()
             coord.join(threads)
         
