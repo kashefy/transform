@@ -76,7 +76,10 @@ class Autoencoder(AbstractNetTF):
         # Construct model
         for idx in xrange(len(self.n_nodes)):
             with tf.name_scope(self.name_scope + 'encode'):
-                encoder_op = self._encoder_op(self.x, idx)
+                if idx == 0:
+                    encoder_op = self._encoder_op(self.x, idx)
+                else:
+                    encoder_op = self._encoder_op(encoder_op, idx)
         self._representation_op = encoder_op
         for idx in xrange(len(self.n_nodes)-1, -1, -1):
             with tf.name_scope(self.name_scope + 'decode'):

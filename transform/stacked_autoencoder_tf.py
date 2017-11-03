@@ -25,11 +25,14 @@ class StackedAutoencoder(AbstractNetTF):
         return in_op
     
     def stack(self, dim):
-        self.dims.append(dim)
+        if not isinstance(dim, (list, tuple)):
+            dim = [dim]
+        for d in dim:
+            self.dims.append(d)
         in_op = self._in_op_cur()
         # Network Parameters
         ae_params = {
-            'n_nodes'   :  [dim],
+            'n_nodes'   :  dim,
             'n_input'   :  int(in_op.get_shape()[-1]),
             'prefix'    :  '%s-%d' % (self.prefix, len(self.sae)+1),
             'reuse'     :  self.reuse,

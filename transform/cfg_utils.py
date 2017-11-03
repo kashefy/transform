@@ -18,7 +18,6 @@ def load_config(fpath, logger):
                      'training_epochs'  : 2, # no. of epochs per stage
                      'batch_size_train' : 16,
                      'batch_size_val'   : 16,
-                     "num_folds"        : 3,
                      "prefix"           : os.path.splitext(os.path.basename(fpath))[0],
                      "lambda_l2"        : 1.0,
                      "logger_name"      : logger.name,

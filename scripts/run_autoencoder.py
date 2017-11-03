@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 import yaml
 import tensorflow as tf
 from transform.ae_runner import AERunner
-from transform.mlp_runner import MLPRunner, augment_rotation
+from transform.mlp_runner import MLPRunner#, augment_rotation
 from transform.stacked_autoencoder_tf import StackedAutoencoder as SAE
 from nideep.nets.mlp_tf import MLP
 import transform.logging_utils as lu
@@ -99,27 +99,32 @@ def finetune(args, sess, runner):
         a[0][i].imshow(np.reshape(mnist.test.images[i], (28, 28)), clim=(0.0, 1.0))
         a[1][i].imshow(np.reshape(encode_decode[i], (28, 28)), clim=(0.0, 1.0))
   
-def run(run_name, log_dir, fpath_cfg_list,
-        fpath_meta, dir_checkpoints):
-    run_dir = os.path.join(log_dir, run_name)
-    if os.path.isdir(run_dir):
-        shutil.rmtree(run_dir)
-    os.makedirs(run_dir)
+def run(run_name, args):
+    if args.run_dir is None:
+        run_dir = os.path.join(args.log_dir, run_name)
+    else:
+        run_dir = args.run_dir
+    run_dir_already_exists = False
+    if not os.path.isdir(run_dir):
+        os.makedirs(run_dir)
+    else:
+        run_dir_already_exists = True
     global logger
-    logger = lu.setup_logging(os.path.join(log_dir, run_name, 'log.txt'))
-    logger.debug("Create run directory %s", run_dir)
+    logger = lu.setup_logging(os.path.join(args.log_dir, 'log.txt'),
+                              name=[args.logger_name, None][args.logger_name_none])
+    if run_dir_already_exists:
+        logger.debug("Found run directory %s", run_dir)
+    else:
+        logger.debug("Created run directory %s", run_dir)
     logger.info("Starting run %s" % run_name)
-    # -90 (cw) to 90 deg (ccw) rotations in 15-deg increments
-    #rotations = np.deg2rad(np.linspace(-90, 90, 180/(12+1), endpoint=True)).tolist()
-    
-    
     cfg_list = []
-    logger.debug("Got %d config files." % len(fpath_cfg_list))
-    for cidx, fpath_cfg in enumerate(fpath_cfg_list):
+    logger.debug("Got %d config files." % len(args.fpath_cfg_list))
+    for cidx, fpath_cfg in enumerate(args.fpath_cfg_list):
         logger.debug("Loading config from %s" % fpath_cfg)
         cfg = load_config(fpath_cfg, logger)
-        cfg['log_dir'] = os.path.expanduser(log_dir)
+        cfg['log_dir'] = os.path.expanduser(args.log_dir)
         cfg['run_name'] = run_name
+        cfg['run_dir'] = os.path.expanduser(run_dir)
         fname_cfg = os.path.basename(fpath_cfg)
         fpath_cfg_dst = os.path.join(run_dir, 'config_%d.yml' % cidx)
         logger.debug("Write config %s to %s" % (fname_cfg, fpath_cfg_dst))
@@ -127,61 +132,65 @@ def run(run_name, log_dir, fpath_cfg_list,
             h.write(yaml.dump(cfg))
         cfg_list.append(cfg)
     
-    reuse = fpath_meta is not None and dir_checkpoints is not None
+    reuse = args.fpath_meta is not None and args.dir_checkpoints is not None
     if reuse:
-        reuse = True
-        trained_model = tf.train.import_meta_graph(fpath_meta)
-        
+        trained_model = tf.train.import_meta_graph(args.fpath_meta)
     cfg = cfg_list[0]
     ae_runner = AERunner(cfg)
-    n_input = ae_runner.data.train.images.shape[-1]
-    sae_params = {
-            'in_op'     : tf.placeholder("float", [None, n_input]),
-            'prefix'    : cfg['prefix'],
-            'reuse'     : reuse,
-            }
-    ae_runner.model = SAE(sae_params)
-    cfg = cfg_list[1]
-    mlp_runner = MLPRunner(cfg)
+    n_input = reduce(lambda x, y: x * y, ae_runner.data.train.images.shape[1:], 1)
+    config = tf.ConfigProto()
+    logger.debug('per_process_gpu_memory_fraction set to %f' % args.per_process_gpu_memory_fraction)
+    config.gpu_options.per_process_gpu_memory_fraction = args.per_process_gpu_memory_fraction
+    grph = tf.Graph()
+    with grph.as_default() as g:
+        sae_params = {
+                'in_op'     : tf.placeholder("float", [None, n_input]),
+                'prefix'    : cfg['prefix'],
+                'reuse'     : reuse,
+                }
+        ae_runner.model = SAE(sae_params)
+        cfg = cfg_list[1]
+        mlp_runner = MLPRunner(cfg)
     
+        # Launch the graph
+        result_mlp = None
+        result_mlp_fine = None
 
-    # Launch the graph
-    with tf.Session() as sess:
-        if fpath_meta is not None and dir_checkpoints is not None:
-            trained_model.restore(sess, tf.train.latest_checkpoint(dir_checkpoints))
-        
-        #logger.debug('encoder-0: %s' % sess.run(ae_runner.model.sae[0].w['encoder-0/w'][10,5:10]))
+        with tf.Session(graph=g, config=config) as sess:
+            if args.fpath_meta is not None and args.dir_checkpoints is not None:
+                trained_model.restore(sess, tf.train.latest_checkpoint(args.dir_checkpoints))
             
-        #saver = tf.train.import_meta_graph('/home/kashefy/models/ae/log_simple_stats/pre0_2017-08-30_12-39-52/reconstruction/train/saved_sae0-1718.meta')
-        #saver.restore(sess, tf.train.latest_checkpoint('/home/kashefy/models/ae/log_simple_stats/pre0_2017-08-30_12-39-52/reconstruction/train/'))
-        #print(sess.run('sae0-1/encoder-0/w:0')[10,5:10])
+            #logger.debug('encoder-0: %s' % sess.run(ae_runner.model.sae[0].w['encoder-0/w'][10,5:10]))
+                
+            #saver = tf.train.import_meta_graph('/home/kashefy/models/ae/log_simple_stats/pre0_2017-08-30_12-39-52/reconstruction/train/saved_sae0-1718.meta')
+            #saver.restore(sess, tf.train.latest_checkpoint('/home/kashefy/models/ae/log_simple_stats/pre0_2017-08-30_12-39-52/reconstruction/train/'))
+            #print(sess.run('sae0-1/encoder-0/w:0')[10,5:10])
+                
             
-        
-        ae_runner.learn(sess)
-        n_classes = mlp_runner.data.train.labels.shape[-1]
-        classifier_params = {
-            'n_nodes'   : [n_classes],
-            'n_input'   : ae_runner.model.representation.get_shape()[-1].value,
-            'prefix'    : cfg['prefix'],
-            }
-        net = MLP(classifier_params)
-        net.x = ae_runner.model.representation
-        net.build()
-        
-        mlp_runner.x = augment_rotation(ae_runner.model.x,
-                                        -90, 90, 15,
-                                        cfg['batch_size_train'])
-        mlp_runner.model = net
-        mlp_runner.learn(sess)
-        logger.debug('encoder-0: %s' % sess.run(ae_runner.model.sae[0].w['encoder-0/w'][10,5:10]))
-        
-        mlp_runner.do_finetune = True
-        mlp_runner.learn(sess)
-        
-        logger.debug('encoder-0: %s' % sess.run(ae_runner.model.sae[0].w['encoder-0/w'][10,5:10]))
-        #finetune(args, sess, sae)
+            result_ae = ae_runner.learn(sess)
+            n_classes = mlp_runner.data.train.labels.shape[-1]
+            classifier_params = {
+                'n_nodes'   : [n_classes],
+                'n_input'   : ae_runner.model.representation.get_shape()[-1].value,
+                'prefix'    : cfg['prefix'],
+                }
+            net = MLP(classifier_params)
+            net.x = ae_runner.model.representation
+            net.build()
+            mlp_runner.x = sae_params['in_op']
+#            mlp_runner.x = augment_rotation(ae_runner.model.x,
+#                                            -90, 90, 15,
+#                                            cfg['batch_size_train'])
+            mlp_runner.model = net
+            result_mlp = mlp_runner.learn(sess)
+#            logger.debug('encoder-0: %s' % sess.run(ae_runner.model.sae[0].w['encoder-0/w'][10,5:10]))
+            mlp_runner.do_finetune = True
+            result_mlp_fine = mlp_runner.learn(sess)
+#            logger.debug('encoder-0: %s' % sess.run(ae_runner.model.sae[0].w['encoder-0/w'][10,5:10]))
+            #finetune(args, sess, sae)
     logger.info("Finished run %s" % run_name)
     lu.close_logging(logger)
+    return result_ae, result_mlp, result_mlp_fine
     
 def handleArgs(args=None):
     parser = argparse.ArgumentParser()
@@ -191,6 +200,10 @@ def handleArgs(args=None):
     parser.add_argument("--log_dir", dest="log_dir", type=str,
                         default='/home/kashefy/models/ae/log_simple_stats',
                         help="Set parent log directory for all runs")
+    parser.add_argument("--logger_name", dest="logger_name", type=str,
+                        default=__name__,
+                        help="Set name for process logging")
+    parser.add_argument('--logger_name_none', action='store_true')
     parser.add_argument("--run_name", dest="run_name", type=str,
                         default=datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
                         help="Set name for run")    
@@ -200,15 +213,26 @@ def handleArgs(args=None):
                         help="Path to file with meta graph for restoring trained models.")
     parser.add_argument("--dir_checkpoints", dest='dir_checkpoints', type=str, default=None,
                         help="Checkpoint directory for restoring trained models.")
+    parser.add_argument("--run_dir", dest="run_dir", type=str, default=None,
+                        help="Set run directory")
+    parser.add_argument("--per_process_gpu_memory_fraction", dest="per_process_gpu_memory_fraction",
+                        type=float, default=1.,
+                        help="Tensorflow's gpu option per_process_gpu_memory_fraction")
+    parser.add_argument("--data_dir", dest="data_dir", type=str,
+                        required=True,
+                        help="Path to data directory")
+    parser.add_argument("--tf_record_prefix", dest="tf_record_prefix", type=str,
+                        help="filename prefix for tf records files")
+    parser.add_argument("--data_seed", dest="data_seed", type=int,
+                        default=None,
+                        help="seed for data generation")
     return parser.parse_args(args=args)
 
 if __name__ == '__main__':
 
     args = handleArgs()
     run(args.run_name_prefix + args.run_name,
-        args.log_dir,
-        args.fpath_cfg_list,
-        args.fpath_meta, args.dir_checkpoints,
+        args,
         )
     
     pass

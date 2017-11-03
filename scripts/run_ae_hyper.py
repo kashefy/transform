@@ -26,7 +26,7 @@ from hyperopt import STATUS_OK, STATUS_FAIL
 from hyperopt import pyll
 import transform.logging_utils as lu
 from transform.cfg_utils import load_config
-import run_mlp as script
+import run_autoencoder as script
 logger = None
 
 if sys.version_info.major < 3:  # Python 2?
@@ -58,23 +58,39 @@ def update_cfg(base, params):
         if key not in excl:
             base[key] = value
             items_new.append([key, value])
+    base['data_seed'] = np.random.randint(3)
+    items_new.append(['data_seed', base['data_seed']])
     for key, value in base.items():
         if isinstance(value, tuple):
             base[key] = list(value)
     suffix = params['run_name'] + '_' + get_items_suffix(items_new).replace(' ', '')
     run_dir_new = unique_dirname(os.path.join(params['run_dir'], suffix))
     base['log_dir'] = run_dir_new # keep log and run dirs the same
+    items_new.append(['log_dir', base['log_dir']])
     base['run_dir'] = run_dir_new
+    items_new.append(['run_dir', base['run_dir']])
     return base, items_new, suffix
 
+#def objective(params_all):
 def objective(params):
     status = STATUS_OK
+#    fpath_list = []
+#    for space_idx in xrange(params_all['num_spaces']):
+#        params = {k[:k.index('spaceIdx-%d' % space_idx):v] for k,v in params_all.items()}
     cfg, _, suffix = update_cfg(params['base'], params)
     fpath_cfg_dst = os.path.join(params['run_dir'], 'config_%s.yml' % suffix)
     logger.debug("Write config %s" % (fpath_cfg_dst))
     with open(fpath_cfg_dst, 'w') as h:
         h.write(yaml.dump(cfg))
+#        fpath_list.append(fpath_cfg_dst)
+#    ch_args_in = [item for sublist in [['-c', p] for p in fpath_list] for item in sublist]
+#    ch_args_in.extend([
+#                      '--log_dir', cfg['log_dir'],
+#                      '--run_name', suffix,
+#                      '--run_dir', cfg['run_dir'],
+#                      ])
     ch_args_in = ['-c', fpath_cfg_dst,
+                  '-c', fpath_cfg_dst,
                   '--log_dir', cfg['log_dir'],
                   '--run_name', suffix,
                   '--run_dir', cfg['run_dir'],
@@ -89,7 +105,6 @@ def objective(params):
            )
     if result_run is None:
         status = STATUS_FAIL
-    if status == STATUS_FAIL:
         logger.error("fmin failed with params: %s" % params)
     result = {
         "name"      : result_run.name,
@@ -100,24 +115,47 @@ def objective(params):
     }
     return result
     
-def add_space(space_base, space_dir):
-    sys.path.append(args.space_dir)
+def add_space(space_base, space_dir, do_reload=False):
+    if space_dir not in sys.path:
+        sys.path.insert(0, space_dir) # prepend to path
     try:
         import space
+        if do_reload:
+            reload(space)
         fpath_space = space.__file__
-        from space import space as space_add
+        if os.path.splitext(fpath_space)[-1] == '.pyc':
+            os.remove(fpath_space)
+            reload(space)
+        space_add = space.space
     except ImportError as e:
         module_name = str(e).split(' ')[-1]
-        expected_module_path = os.path.join(args.space_dir, module_name + '.py')
+        expected_module_path = os.path.join(space_dir, module_name + '.py')
         new_msg = str(e) + '. Verify that the module %s exists.' % expected_module_path
         logger.exception(new_msg)
         reraise(type(e), type(e)(
                 new_msg), sys.exc_info()[2])
     logger.debug("Adding space definitions from %s" % fpath_space)
     for key, value in space_add.items():
+        space_base.pop(key, None)
+        space_base['base'].pop(key, None)
         space_base[key] = value
     return space_base
 
+def init_trials(fpath_trials, force_fresh=False):
+    if force_fresh:
+        try:
+            trials = pickle.load(open(fpath_trials, "rb"))
+            logger.info("Loading saved trials from %s" % fpath_trials)
+            logger.debug("Rerunning from {} trials to add more.".format(
+                len(trials.trials)))
+        except:
+            trials = Trials()
+            logger.info("Starting trials from scratch.")
+    else:
+        trials = Trials()
+        logger.info("Starting trials from scratch.")
+    return trials
+        
 def run(run_name, args):
     if args.run_dir is None:
         run_dir = os.path.join(args.log_dir, run_name)
@@ -136,18 +174,14 @@ def run(run_name, args):
     else:
         logger.debug("Created run directory %s", run_dir)
     fpath_trials = os.path.join(run_dir, "trials.pkl")
-    max_evals = args.nb_evals
-    try:
-        trials = pickle.load(open(fpath_trials, "rb"))
-        logger.info("Loading saved trials from %s" % fpath_trials)
-        max_evals += len(trials.trials)
-        logger.debug("Rerunning from {} trials to add more.".format(
-            len(trials.trials)))
-    except:
-        trials = Trials()
-        logger.info("Starting trials from scratch.")
-    
-    cfg = load_config(args.fpath_cfg, logger)
+    trials = init_trials(fpath_trials, force_fresh=args.force_fresh_trials)
+    max_evals = args.nb_evals + len(trials.trials)
+
+#    space_all = {}
+#    for cfgidx, (fpath_cfg, space_dir) in enumerate(zip(args.fpath_cfg_list, args.space_dir)):
+    fpath_cfg = args.fpath_cfg
+    space_dir = args.space_dir
+    cfg = load_config(fpath_cfg, logger)
     space = {
         'log_dir' : os.path.abspath(os.path.expanduser(args.log_dir)),
         'run_dir' : run_dir,
@@ -158,18 +192,23 @@ def run(run_name, args):
             ['--data_dir', args.data_dir],
             ],
         'tf_record_prefix'  : args.tf_record_prefix,
-#        'learning_rate' : hp.choice('learning_rate', [0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005, 0.00001, 0.000005, 0.000001]),
-#        'lambda_l2' : hp.choice('lambda_l2', [0.0, 0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001]),
-        }
-    space = add_space(space, args.space_dir)
-    pp = pprint.PrettyPrinter(indent=4, width=100)
-    for _ in range(10):
-        pp.pprint(pyll.stochastic.sample(space))
+    }
+#    space = add_space(space, space_dir, do_reload=cfgidx>0)
+#    fpath_space = os.path.join(run_dir, "space_%d.pkl" % (cfgidx,))
+    space = add_space(space, space_dir)
     fpath_space = os.path.join(run_dir, "space.pkl")
     logger.debug("Save space to %s" % fpath_space)
     with open(fpath_space, "wb") as h:
         pickle.dump(space, h)
+#    for k, v in space.items():
+#        space_all[k+'_spaceIdx-%d' % cfgidx] = v
+    pp = pprint.PrettyPrinter(indent=4, width=100)
+#    for _ in range(10):
+#        pp.pprint(pyll.stochastic.sample(space))
+#    space_all['num_spaces'] = len(args.fpath_cfg_list)
+    pp.pprint(space)
     best = fmin(fn=objective,
+#                space=space_all,
                 space=space,
                 algo=tpe.suggest,
                 trials=trials,
@@ -187,7 +226,7 @@ def run(run_name, args):
 
 def handleArgs(args=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--config",
+    parser.add_argument("-c", "--config", action='store',
                         dest="fpath_cfg", type=str, required=True,
                         help="Path to master config file")
     parser.add_argument("--log_dir", dest="log_dir", type=str,
@@ -205,8 +244,8 @@ def handleArgs(args=None):
                         help="Set prefix run name")
     parser.add_argument("--nb_evals", dest="nb_evals", type=int, required=True,
                         help="Maximum number of evaluations")
-    parser.add_argument("--space_dir", dest="space_dir", type=str,
-                        required=True,
+    parser.add_argument("--space_dir", action='store',
+                        dest="space_dir", type=str, required=True,
                         help="Path to directory with module for space definition")
     parser.add_argument("--run_dir", dest="run_dir", type=str, default=None,
                         help="Set run directory")
@@ -218,6 +257,9 @@ def handleArgs(args=None):
                         help="Path to data directory")
     parser.add_argument("--tf_record_prefix", dest="tf_record_prefix", type=str,
                         help="filename prefix for tf records files")
+    parser.add_argument("--force_fresh_trials",  action='store_true',
+                        dest="force_fresh_trials",
+                        help="Force to start new set of trials and not resume existing ones.")
     return parser.parse_args(args=args)
 
 if __name__ == '__main__':

@@ -54,7 +54,7 @@ class AERunner(AbstractRunner):
             
         for dim in self.stack_dims:
             itr_depth = 0
-            self.logger.debug('Stacking %d nodes.' % dim)
+            self.logger.debug('Stacking %s nodes.' % str(dim))
             self.model.stack(dim)
             if itr_exp == 0:
                 self.x = self.model.x
@@ -119,7 +119,7 @@ class AERunner(AbstractRunner):
                     itr_exp += 1
                     itr_depth += 1
                     # run metric op one more time, data in feed dict is dummy data, does not influence metric
-                if self.tf_record_prefix is not None: # TODO extend to tfr
+                if self.tf_record_prefix is None: # TODO extend to tfr
                     _, sess_summary = sess.run([cost, summaries_merged_val],
                                              feed_dict={self.x  : self.batch_viz_xs}
                                              )
@@ -129,8 +129,9 @@ class AERunner(AbstractRunner):
                 self.logger.debug("Save model at step %d to '%s'" % (itr_exp, fpath_save))
                 self.saver.save(sess, fpath_save, global_step=itr_exp)
                 l = self.validate(sess, loss)
-                result.last = l
-                result.max = max(result.max, l)
+                self.logger.debug("validation loss after step %d: %f" % (itr_exp, l))
+                result.last = l[0]
+                result.max = max(result.max, result.last)
         if self.tf_record_prefix is not None:
             coord.request_stop()
             coord.join(threads)
@@ -146,6 +147,7 @@ class AERunner(AbstractRunner):
 #        a[0][i].imshow(np.reshape(mnist.test.images[i], (28, 28)), clim=(0.0, 1.0))
 #        a[1][i].imshow(np.reshape(encode_decode[i], (28, 28)), clim=(0.0, 1.0))
 #    fig.savefig(os.path.join(args.log_dir, run_dir, 'train_layerwise_reconstruct.png'))
+        return result
 
     def validate(self, sess, loss):
         num_batches_val = int(self.data.validation.num_examples/self.batch_size_val)
@@ -156,7 +158,7 @@ class AERunner(AbstractRunner):
                                 self.data.validation.path,
                                 one_hot=self.data.validation.one_hot,
                                 num_orientations=len(self.data.validation.orientations))
-            batch_xs_op = tf.train.batch([img],
+            batch_xs_op, batch_ys_op, batch_os_op = tf.train.batch([img, label, label_orient],
                                                     batch_size=self.batch_size_val,
                                                     capacity=2000,
                                                     num_threads=8
@@ -166,21 +168,17 @@ class AERunner(AbstractRunner):
         for _ in xrange(num_batches_val):
             if self.tf_record_prefix is None:
                 batch_xs, _ = self.data.validation.next_batch(self.batch_size_val,
-                                                                     shuffle=False)
+                                                              shuffle=False)
             else:
-                batch_xs = sess.run([batch_xs_op])
-            l = sess.run(\
-                            [loss
-                             ],
-                            feed_dict={self.x: batch_xs}
-                            )
+                batch_xs, batch_ys, batch_os = sess.run([batch_xs_op, batch_ys_op, batch_os_op])
+            l = sess.run([loss], feed_dict={self.x: batch_xs})
         if self.tf_record_prefix is not None:
             coord.request_stop()
             coord.join(threads)
         return l
             
     def _cost_loss(self, prefix):
-        loss = self.model.cost(name=prefix + '/loss_classification')
+        loss = self.model.cost(name=prefix + '/loss_reconstruction')
         if self.lambda_l2 != 0:
             regularization = self._regularization(name=prefix + '/regularization_l2')
             cost = tf.add(loss, self.lambda_l2 * regularization,
@@ -203,7 +201,7 @@ class AERunner(AbstractRunner):
 #        self.prefix = 'reconstruction'
         self._vars_added = []
         
-        if self.tf_record_prefix is not None:
+        if self.tf_record_prefix is None:
             self.batch_viz_xs, self.batch_viz_ys = self.data.validation.next_batch(self.batch_size_val,
                                                                                    shuffle=False)
             
