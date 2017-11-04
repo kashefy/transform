@@ -20,6 +20,7 @@ def load_config(fpath, logger):
                      'batch_size_val'   : 16,
                      "prefix"           : os.path.splitext(os.path.basename(fpath))[0],
                      "lambda_l2"        : 1.0,
+                     "lambda_l1"        : 1.0,
                      "logger_name"      : logger.name,
                      "n_nodes"          : [],
                      "track_interval_train" : 1,

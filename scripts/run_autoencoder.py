@@ -20,9 +20,10 @@ import matplotlib.pyplot as plt
 import yaml
 import tensorflow as tf
 from transform.ae_runner import AERunner
-from transform.mlp_runner import MLPRunner, augment_rotation
+from transform.mlp_runner import MLPRunner
 from transform.stacked_autoencoder_tf import StackedAutoencoder as SAE
 from nideep.nets.mlp_tf import MLP
+from transform.augmentation import rotation_ops
 import transform.logging_utils as lu
 from transform.cfg_utils import load_config
 logger = None
@@ -131,12 +132,10 @@ def run(run_name, args):
         with open(fpath_cfg_dst, 'w') as h:
             h.write(yaml.dump(cfg))
         cfg_list.append(cfg)
-    
     reuse = args.fpath_meta is not None and args.dir_checkpoints is not None
     if reuse:
         trained_model = tf.train.import_meta_graph(args.fpath_meta)
     cfg = cfg_list[0]
-    print(cfg)
     ae_runner = AERunner(cfg)
     n_input = reduce(lambda x, y: x * y, ae_runner.data.train.images.shape[1:], 1)
     config = tf.ConfigProto()
@@ -147,7 +146,7 @@ def run(run_name, args):
         in_op = tf.placeholder("float", [None, n_input])
 #        if cfg['do_augment_rot']:
 #            augment_op = augment_rotation(in_op,
-#                                          -90, 90, 15,
+#                                          -60, 60, 30,,
 #                                          cfg['batch_size_train'])
 #            sae_params = {
 #                    'in_op'     : augment_op,

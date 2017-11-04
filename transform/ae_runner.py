@@ -10,7 +10,6 @@ import tensorflow as tf
 #from tensorflow.python import debug as tf_debug
 from abstract_runner import AbstractRunner, setup_optimizer
 from nideep.datasets.mnist.mnist_tf import MNIST # TODO remove
-from mlp_runner import augment_rotation, gaussian_noise_layer
 
 class AERunner(AbstractRunner):
     '''
@@ -117,11 +116,12 @@ class AERunner(AbstractRunner):
         #            plt.draw()
         #            plt.waitforbuttonpress()
                     batch_xs_in = batch_xs
+#                    print(len(sess.graph.get_operations()))
                     if self.do_augment_rot:
-                        augment_op = augment_rotation(self.x,
-                                                      -90, 90, 15,
-                                                      self.batch_size_train)
+                        augment_op = self.rotation_ops_multiset_train(3)
                         batch_xs_in = sess.run(augment_op, feed_dict={self.x : batch_xs})
+#                        print(len(sess.graph.get_operations()))
+#                    print(len(sess.graph.get_operations()))
 #                    _, c, sess_summary = sess.run([optimizer, cost, summaries_merged_train],
 #                                                  feed_dict={self.x: batch_xs})
                     _, c, sess_summary = sess.run([optimizer, cost, summaries_merged_train],
@@ -185,9 +185,7 @@ class AERunner(AbstractRunner):
                 batch_xs, _, _ = sess.run([batch_xs_op, batch_ys_op, batch_os_op])
             batch_xs_in = batch_xs
             if self.do_augment_rot:
-                augment_op = augment_rotation(self.x,
-                                              -90, 90, 15,
-                                              self.batch_size_val)
+                augment_op = self.rotation_ops_multiset_val(3)
                 batch_xs_in = sess.run(augment_op, feed_dict={self.x : batch_xs})
             l = sess.run([loss], feed_dict={self.x: batch_xs_in})
         if self.tf_record_prefix is not None:
@@ -198,12 +196,23 @@ class AERunner(AbstractRunner):
             
     def _cost_loss(self, prefix):
         loss = self.model.cost(name=prefix + '/loss_reconstruction')
+        regularization_l2 = None
         if self.lambda_l2 != 0:
-            regularization = self._regularization(name=prefix + '/regularization_l2')
-            cost = tf.add(loss, self.lambda_l2 * regularization,
-                          name=prefix + '/cost')
-        else:
+            regularization_l2 = self._regularization(name=prefix + '/regularization_l2')
+        regularization_l1 = None
+        if self.lambda_l1 != 0:
+            regularization_l1 = self._regularization_l1(name=prefix + '/regularization_l1')
+        if regularization_l2 is None and regularization_l1 is None:
             cost = loss
+        elif regularization_l2 is not None and regularization_l1 is None:
+            cost = tf.add(loss, self.lambda_l2 * regularization_l2,
+                  name=prefix + '/cost')
+        elif regularization_l2 is None and regularization_l1 is not None:
+            cost = tf.add(loss, self.lambda_l1 * regularization_l1,
+                  name=prefix + '/cost')
+        else:
+            cost = tf.add(loss, self.lambda_l1 * regularization_l1 + self.lambda_l2 * regularization_l2,
+                  name=prefix + '/cost')
         return cost, loss
     
     def __init__(self, params):

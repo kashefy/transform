@@ -12,6 +12,7 @@ from bunch import Bunch
 import numpy as np
 import tensorflow as tf
 from nideep.datasets.mnist.mnist_tf import MNIST
+from augmentation import rotation_ops
 
 def setup_optimizer(cost, learning_rate, name=None, var_list=None):
 #    opt = tf.train.RMSPropOptimizer(learning_rate)
@@ -133,6 +134,28 @@ class AbstractRunner(object):
             return regularizers
         else:
             return None
+        
+    def _regularization_l1(self, name=None):
+        if self.lambda_l1 != 0:
+            weights = self.model.w
+            w_names = [weights[k].name for k in weights.keys()]
+            self.logger.debug("L1 regularization for %s" % ','.join(w_names))
+            losses = [tf.norm(weights[k], ord=1) for k in weights.keys()]
+            regularizers = tf.add_n(losses, name=name)
+            return regularizers
+        else:
+            return None
+        
+    def _regularization(self, name=None):
+        if self.lambda_l2 != 0:
+            weights = self.model.w
+            w_names = [weights[k].name for k in weights.keys()]
+            self.logger.debug("L2 regularization for %s" % ','.join(w_names))
+            losses = [tf.nn.l2_loss(weights[k]) for k in weights.keys()]
+            regularizers = tf.add_n(losses, name=name)
+            return regularizers
+        else:
+            return None
     
     def _check_validation_batch_size(self):
         num_batches_val_real = self.data.validation.num_examples/float(self.batch_size_val)
@@ -187,7 +210,33 @@ class AbstractRunner(object):
             self.logger.info("Data will be loaded from TF Records: "
                              "%s" % ', '.join([':'.join([f,str(getattr(data, f).path)]) for f in data._fields])
                              )
-        return data 
+        return data
+    
+    def rotation_ops_multiset_train(self,
+                                    count):
+        if self.augment_ops_train is None:
+            self.augment_ops_train = []
+            for _ in range(count):
+                augment_op = rotation_ops(self.x,
+                                      -60, 60, 30,
+                                      self.batch_size_train,
+                                      self.prefix)
+                self.augment_ops_train.append(augment_op)
+        augment_op = self.augment_ops_train[np.random.randint(len(self.augment_ops_train))]
+        return augment_op
+            
+    def rotation_ops_multiset_val(self,
+                                    count):
+        if self.augment_ops_val is None:
+            self.augment_ops_val = []
+            for _ in range(count):
+                augment_op = rotation_ops(self.x,
+                                      -60, 60, 30,
+                                      self.batch_size_val,
+                                      self.prefix)
+                self.augment_ops_val.append(augment_op)
+        augment_op = self.augment_ops_val[np.random.randint(len(self.augment_ops_val))]
+        return augment_op
     
     def __init__(self, params):
         '''
@@ -218,6 +267,11 @@ class AbstractRunner(object):
             self.logger.debug("lambda_l2: %g" % self.lambda_l2)
         else:
             self.logger.debug("No L2 regularization")
+        self.lambda_l1 = params.lambda_l1
+        if self.lambda_l1 != 0:
+            self.logger.debug("lambda_l1: %g" % self.lambda_l1)
+        else:
+            self.logger.debug("No L1 regularization")
         self._model = None
         self.saver = None
         self.track_interval_train = params.track_interval_train
@@ -238,5 +292,8 @@ class AbstractRunner(object):
         self.logger.debug("Augment by rotation: %s" % (['No', 'Yes'][self.do_augment_rot],))
         self.input_noise_std = params['input_noise_std']
         self.logger.debug("Input noise std-dev: %f" % self.input_noise_std,)
+        self.augment_ops_train = None
+        self.augment_ops_val = None
+        self.gaussian_nois_ops = None
         
         

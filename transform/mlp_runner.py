@@ -16,27 +16,6 @@ from nideep.datasets.mnist.mnist_tf import MNIST # TODO remove
 
 MetricOps = collections.namedtuple('MetricOps', ['metric', 'update', 'reset'])
 
-def rotation_rad(min_deg, max_deg, delta_deg):
-    return np.deg2rad(np.arange(min_deg, max_deg+delta_deg, delta_deg)).tolist()
-
-def augment_rotation(x, 
-                     min_deg, max_deg, delta_deg,
-                     batch_sz
-                     ):
-    reshape_op = tf.reshape(x, [-1, 28, 28, 1])
-    rotations_rad = rotation_rad(min_deg, max_deg, delta_deg)
-    rots_cur = np.random.choice(rotations_rad, batch_sz)
-    rot_op = tf.contrib.image.rotate(reshape_op, rots_cur)
-    flatten_op = tf.reshape(rot_op, [-1, x.get_shape()[-1].value])
-    return flatten_op
-
-def gaussian_noise_layer(in_, std, name):
-    noise = tf.random_normal(shape=tf.shape(in_),
-                             mean=0.0, stddev=std,
-                             dtype=tf.float32,
-                             name=name)
-    return tf.add(in_, noise, name='_'.join([in_.name, 'noise']))
-
 class MLPRunner(AbstractRunner):
     '''
     classdocs
@@ -103,10 +82,14 @@ class MLPRunner(AbstractRunner):
                 else:
                     batch_xs, batch_ys, batch_os = sess.run([batch_xs_op, batch_ys_op, batch_os_op])
 #                f = sess.run([augment_op], feed_dict={xx:batch_xs})
+                batch_xs_in = batch_xs
+                if self.do_augment_rot:
+                    augment_op = self.rotation_ops_multiset_train(3)
+                    batch_xs_in = sess.run(augment_op, feed_dict={self.x : batch_xs})
                 _, _, sess_summary = sess.run([optimizer,
                                                cost,
                                                summaries_merged_train],
-                                               feed_dict={self.x : batch_xs,
+                                               feed_dict={self.x : batch_xs_in,
                                                           self.y_: batch_ys}
                                               )
                 if self.is_time_to_track_train(itr_exp):
@@ -159,11 +142,15 @@ class MLPRunner(AbstractRunner):
                                                                      shuffle=False)
             else:
                 batch_xs, batch_ys, batch_os = sess.run([batch_xs_op, batch_ys_op, batch_os_op])
+            batch_xs_in = batch_xs
+            if self.do_augment_rot:
+                augment_op = self.rotation_ops_multiset_val(3)
+                batch_xs_in = sess.run(augment_op, feed_dict={self.x : batch_xs})
             _, _ = sess.run(\
                             [self._acc_ops.metric, self._acc_ops.update,
 #                             tf.argmax(self.model.p,1), tf.argmax(self.y_,1),
                              ],
-                            feed_dict={self.x: batch_xs,
+                            feed_dict={self.x: batch_xs_in,
                                        self.y_: batch_ys}
                             )
         if self.tf_record_prefix is not None:
@@ -172,12 +159,23 @@ class MLPRunner(AbstractRunner):
         
     def _cost_loss(self, prefix):
         loss = self.model.cost(self.y_, name=prefix + '/loss_classification')
+        regularization_l2 = None
         if self.lambda_l2 != 0:
-            regularization = self._regularization(name=prefix + '/regularization_l2')
-            cost = tf.add(loss, self.lambda_l2 * regularization,
-                          name=prefix + '/cost')
-        else:
+            regularization_l2 = self._regularization(name=prefix + '/regularization_l2')
+        regularization_l1 = None
+        if self.lambda_l1 != 0:
+            regularization_l1 = self._regularization_l1(name=prefix + '/regularization_l1')
+        if regularization_l2 is None and regularization_l1 is None:
             cost = loss
+        elif regularization_l2 is not None and regularization_l1 is None:
+            cost = tf.add(loss, self.lambda_l2 * regularization_l2,
+                  name=prefix + '/cost')
+        elif regularization_l2 is None and regularization_l1 is not None:
+            cost = tf.add(loss, self.lambda_l1 * regularization_l1,
+                  name=prefix + '/cost')
+        else:
+            cost = tf.add(loss, self.lambda_l1 * regularization_l1 + self.lambda_l2 * regularization_l2,
+                  name=prefix + '/cost')
         return cost, loss
             
     def _init_acc_ops(self, name='acc'):
