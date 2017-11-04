@@ -60,8 +60,7 @@ def update_cfg(base, params):
             items_new.append([key, value])
     base['data_seed'] = np.random.randint(3)
     items_new.append(['data_seed', base['data_seed']])
-#    base['do_augment_rot'] = [True, True][np.random.randint(2)]
-    base['do_augment_rot'] = [True, True][np.random.randint(2)]
+    base['do_augment_rot'] = [False, True][np.random.randint(2)]
     items_new.append(['do_augment_rot', base['do_augment_rot']])
     for key, value in base.items():
         if isinstance(value, tuple):
