@@ -71,9 +71,10 @@ class MLPRunner(AbstractRunner):
 
         self._init_saver()
         itr_exp = 0
-        result = collections.namedtuple('Result', ['max', 'last', 'name'])
+        result = collections.namedtuple('Result', ['max', 'last', 'name', 'history'])
         result.name = self._acc_ops.metric.name
         result.max = 0
+        result.history = collections.deque(maxlen=3)
         for epoch in xrange(self.training_epochs):
             self.logger.info("Start %s epoch %d, step %d" % (suffix, epoch, itr_exp))
             # Loop over all batches
@@ -110,7 +111,11 @@ class MLPRunner(AbstractRunner):
             self.logger.debug("Save model at %s step %d to '%s'" % (suffix, itr_exp, fpath_save))
             self.saver.save(sess, fpath_save, global_step=itr_exp)
             result.last = acc
-            result.max = max(result.max, acc)
+            result.max = max(result.max, result.last)
+            result.history.append(result.last)
+            if len(result.history) == result.history.maxlen and np.absolute(np.mean(result.history)-result.last) < 1e-5:
+                self.logger.debug("Validation accuracy not changing anymore. Stop iterating.")
+                break
         if self.tf_record_prefix is not None:
             coord.request_stop()
             coord.join(threads)
