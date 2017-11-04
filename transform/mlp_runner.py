@@ -39,8 +39,9 @@ class MLPRunner(AbstractRunner):
         if not self.do_finetune:
             vars_new = self.model.vars_new() # limit optimizaer vars if not finetuning
         optimizer = setup_optimizer(cost, self.learning_rate, var_list=vars_new)
-        vars_new = self.model.vars_new()
-        self.init_vars(sess, vars_new)
+        if not self.do_finetune:
+            vars_new = self.model.vars_new()
+            self.init_vars(sess, vars_new)
         summaries_merged_train = self._merge_summaries_scalars([cost, loss])
         
         if self._acc_ops is None:
