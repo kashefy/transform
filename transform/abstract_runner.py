@@ -234,6 +234,9 @@ class AbstractRunner(object):
             self.logger.debug("Use tf records prefix '%s'" % self.tf_record_prefix)
         else:
             self.logger.debug("No tf records prefix provided. Don't load data from tf records")
-            
-            
+        self.do_augment_rot = params.do_augment_rot
+        self.logger.debug("Augment by rotation: %s" % (['No', 'Yes'][self.do_augment_rot],))
+        self.input_noise_std = params['input_noise_std']
+        self.logger.debug("Input noise std-dev: %f" % self.input_noise_std,)
+        
         

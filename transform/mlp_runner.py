@@ -30,6 +30,13 @@ def augment_rotation(x,
     flatten_op = tf.reshape(rot_op, [-1, x.get_shape()[-1].value])
     return flatten_op
 
+def gaussian_noise_layer(in_, std, name):
+    noise = tf.random_normal(shape=tf.shape(in_),
+                             mean=0.0, stddev=std,
+                             dtype=tf.float32,
+                             name=name)
+    return tf.add(in_, noise, name='_'.join([in_.name, 'noise']))
+
 class MLPRunner(AbstractRunner):
     '''
     classdocs

@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 import yaml
 import tensorflow as tf
 from transform.ae_runner import AERunner
-from transform.mlp_runner import MLPRunner#, augment_rotation
+from transform.mlp_runner import MLPRunner, augment_rotation
 from transform.stacked_autoencoder_tf import StackedAutoencoder as SAE
 from nideep.nets.mlp_tf import MLP
 import transform.logging_utils as lu
@@ -136,6 +136,7 @@ def run(run_name, args):
     if reuse:
         trained_model = tf.train.import_meta_graph(args.fpath_meta)
     cfg = cfg_list[0]
+    print(cfg)
     ae_runner = AERunner(cfg)
     n_input = reduce(lambda x, y: x * y, ae_runner.data.train.images.shape[1:], 1)
     config = tf.ConfigProto()
@@ -143,11 +144,27 @@ def run(run_name, args):
     config.gpu_options.per_process_gpu_memory_fraction = args.per_process_gpu_memory_fraction
     grph = tf.Graph()
     with grph.as_default() as g:
+        in_op = tf.placeholder("float", [None, n_input])
+#        if cfg['do_augment_rot']:
+#            augment_op = augment_rotation(in_op,
+#                                          -90, 90, 15,
+#                                          cfg['batch_size_train'])
+#            sae_params = {
+#                    'in_op'     : augment_op,
+#                    'prefix'    : cfg['prefix'],
+#                    'reuse'     : reuse,
+#                    }
+#        else:
+#            sae_params = {
+#                    'in_op'     : in_op,
+#                    'reuse'     : reuse,
+#                    'prefix'    : cfg['prefix'],
+#                    }
         sae_params = {
-                'in_op'     : tf.placeholder("float", [None, n_input]),
-                'prefix'    : cfg['prefix'],
-                'reuse'     : reuse,
-                }
+                    'in_op'     : in_op,
+                    'reuse'     : reuse,
+                    'prefix'    : cfg['prefix'],
+                    }
         ae_runner.model = SAE(sae_params)
         cfg = cfg_list[1]
         mlp_runner = MLPRunner(cfg)

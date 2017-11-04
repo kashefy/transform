@@ -60,6 +60,8 @@ def update_cfg(base, params):
             items_new.append([key, value])
     base['data_seed'] = np.random.randint(3)
     items_new.append(['data_seed', base['data_seed']])
+    base['do_augment_rot'] = [False, True][np.random.randint(2)]
+    items_new.append(['do_augment_rot', base['do_augment_rot']])
     for key, value in base.items():
         if isinstance(value, tuple):
             base[key] = list(value)
@@ -74,42 +76,43 @@ def update_cfg(base, params):
 #def objective(params_all):
 def objective(params):
     status = STATUS_OK
-#    fpath_list = []
+    fpath_cfg_dst_list = []
 #    for space_idx in xrange(params_all['num_spaces']):
 #        params = {k[:k.index('spaceIdx-%d' % space_idx):v] for k,v in params_all.items()}
-    cfg, _, suffix = update_cfg(params['base'], params)
-    fpath_cfg_dst = os.path.join(params['run_dir'], 'config_%s.yml' % suffix)
-    logger.debug("Write config %s" % (fpath_cfg_dst))
-    with open(fpath_cfg_dst, 'w') as h:
-        h.write(yaml.dump(cfg))
-#        fpath_list.append(fpath_cfg_dst)
-#    ch_args_in = [item for sublist in [['-c', p] for p in fpath_list] for item in sublist]
-#    ch_args_in.extend([
-#                      '--log_dir', cfg['log_dir'],
-#                      '--run_name', suffix,
-#                      '--run_dir', cfg['run_dir'],
-#                      ])
-    ch_args_in = ['-c', fpath_cfg_dst,
-                  '-c', fpath_cfg_dst,
-                  '--log_dir', cfg['log_dir'],
-                  '--run_name', suffix,
-                  '--run_dir', cfg['run_dir'],
-                  ]
+    for cfg_idx, base in enumerate(params['base']):
+        cfg, _, suffix = update_cfg(base, params)
+        fpath_cfg_dst = os.path.join(params['run_dir'], 'config_%s_%d-%s.yml' % (suffix, cfg_idx, cfg['prefix']))
+        logger.debug("Write config %d/%d %s" % (cfg_idx, len(params['base']), fpath_cfg_dst))
+        with open(fpath_cfg_dst, 'w') as h:
+            h.write(yaml.dump(cfg))
+            fpath_cfg_dst_list.append(fpath_cfg_dst)
+    ch_args_in = [it for sublist in [['-c', p] for p in fpath_cfg_dst_list] for it in sublist]
+    ch_args_in.extend([
+                      '--log_dir', cfg['log_dir'],
+                      '--run_name', suffix,
+                      '--run_dir', cfg['run_dir'],
+                      ])
+#    ch_args_in = ['-c', fpath_cfg_dst,
+#                  '-c', fpath_cfg_dst,
+#                  '--log_dir', cfg['log_dir'],
+#                  '--run_name', suffix,
+#                  '--run_dir', cfg['run_dir'],
+#                  ]
     for k, v in params['pass_on_args']:
         logger.debug("Passing on %s %s" % (k, str(v)))
         ch_args_in.extend([k, str(v)])
     args_ch = script.handleArgs(args=ch_args_in)
-    result_run = \
+    result_ae, result_mlp, result_mlp_fine = \
         script.run(args_ch.run_name,
            args_ch
            )
-    if result_run is None:
+    if result_ae is None:
         status = STATUS_FAIL
         logger.error("fmin failed with params: %s" % params)
     result = {
-        "name"      : result_run.name,
-        "loss"      : -result_run.max, 
-        "performance" : result_run.max, 
+        "name"      : result_mlp_fine.name,
+        "loss"      : -result_mlp_fine.max, 
+        "performance" : result_mlp_fine.max, 
         "status"    : status,
         "space"     : cfg,
     }
@@ -136,9 +139,9 @@ def add_space(space_base, space_dir, do_reload=False):
                 new_msg), sys.exc_info()[2])
     logger.debug("Adding space definitions from %s" % fpath_space)
     for key, value in space_add.items():
-        space_base.pop(key, None)
-        space_base['base'].pop(key, None)
-        space_base[key] = value
+        for base_idx in range(len(space_base['base'])):
+            space_base['base'][base_idx].pop(key, None)
+            space_base[key] = value
     return space_base
 
 def init_trials(fpath_trials, force_fresh=False):
@@ -179,14 +182,12 @@ def run(run_name, args):
 
 #    space_all = {}
 #    for cfgidx, (fpath_cfg, space_dir) in enumerate(zip(args.fpath_cfg_list, args.space_dir)):
-    fpath_cfg = args.fpath_cfg
     space_dir = args.space_dir
-    cfg = load_config(fpath_cfg, logger)
     space = {
         'log_dir' : os.path.abspath(os.path.expanduser(args.log_dir)),
         'run_dir' : run_dir,
         'run_name': run_name,
-        'base'  : cfg,
+        'base'  : [load_config(fpath_cfg, logger) for fpath_cfg in args.fpath_cfg_list],
         'pass_on_args' : [
             ['--per_process_gpu_memory_fraction', args.per_process_gpu_memory_fraction],
             ['--data_dir', args.data_dir],
@@ -226,8 +227,8 @@ def run(run_name, args):
 
 def handleArgs(args=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--config", action='store',
-                        dest="fpath_cfg", type=str, required=True,
+    parser.add_argument("-c", "--config", action='append',
+                        dest="fpath_cfg_list", type=str, required=True,
                         help="Path to master config file")
     parser.add_argument("--log_dir", dest="log_dir", type=str,
                         default=os.path.abspath(os.path.curdir),

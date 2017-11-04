@@ -10,6 +10,7 @@ import tensorflow as tf
 #from tensorflow.python import debug as tf_debug
 from abstract_runner import AbstractRunner, setup_optimizer
 from nideep.datasets.mnist.mnist_tf import MNIST # TODO remove
+from mlp_runner import augment_rotation, gaussian_noise_layer
 
 class AERunner(AbstractRunner):
     '''
@@ -24,7 +25,8 @@ class AERunner(AbstractRunner):
         itr_exp = 0
         result = collections.namedtuple('Result', ['max', 'last', 'name'])
         result.max = 0
-    
+        
+
 #        saver = tf.train.import_meta_graph('/home/kashefy/models/ae/log_simple_stats/pre0_t00/reconstruction/train/saved_sae0-20.meta')
 #        saver.restore(sess, tf.train.latest_checkpoint('/home/kashefy/models/ae/log_simple_stats/pre0_t00/reconstruction/train/'))
 #        g = tf.get_default_graph()
@@ -47,17 +49,20 @@ class AERunner(AbstractRunner):
                                                     batch_size=self.batch_size_train,
                                                     capacity=2000,
                                                     min_after_dequeue=1000,
-                                                    num_threads=8
+                                                    num_threads=4
                                                     )
             coord = tf.train.Coordinator()
             threads = tf.train.start_queue_runners(sess=sess, coord=coord)
-            
         for dim in self.stack_dims:
             itr_depth = 0
             self.logger.debug('Stacking %s nodes.' % str(dim))
             self.model.stack(dim)
             if itr_exp == 0:
                 self.x = self.model.x
+#                augment_op = augment_rotation(self.x,
+#                                              -90, 90, 15,
+#                                              self.batch_size_train)
+#                self.model.x = augment_op
             cost, loss = self._cost_loss(self.dirname('train'))
             result.name = loss.name
             vars_new = self.model.vars_new()
@@ -71,15 +76,15 @@ class AERunner(AbstractRunner):
 #            self.logger.debug('encoder-0: %s' % sess.run(self.model.sae[0].w['encoder-0/w'][10,5:10]))
             summaries_merged_train = self._merge_summaries_scalars([loss, cost])
             
-            summaries = []
-#            for value in [loss, cost]:
-#                self.logger.debug("log scalar: %s" % value.op.name)
+#            summaries = []
+##            for value in [loss, cost]:
+##                self.logger.debug("log scalar: %s" % value.op.name)
 #                summaries.append(tf.summary.scalar(value.op.name, value))
-            self.logger.debug("log weights (histograms, images): %s" % self.model.w.keys())
-            self._append_summaries_hists(summaries, self.model.w.values())
-            self._append_summaries_var_imgs(summaries, self.model.w.values())
-            self._append_summaries_op_imgs(summaries, [self.model.p])
-            summaries_merged_val = tf.summary.merge(summaries)
+#            self.logger.debug("log weights (histograms, images): %s" % self.model.w.keys())
+#            self._append_summaries_hists(summaries, self.model.w.values())
+#            self._append_summaries_var_imgs(summaries, self.model.w.values())
+#            self._append_summaries_op_imgs(summaries, [self.model.p])
+#            summaries_merged_val = tf.summary.merge(summaries)
             self._init_saver()
         
             fpath_save = os.path.join(dir_train, self._get_save_name())
@@ -90,7 +95,6 @@ class AERunner(AbstractRunner):
                 self.logger.info("Start epoch %d, step %d" % (epoch, itr_exp))
                 # Loop over all batches
                 for itr_epoch in xrange(self.num_batches_train):
-#                    batch_xs, _ = self.data.train.next_batch(self.batch_size_train)
                     if self.tf_record_prefix is None:
                         batch_xs, _ = self.data.train.next_batch(self.batch_size_train)
                     else:
@@ -112,41 +116,49 @@ class AERunner(AbstractRunner):
         #            f.show()
         #            plt.draw()
         #            plt.waitforbuttonpress()
+                    batch_xs_in = batch_xs
+                    if self.do_augment_rot:
+                        augment_op = augment_rotation(self.x,
+                                                      -90, 90, 15,
+                                                      self.batch_size_train)
+                        batch_xs_in = sess.run(augment_op, feed_dict={self.x : batch_xs})
+#                    _, c, sess_summary = sess.run([optimizer, cost, summaries_merged_train],
+#                                                  feed_dict={self.x: batch_xs})
                     _, c, sess_summary = sess.run([optimizer, cost, summaries_merged_train],
-                                                  feed_dict={self.x: batch_xs})
+                                                  feed_dict={self.x: batch_xs_in})
                     if self.is_time_to_track_train(itr_exp):
                         summary_writer_train.add_summary(sess_summary, itr_exp)
                     itr_exp += 1
                     itr_depth += 1
+#                    import matplotlib.pyplot as plt
+#                    f, a = plt.subplots(2, 10, figsize=(10, 2))
+#                    for i in xrange(10):
+#                        a[0][i].imshow(np.squeeze(batch_xs[i]).reshape(28,28))
+#                    f.show()
+#                    plt.draw()
+#                    plt.waitforbuttonpress()
                     # run metric op one more time, data in feed dict is dummy data, does not influence metric
-                if self.tf_record_prefix is None: # TODO extend to tfr
-                    _, sess_summary = sess.run([cost, summaries_merged_val],
-                                             feed_dict={self.x  : self.batch_viz_xs}
-                                             )
-                    if self.is_time_to_track_val(itr_exp):
-                        summary_writer_val.add_summary(sess_summary, itr_exp)
+#                if self.tf_record_prefix is None: # TODO extend to tfr
+#                    _, sess_summary = sess.run([cost, summaries_merged_val],
+#                                             feed_dict={self.x  : self.batch_viz_xs}
+#                                             )
+#                    _ = sess.run([cost],
+#                                 feed_dict={self.x  : self.batch_viz_xs}
+#                                )
+#                    if self.is_time_to_track_val(itr_exp):
+#                        summary_writer_val.add_summary(sess_summary, itr_exp)
                 fpath_save = os.path.join(dir_train, self._get_save_name())
                 self.logger.debug("Save model at step %d to '%s'" % (itr_exp, fpath_save))
                 self.saver.save(sess, fpath_save, global_step=itr_exp)
-                l = self.validate(sess, loss)
+                l = self.validate(sess, loss)[0]
                 self.logger.debug("validation loss after step %d: %f" % (itr_exp, l))
-                result.last = l[0]
+                result.last = l
                 result.max = max(result.max, result.last)
         if self.tf_record_prefix is not None:
             coord.request_stop()
             coord.join(threads)
-            self.logger.info("Optimization Finished!")
-#            self.logger.debug('encoder-0: %s' % sess.run(self.model.sae[0].w['encoder-0/w'][10,5:10]))
-#        if dim == 128:
-#            print('encoder_2',sess.run(sae.sae[1].w['encoder_2/w'][10,5:10]))
-#            encode_decode = sess.run(
-#                sae.p, feed_dict={sae.x: mnist.test.images[:args.examples_to_show]})
-        # Compare original images with their reconstructions
-#    fig, a = plt.subplots(2, 10, figsize=(10, 2))
-#    for i in xrange(args.examples_to_show):
-#        a[0][i].imshow(np.reshape(mnist.test.images[i], (28, 28)), clim=(0.0, 1.0))
-#        a[1][i].imshow(np.reshape(encode_decode[i], (28, 28)), clim=(0.0, 1.0))
-#    fig.savefig(os.path.join(args.log_dir, run_dir, 'train_layerwise_reconstruct.png'))
+            self.logger.debug("Stop training queue")
+        self.logger.info("Optimization Finished!")
         return result
 
     def validate(self, sess, loss):
@@ -161,7 +173,7 @@ class AERunner(AbstractRunner):
             batch_xs_op, batch_ys_op, batch_os_op = tf.train.batch([img, label, label_orient],
                                                     batch_size=self.batch_size_val,
                                                     capacity=2000,
-                                                    num_threads=8
+                                                    num_threads=4
                                                     )
             coord = tf.train.Coordinator()
             threads = tf.train.start_queue_runners(sess=sess, coord=coord)
@@ -170,11 +182,18 @@ class AERunner(AbstractRunner):
                 batch_xs, _ = self.data.validation.next_batch(self.batch_size_val,
                                                               shuffle=False)
             else:
-                batch_xs, batch_ys, batch_os = sess.run([batch_xs_op, batch_ys_op, batch_os_op])
-            l = sess.run([loss], feed_dict={self.x: batch_xs})
+                batch_xs, _, _ = sess.run([batch_xs_op, batch_ys_op, batch_os_op])
+            batch_xs_in = batch_xs
+            if self.do_augment_rot:
+                augment_op = augment_rotation(self.x,
+                                              -90, 90, 15,
+                                              self.batch_size_val)
+                batch_xs_in = sess.run(augment_op, feed_dict={self.x : batch_xs})
+            l = sess.run([loss], feed_dict={self.x: batch_xs_in})
         if self.tf_record_prefix is not None:
             coord.request_stop()
             coord.join(threads)
+            self.logger.debug("Stop validation queue")
         return l
             
     def _cost_loss(self, prefix):
@@ -197,11 +216,12 @@ class AERunner(AbstractRunner):
         self.logger.debug("No. of batches per epoch: %d" % self.num_batches_train)
         self._check_validation_batch_size()
         self.stack_dims = params['stack_dims']
-        self.logger.debug("Stack dims: %s" % self.stack_dims)
-#        self.prefix = 'reconstruction'
-        self._vars_added = []
-        
+        self.logger.debug("Dims to stack: %s" % self.stack_dims)
         if self.tf_record_prefix is None:
             self.batch_viz_xs, self.batch_viz_ys = self.data.validation.next_batch(self.batch_size_val,
                                                                                    shuffle=False)
-            
+        
+        self.do_reconstruct_original = params['do_reconstruct_original']
+        self.logger.debug("Reconstruct origingal input: %s" % (['No', 'Yes'][self.do_reconstruct_original],))
+        self._vars_added = []
+        

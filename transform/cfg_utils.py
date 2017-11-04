@@ -27,6 +27,9 @@ def load_config(fpath, logger):
                      'data_dir'         : 'MNIST_data',
                      'data_seed'        : None, # None to generate new seed
                      'tf_record_prefix' : None, # None -> don't use tf records
+                     'do_augment_rot'           : False,
+                     'do_reconstruct_original'  : True, # for ae only
+                     'input_noise_std'  : 0.0,
                      }
     for k in default_items.keys():
         cfg[k] = cfg.get(k, default_items[k])
