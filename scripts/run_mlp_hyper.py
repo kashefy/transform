@@ -118,6 +118,21 @@ def add_space(space_base, space_dir):
         space_base[key] = value
     return space_base
 
+def init_trials(fpath_trials, force_fresh=False):
+    if not force_fresh:
+        try:
+            trials = pickle.load(open(fpath_trials, "rb"))
+            logger.info("Loading saved trials from %s" % fpath_trials)
+            logger.debug("Rerunning from {} trials to add more.".format(
+                len(trials.trials)))
+        except:
+            trials = Trials()
+            logger.info("Starting trials from scratch.")
+    else:
+        trials = Trials()
+        logger.info("Starting trials from scratch.")
+    return trials
+
 def run(run_name, args):
     if args.run_dir is None:
         run_dir = os.path.join(args.log_dir, run_name)
@@ -136,6 +151,7 @@ def run(run_name, args):
     else:
         logger.debug("Created run directory %s", run_dir)
     fpath_trials = os.path.join(run_dir, "trials.pkl")
+    trials = init_trials(fpath_trials, force_fresh=args.force_fresh_trials)
     max_evals = args.nb_evals
     try:
         trials = pickle.load(open(fpath_trials, "rb"))

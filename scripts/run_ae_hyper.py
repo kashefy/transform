@@ -145,7 +145,7 @@ def add_space(space_base, space_dir, do_reload=False):
     return space_base
 
 def init_trials(fpath_trials, force_fresh=False):
-    if force_fresh:
+    if not force_fresh:
         try:
             trials = pickle.load(open(fpath_trials, "rb"))
             logger.info("Loading saved trials from %s" % fpath_trials)
