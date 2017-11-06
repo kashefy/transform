@@ -16,7 +16,7 @@ import os
 from datetime import datetime
 import yaml
 import tensorflow as tf
-from transform.mlp_runner import MLPRunner, augment_rotation
+from transform.mlp_runner import MLPRunner
 from nideep.nets.mlp_tf import MLP
 import transform.logging_utils as lu
 from transform.cfg_utils import load_config
