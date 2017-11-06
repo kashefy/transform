@@ -234,6 +234,10 @@ def handleArgs(args=None):
                         help="Path to data directory")
     parser.add_argument("--tf_record_prefix", dest="tf_record_prefix", type=str,
                         help="filename prefix for tf records files")
+    parser.add_argument("--force_fresh_trials",  action='store_true',
+                        dest="force_fresh_trials",
+                        help="Force to start new set of trials and not resume existing ones.")
+
     return parser.parse_args(args=args)
 
 if __name__ == '__main__':
