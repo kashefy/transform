@@ -13,6 +13,7 @@ import numpy as np
 import tensorflow as tf
 from nideep.datasets.mnist.mnist_tf import MNIST
 from augmentation import rotation_ops
+from transform.augmentation import gaussian_noise_op, rotation_rad
 
 def setup_optimizer(cost, learning_rate, name=None, var_list=None):
 #    opt = tf.train.RMSPropOptimizer(learning_rate)
@@ -189,7 +190,7 @@ class AbstractRunner(object):
         else:
             tf_record_descr = {'data_seed'  : self.data_seed,
                                'one_hot'    : True,
-                               'orientations' : sorted(range(-60, 90, 30)),
+                               'orientations' : sorted(np.rad2deg(rotation_rad(-60,60,15))),
 #                               'orientations' : sorted(range(-60, 75, 15)),
                                'validation_size' : self.validation_size
                                }
@@ -217,12 +218,12 @@ class AbstractRunner(object):
         if self.augment_ops_train is None:
             self.augment_ops_train = []
             for _ in range(count):
-                augment_op = rotation_ops(self.x,
-                                      -60, 60, 30,
+                augment_op, rotations = rotation_ops(self.x,
+                                      -60, 60, 15,
                                       self.batch_size_train,
                                       self.prefix)
-                self.augment_ops_train.append(augment_op)
-        augment_op = self.augment_ops_train[np.random.randint(len(self.augment_ops_train))]
+                self.augment_ops_train.append((augment_op, rotations))
+        augment_op = self.augment_ops_train[np.random.randint(count)]
         return augment_op
             
     def rotation_ops_multiset_val(self,
@@ -230,13 +231,23 @@ class AbstractRunner(object):
         if self.augment_ops_val is None:
             self.augment_ops_val = []
             for _ in range(count):
-                augment_op = rotation_ops(self.x,
-                                      -60, 60, 30,
+                augment_op, rotations = rotation_ops(self.x,
+                                      -60, 60, 15,
                                       self.batch_size_val,
                                       self.prefix)
-                self.augment_ops_val.append(augment_op)
-        augment_op = self.augment_ops_val[np.random.randint(len(self.augment_ops_val))]
+                self.augment_ops_val.append((augment_op, rotations))
+        augment_op = self.augment_ops_val[np.random.randint(count)]
         return augment_op
+    
+    def gaussian_noise_op(self, in_):
+        op_name = '_'.join([in_.name, 'noise_add'])
+        if op_name in self.gaussian_noise_ops:
+            return self.gaussian_noise_ops[op_name]
+        else:
+            op_new = gaussian_noise_op(in_, self.input_noise_std)
+            assert(op_new.name == op_name)
+            self.gaussian_noise_ops[op_name] = op_new
+        return op_new
     
     def __init__(self, params):
         '''
@@ -294,6 +305,6 @@ class AbstractRunner(object):
         self.logger.debug("Input noise std-dev: %f" % self.input_noise_std,)
         self.augment_ops_train = None
         self.augment_ops_val = None
-        self.gaussian_nois_ops = None
+        self.gaussian_noise_ops = {}
         
         

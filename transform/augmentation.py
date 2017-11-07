@@ -19,11 +19,12 @@ def rotation_ops(x,
     rot_op = tf.contrib.image.rotate(reshape_op, rots_cur)
     flatten_op = tf.reshape(rot_op, [-1, x.get_shape()[-1].value],
                             name=name+'/flatten_rot')
-    return flatten_op
+    return flatten_op, rots_cur
 
-def gaussian_noise_op(in_, std, name):
+def gaussian_noise_op(in_, std):
+    prefix = in_.name.replace(':', '-')
     noise = tf.random_normal(shape=tf.shape(in_),
                              mean=0.0, stddev=std,
                              dtype=tf.float32,
-                             name=name)
-    return tf.add(in_, noise, name='_'.join([in_.name, 'noise']))
+                             name='_'.join([prefix, 'noise']))
+    return tf.add(in_, noise, name='_'.join([prefix, 'noise_add']))

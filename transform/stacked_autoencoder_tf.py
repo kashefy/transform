@@ -36,23 +36,31 @@ class StackedAutoencoder(AbstractNetTF):
             'n_input'   :  int(in_op.get_shape()[-1]),
             'prefix'    :  '%s-%d' % (self.prefix, len(self.sae)+1),
             'reuse'     :  self.reuse,
+            'do_denoising'      : self.do_denoising,
+            'input_noise_std'   : self.input_noise_std,
              }
         ae = AE(ae_params)
         ae.x = in_op
         _, _ = ae.build()
-        
         if len(self.sae) > 0:
             self.sae[-1].decoder(ae.p)
         self.sae.append(ae)
+        if len(self.sae) == 1:
+            self.enc_in = self.sae[0].enc_in
             
         # Targets (Labels) are the input data.
         self._y_true = self.sae[-1].x
-        
+    
+    @property
     def y_true(self):
         return self._y_true
+
+    @y_true.setter
+    def y_true(self, value):
+        self._y_true = value
             
     def cost(self, name=None):
-        return self.sae[-1].cost_cross_entropy(self._y_true, name=name)
+        return self.sae[-1].cost_cross_entropy(self.y_true, name=name)
         
     def vars_new(self):
         return self.sae[-1].vars_new()
@@ -97,4 +105,8 @@ class StackedAutoencoder(AbstractNetTF):
         params['n_input'] = int(self.in_op.get_shape()[-1])
         super(StackedAutoencoder, self).__init__(params)
         self.sae = []
+        self.do_denoising = params.get('do_denoising', False)
+        self.input_noise_std = params.get('input_noise_std', 0.)
+        if self.input_noise_std == 0.:
+            self.do_denoising = False
         

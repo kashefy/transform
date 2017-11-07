@@ -1,0 +1,665 @@
+2017-11-07 19:02:04,396 - __main__ - DEBUG - Created run directory ~/models/ae/mlp2t/pre0_t01
+2017-11-07 19:02:04,397 - __main__ - INFO - Starting run pre0_t01
+2017-11-07 19:02:04,397 - __main__ - DEBUG - Got 1 config files.
+2017-11-07 19:02:04,397 - __main__ - DEBUG - Loading config from ~/models/ae/mlpv.yml
+2017-11-07 19:02:04,401 - __main__ - DEBUG - Write config mlpv.yml to ~/models/ae/mlp2t/pre0_t01/config_0.yml
+2017-11-07 19:02:04,404 - __main__.MLP2TaskRunner - DEBUG - Runner prefix: 'mlpv'
+2017-11-07 19:02:04,404 - __main__.MLP2TaskRunner - DEBUG - batch_size (training): 64
+2017-11-07 19:02:04,404 - __main__.MLP2TaskRunner - DEBUG - batch_size (validation): 100
+2017-11-07 19:02:04,404 - __main__.MLP2TaskRunner - DEBUG - initial learning rate: 0.5
+2017-11-07 19:02:04,404 - __main__.MLP2TaskRunner - DEBUG - training epochs: 2
+2017-11-07 19:02:04,404 - __main__.MLP2TaskRunner - DEBUG - validation size: 5000
+2017-11-07 19:02:04,404 - __main__.MLP2TaskRunner - DEBUG - lambda_l2: 1
+2017-11-07 19:02:04,405 - __main__.MLP2TaskRunner - DEBUG - lambda_l1: 1
+2017-11-07 19:02:04,405 - __main__.MLP2TaskRunner - DEBUG - Data dir: MNIST_data
+2017-11-07 19:02:04,405 - __main__.MLP2TaskRunner - DEBUG - Data seed: 0
+2017-11-07 19:02:04,405 - __main__.MLP2TaskRunner - DEBUG - No tf records prefix provided. Don't load data from tf records
+2017-11-07 19:02:04,405 - __main__.MLP2TaskRunner - DEBUG - Augment by rotation: No
+2017-11-07 19:02:04,405 - __main__.MLP2TaskRunner - DEBUG - Input noise std-dev: 0.000000
+2017-11-07 19:02:05,547 - __main__.MLP2TaskRunner - DEBUG - No. of training batches per epoch: 859
+2017-11-07 19:02:05,547 - __main__.MLP2TaskRunner - DEBUG - Validation data will not shift between epochs.
+2017-11-07 19:02:30,638 - __main__ - DEBUG - Found run directory ~/models/ae/mlp2t/pre0_t01
+2017-11-07 19:02:30,638 - __main__ - INFO - Starting run pre0_t01
+2017-11-07 19:02:30,638 - __main__ - DEBUG - Got 1 config files.
+2017-11-07 19:02:30,638 - __main__ - DEBUG - Loading config from ~/models/ae/mlpv.yml
+2017-11-07 19:02:30,640 - __main__ - DEBUG - Write config mlpv.yml to ~/models/ae/mlp2t/pre0_t01/config_0.yml
+2017-11-07 19:02:30,643 - __main__.MLP2TaskRunner - DEBUG - Runner prefix: 'mlpv'
+2017-11-07 19:02:30,643 - __main__.MLP2TaskRunner - DEBUG - batch_size (training): 64
+2017-11-07 19:02:30,644 - __main__.MLP2TaskRunner - DEBUG - batch_size (validation): 100
+2017-11-07 19:02:30,644 - __main__.MLP2TaskRunner - DEBUG - initial learning rate: 0.5
+2017-11-07 19:02:30,644 - __main__.MLP2TaskRunner - DEBUG - training epochs: 2
+2017-11-07 19:02:30,644 - __main__.MLP2TaskRunner - DEBUG - validation size: 5000
+2017-11-07 19:02:30,644 - __main__.MLP2TaskRunner - DEBUG - lambda_l2: 1
+2017-11-07 19:02:30,644 - __main__.MLP2TaskRunner - DEBUG - lambda_l1: 1
+2017-11-07 19:02:30,644 - __main__.MLP2TaskRunner - DEBUG - Data dir: MNIST_data
+2017-11-07 19:02:30,644 - __main__.MLP2TaskRunner - DEBUG - Data seed: 0
+2017-11-07 19:02:30,644 - __main__.MLP2TaskRunner - DEBUG - No tf records prefix provided. Don't load data from tf records
+2017-11-07 19:02:30,644 - __main__.MLP2TaskRunner - DEBUG - Augment by rotation: No
+2017-11-07 19:02:30,645 - __main__.MLP2TaskRunner - DEBUG - Input noise std-dev: 0.000000
+2017-11-07 19:02:31,554 - __main__.MLP2TaskRunner - DEBUG - No. of training batches per epoch: 859
+2017-11-07 19:02:31,555 - __main__.MLP2TaskRunner - DEBUG - Validation data will not shift between epochs.
+2017-11-07 19:03:12,581 - __main__ - DEBUG - Found run directory ~/models/ae/mlp2t/pre0_t01
+2017-11-07 19:03:12,582 - __main__ - INFO - Starting run pre0_t01
+2017-11-07 19:03:12,582 - __main__ - DEBUG - Got 1 config files.
+2017-11-07 19:03:12,582 - __main__ - DEBUG - Loading config from ~/models/ae/mlpv.yml
+2017-11-07 19:03:12,584 - __main__ - DEBUG - Write config mlpv.yml to ~/models/ae/mlp2t/pre0_t01/config_0.yml
+2017-11-07 19:03:12,587 - __main__.MLP2TaskRunner - DEBUG - Runner prefix: 'mlpv'
+2017-11-07 19:03:12,587 - __main__.MLP2TaskRunner - DEBUG - batch_size (training): 64
+2017-11-07 19:03:12,587 - __main__.MLP2TaskRunner - DEBUG - batch_size (validation): 100
+2017-11-07 19:03:12,588 - __main__.MLP2TaskRunner - DEBUG - initial learning rate: 0.5
+2017-11-07 19:03:12,588 - __main__.MLP2TaskRunner - DEBUG - training epochs: 2
+2017-11-07 19:03:12,588 - __main__.MLP2TaskRunner - DEBUG - validation size: 5000
+2017-11-07 19:03:12,588 - __main__.MLP2TaskRunner - DEBUG - lambda_l2: 1
+2017-11-07 19:03:12,588 - __main__.MLP2TaskRunner - DEBUG - lambda_l1: 1
+2017-11-07 19:03:12,588 - __main__.MLP2TaskRunner - DEBUG - Data dir: MNIST_data
+2017-11-07 19:03:12,588 - __main__.MLP2TaskRunner - DEBUG - Data seed: 0
+2017-11-07 19:03:12,588 - __main__.MLP2TaskRunner - DEBUG - No tf records prefix provided. Don't load data from tf records
+2017-11-07 19:03:12,588 - __main__.MLP2TaskRunner - DEBUG - Augment by rotation: No
+2017-11-07 19:03:12,589 - __main__.MLP2TaskRunner - DEBUG - Input noise std-dev: 0.000000
+2017-11-07 19:03:13,649 - __main__.MLP2TaskRunner - DEBUG - No. of training batches per epoch: 859
+2017-11-07 19:03:13,650 - __main__.MLP2TaskRunner - DEBUG - Validation data will not shift between epochs.
+2017-11-07 19:46:11,612 - __main__ - DEBUG - Found run directory ~/models/ae/mlp2t/pre0_t01
+2017-11-07 19:46:11,612 - __main__ - INFO - Starting run pre0_t01
+2017-11-07 19:46:11,612 - __main__ - DEBUG - Got 1 config files.
+2017-11-07 19:46:11,612 - __main__ - DEBUG - Loading config from ~/models/ae/mlpvr.yml
+2017-11-07 19:46:11,615 - __main__ - DEBUG - Write config mlpvr.yml to ~/models/ae/mlp2t/pre0_t01/config_0.yml
+2017-11-07 19:46:11,618 - __main__.MLP2TaskRunner - DEBUG - Runner prefix: 'mlpvr'
+2017-11-07 19:46:11,618 - __main__.MLP2TaskRunner - DEBUG - batch_size (training): 64
+2017-11-07 19:46:11,618 - __main__.MLP2TaskRunner - DEBUG - batch_size (validation): 100
+2017-11-07 19:46:11,618 - __main__.MLP2TaskRunner - DEBUG - initial learning rate: 0.5
+2017-11-07 19:46:11,618 - __main__.MLP2TaskRunner - DEBUG - training epochs: 2
+2017-11-07 19:46:11,618 - __main__.MLP2TaskRunner - DEBUG - validation size: 5000
+2017-11-07 19:46:11,618 - __main__.MLP2TaskRunner - DEBUG - lambda_l2: 1
+2017-11-07 19:46:11,618 - __main__.MLP2TaskRunner - DEBUG - lambda_l1: 1
+2017-11-07 19:46:11,618 - __main__.MLP2TaskRunner - DEBUG - Data dir: MNIST_data
+2017-11-07 19:46:11,619 - __main__.MLP2TaskRunner - DEBUG - Data seed: 0
+2017-11-07 19:46:11,619 - __main__.MLP2TaskRunner - DEBUG - No tf records prefix provided. Don't load data from tf records
+2017-11-07 19:46:11,619 - __main__.MLP2TaskRunner - DEBUG - Augment by rotation: Yes
+2017-11-07 19:46:11,619 - __main__.MLP2TaskRunner - DEBUG - Input noise std-dev: 0.000000
+2017-11-07 19:46:12,780 - __main__.MLP2TaskRunner - DEBUG - No. of training batches per epoch: 859
+2017-11-07 19:46:12,780 - __main__.MLP2TaskRunner - DEBUG - Validation data will not shift between epochs.
+2017-11-07 19:46:12,782 - __main__ - DEBUG - per_process_gpu_memory_fraction set to 1.000000
+2017-11-07 19:46:12,815 - __main__.MLP2TaskRunner - INFO - Define placeholder for ground truth. Dims: 10
+2017-11-07 20:04:58,398 - __main__ - DEBUG - Found run directory ~/models/ae/mlp2t/pre0_t01
+2017-11-07 20:04:58,398 - __main__ - INFO - Starting run pre0_t01
+2017-11-07 20:04:58,398 - __main__ - DEBUG - Got 1 config files.
+2017-11-07 20:04:58,398 - __main__ - DEBUG - Loading config from ~/models/ae/mlpvr.yml
+2017-11-07 20:04:58,401 - __main__ - DEBUG - Write config mlpvr.yml to ~/models/ae/mlp2t/pre0_t01/config_0.yml
+2017-11-07 20:04:58,404 - __main__.MLP2TaskRunner - DEBUG - Runner prefix: 'mlpvr'
+2017-11-07 20:04:58,404 - __main__.MLP2TaskRunner - DEBUG - batch_size (training): 64
+2017-11-07 20:04:58,404 - __main__.MLP2TaskRunner - DEBUG - batch_size (validation): 100
+2017-11-07 20:04:58,404 - __main__.MLP2TaskRunner - DEBUG - initial learning rate: 0.5
+2017-11-07 20:04:58,404 - __main__.MLP2TaskRunner - DEBUG - training epochs: 2
+2017-11-07 20:04:58,404 - __main__.MLP2TaskRunner - DEBUG - validation size: 5000
+2017-11-07 20:04:58,404 - __main__.MLP2TaskRunner - DEBUG - lambda_l2: 1
+2017-11-07 20:04:58,405 - __main__.MLP2TaskRunner - DEBUG - lambda_l1: 1
+2017-11-07 20:04:58,405 - __main__.MLP2TaskRunner - DEBUG - Data dir: MNIST_data
+2017-11-07 20:04:58,405 - __main__.MLP2TaskRunner - DEBUG - Data seed: 0
+2017-11-07 20:04:58,405 - __main__.MLP2TaskRunner - DEBUG - No tf records prefix provided. Don't load data from tf records
+2017-11-07 20:04:58,405 - __main__.MLP2TaskRunner - DEBUG - Augment by rotation: Yes
+2017-11-07 20:04:58,405 - __main__.MLP2TaskRunner - DEBUG - Input noise std-dev: 0.000000
+2017-11-07 20:04:59,737 - __main__.MLP2TaskRunner - DEBUG - No. of training batches per epoch: 859
+2017-11-07 20:04:59,737 - __main__.MLP2TaskRunner - DEBUG - Validation data will not shift between epochs.
+2017-11-07 20:04:59,739 - __main__ - DEBUG - per_process_gpu_memory_fraction set to 1.000000
+2017-11-07 20:06:35,197 - __main__ - DEBUG - Found run directory ~/models/ae/mlp2t/pre0_t01
+2017-11-07 20:06:35,198 - __main__ - INFO - Starting run pre0_t01
+2017-11-07 20:06:35,199 - __main__ - DEBUG - Got 1 config files.
+2017-11-07 20:06:35,199 - __main__ - DEBUG - Loading config from ~/models/ae/mlpvr.yml
+2017-11-07 20:06:35,214 - __main__ - DEBUG - Write config mlpvr.yml to ~/models/ae/mlp2t/pre0_t01/config_0.yml
+2017-11-07 20:06:35,229 - __main__.MLP2TaskRunner - DEBUG - Runner prefix: 'mlpvr'
+2017-11-07 20:06:35,230 - __main__.MLP2TaskRunner - DEBUG - batch_size (training): 64
+2017-11-07 20:06:35,230 - __main__.MLP2TaskRunner - DEBUG - batch_size (validation): 100
+2017-11-07 20:06:35,231 - __main__.MLP2TaskRunner - DEBUG - initial learning rate: 0.5
+2017-11-07 20:06:35,231 - __main__.MLP2TaskRunner - DEBUG - training epochs: 2
+2017-11-07 20:06:35,232 - __main__.MLP2TaskRunner - DEBUG - validation size: 5000
+2017-11-07 20:06:35,232 - __main__.MLP2TaskRunner - DEBUG - lambda_l2: 1
+2017-11-07 20:06:35,233 - __main__.MLP2TaskRunner - DEBUG - lambda_l1: 1
+2017-11-07 20:06:35,233 - __main__.MLP2TaskRunner - DEBUG - Data dir: MNIST_data
+2017-11-07 20:06:35,234 - __main__.MLP2TaskRunner - DEBUG - Data seed: 0
+2017-11-07 20:06:35,235 - __main__.MLP2TaskRunner - DEBUG - No tf records prefix provided. Don't load data from tf records
+2017-11-07 20:06:35,235 - __main__.MLP2TaskRunner - DEBUG - Augment by rotation: Yes
+2017-11-07 20:06:35,236 - __main__.MLP2TaskRunner - DEBUG - Input noise std-dev: 0.000000
+2017-11-07 20:06:36,264 - __main__.MLP2TaskRunner - DEBUG - No. of training batches per epoch: 859
+2017-11-07 20:06:36,264 - __main__.MLP2TaskRunner - DEBUG - Validation data will not shift between epochs.
+2017-11-07 20:06:36,266 - __main__ - DEBUG - per_process_gpu_memory_fraction set to 1.000000
+2017-11-07 20:13:08,570 - __main__ - DEBUG - Found run directory ~/models/ae/mlp2t/pre0_t01
+2017-11-07 20:13:08,570 - __main__ - INFO - Starting run pre0_t01
+2017-11-07 20:13:08,571 - __main__ - DEBUG - Got 1 config files.
+2017-11-07 20:13:08,571 - __main__ - DEBUG - Loading config from ~/models/ae/mlpvr.yml
+2017-11-07 20:13:08,573 - __main__ - DEBUG - Write config mlpvr.yml to ~/models/ae/mlp2t/pre0_t01/config_0.yml
+2017-11-07 20:13:08,576 - __main__.MLP2TaskRunner - DEBUG - Runner prefix: 'mlpvr'
+2017-11-07 20:13:08,576 - __main__.MLP2TaskRunner - DEBUG - batch_size (training): 64
+2017-11-07 20:13:08,576 - __main__.MLP2TaskRunner - DEBUG - batch_size (validation): 100
+2017-11-07 20:13:08,576 - __main__.MLP2TaskRunner - DEBUG - initial learning rate: 0.5
+2017-11-07 20:13:08,577 - __main__.MLP2TaskRunner - DEBUG - training epochs: 2
+2017-11-07 20:13:08,577 - __main__.MLP2TaskRunner - DEBUG - validation size: 5000
+2017-11-07 20:13:08,577 - __main__.MLP2TaskRunner - DEBUG - lambda_l2: 1
+2017-11-07 20:13:08,577 - __main__.MLP2TaskRunner - DEBUG - lambda_l1: 1
+2017-11-07 20:13:08,577 - __main__.MLP2TaskRunner - DEBUG - Data dir: MNIST_data
+2017-11-07 20:13:08,577 - __main__.MLP2TaskRunner - DEBUG - Data seed: 0
+2017-11-07 20:13:08,577 - __main__.MLP2TaskRunner - DEBUG - No tf records prefix provided. Don't load data from tf records
+2017-11-07 20:13:08,577 - __main__.MLP2TaskRunner - DEBUG - Augment by rotation: Yes
+2017-11-07 20:13:08,577 - __main__.MLP2TaskRunner - DEBUG - Input noise std-dev: 0.000000
+2017-11-07 20:13:09,521 - __main__.MLP2TaskRunner - DEBUG - No. of training batches per epoch: 859
+2017-11-07 20:13:09,522 - __main__.MLP2TaskRunner - DEBUG - Validation data will not shift between epochs.
+2017-11-07 20:13:09,523 - __main__ - DEBUG - per_process_gpu_memory_fraction set to 1.000000
+2017-11-07 20:13:09,545 - __main__.MLP2TaskRunner - INFO - Define placeholder for ground truth. Dims: 10
+2017-11-07 20:13:57,617 - __main__ - DEBUG - Found run directory ~/models/ae/mlp2t/pre0_t01
+2017-11-07 20:13:57,618 - __main__ - INFO - Starting run pre0_t01
+2017-11-07 20:13:57,618 - __main__ - DEBUG - Got 1 config files.
+2017-11-07 20:13:57,618 - __main__ - DEBUG - Loading config from ~/models/ae/mlpvr.yml
+2017-11-07 20:13:57,629 - __main__ - DEBUG - Write config mlpvr.yml to ~/models/ae/mlp2t/pre0_t01/config_0.yml
+2017-11-07 20:13:57,639 - __main__.MLP2TaskRunner - DEBUG - Runner prefix: 'mlpvr'
+2017-11-07 20:13:57,639 - __main__.MLP2TaskRunner - DEBUG - batch_size (training): 64
+2017-11-07 20:13:57,640 - __main__.MLP2TaskRunner - DEBUG - batch_size (validation): 100
+2017-11-07 20:13:57,640 - __main__.MLP2TaskRunner - DEBUG - initial learning rate: 0.5
+2017-11-07 20:13:57,640 - __main__.MLP2TaskRunner - DEBUG - training epochs: 2
+2017-11-07 20:13:57,641 - __main__.MLP2TaskRunner - DEBUG - validation size: 5000
+2017-11-07 20:13:57,641 - __main__.MLP2TaskRunner - DEBUG - lambda_l2: 1
+2017-11-07 20:13:57,641 - __main__.MLP2TaskRunner - DEBUG - lambda_l1: 1
+2017-11-07 20:13:57,642 - __main__.MLP2TaskRunner - DEBUG - Data dir: MNIST_data
+2017-11-07 20:13:57,642 - __main__.MLP2TaskRunner - DEBUG - Data seed: 0
+2017-11-07 20:13:57,642 - __main__.MLP2TaskRunner - DEBUG - No tf records prefix provided. Don't load data from tf records
+2017-11-07 20:13:57,643 - __main__.MLP2TaskRunner - DEBUG - Augment by rotation: Yes
+2017-11-07 20:13:57,643 - __main__.MLP2TaskRunner - DEBUG - Input noise std-dev: 0.000000
+2017-11-07 20:13:58,648 - __main__.MLP2TaskRunner - DEBUG - No. of training batches per epoch: 859
+2017-11-07 20:13:58,649 - __main__.MLP2TaskRunner - DEBUG - Validation data will not shift between epochs.
+2017-11-07 20:13:58,652 - __main__ - DEBUG - per_process_gpu_memory_fraction set to 1.000000
+2017-11-07 20:14:11,103 - __main__.MLP2TaskRunner - INFO - Define placeholder for ground truth. Dims: 10
+2017-11-07 20:17:25,741 - __main__ - DEBUG - Found run directory ~/models/ae/mlp2t/pre0_t01
+2017-11-07 20:17:25,742 - __main__ - INFO - Starting run pre0_t01
+2017-11-07 20:17:25,742 - __main__ - DEBUG - Got 1 config files.
+2017-11-07 20:17:25,742 - __main__ - DEBUG - Loading config from ~/models/ae/mlpvr.yml
+2017-11-07 20:17:25,746 - __main__ - DEBUG - Write config mlpvr.yml to ~/models/ae/mlp2t/pre0_t01/config_0.yml
+2017-11-07 20:17:25,752 - __main__.MLP2TaskRunner - DEBUG - Runner prefix: 'mlpvr'
+2017-11-07 20:17:25,752 - __main__.MLP2TaskRunner - DEBUG - batch_size (training): 64
+2017-11-07 20:17:25,753 - __main__.MLP2TaskRunner - DEBUG - batch_size (validation): 100
+2017-11-07 20:17:25,753 - __main__.MLP2TaskRunner - DEBUG - initial learning rate: 0.5
+2017-11-07 20:17:25,753 - __main__.MLP2TaskRunner - DEBUG - training epochs: 2
+2017-11-07 20:17:25,753 - __main__.MLP2TaskRunner - DEBUG - validation size: 5000
+2017-11-07 20:17:25,753 - __main__.MLP2TaskRunner - DEBUG - lambda_l2: 1
+2017-11-07 20:17:25,753 - __main__.MLP2TaskRunner - DEBUG - lambda_l1: 1
+2017-11-07 20:17:25,754 - __main__.MLP2TaskRunner - DEBUG - Data dir: MNIST_data
+2017-11-07 20:17:25,754 - __main__.MLP2TaskRunner - DEBUG - Data seed: 0
+2017-11-07 20:17:25,754 - __main__.MLP2TaskRunner - DEBUG - No tf records prefix provided. Don't load data from tf records
+2017-11-07 20:17:25,754 - __main__.MLP2TaskRunner - DEBUG - Augment by rotation: Yes
+2017-11-07 20:17:25,754 - __main__.MLP2TaskRunner - DEBUG - Input noise std-dev: 0.000000
+2017-11-07 20:17:27,042 - __main__.MLP2TaskRunner - DEBUG - No. of training batches per epoch: 859
+2017-11-07 20:17:27,043 - __main__.MLP2TaskRunner - DEBUG - Validation data will not shift between epochs.
+2017-11-07 20:17:27,043 - __main__ - DEBUG - per_process_gpu_memory_fraction set to 1.000000
+2017-11-07 20:17:27,066 - __main__.MLP2TaskRunner - INFO - Define placeholder for ground truth. Dims: 10
+2017-11-07 20:17:27,117 - __main__.MLP2TaskRunner - DEBUG - L2 regularization for mlpvr/fc-0/w:0,mlpvr/fc-0-aux/w:0
+2017-11-07 20:17:27,119 - __main__.MLP2TaskRunner - DEBUG - L1 regularization for mlpvr/fc-0/w:0,mlpvr/fc-0-aux/w:0
+2017-11-07 20:17:27,279 - __main__.MLP2TaskRunner - DEBUG - initializing: [u'mlpvr/fc-0/w:0', u'mlpvr/fc-0-aux/w:0', u'mlpvr/fc-0/b:0', u'mlpvr/fc-0-aux/b:0']
+2017-11-07 20:17:27,316 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/train/cost
+2017-11-07 20:17:27,318 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/train/loss
+2017-11-07 20:17:51,265 - __main__ - DEBUG - Found run directory ~/models/ae/mlp2t/pre0_t01
+2017-11-07 20:17:51,266 - __main__ - INFO - Starting run pre0_t01
+2017-11-07 20:17:51,266 - __main__ - DEBUG - Got 1 config files.
+2017-11-07 20:17:51,266 - __main__ - DEBUG - Loading config from ~/models/ae/mlpvr.yml
+2017-11-07 20:17:51,268 - __main__ - DEBUG - Write config mlpvr.yml to ~/models/ae/mlp2t/pre0_t01/config_0.yml
+2017-11-07 20:17:51,272 - __main__.MLP2TaskRunner - DEBUG - Runner prefix: 'mlpvr'
+2017-11-07 20:17:51,272 - __main__.MLP2TaskRunner - DEBUG - batch_size (training): 64
+2017-11-07 20:17:51,272 - __main__.MLP2TaskRunner - DEBUG - batch_size (validation): 100
+2017-11-07 20:17:51,272 - __main__.MLP2TaskRunner - DEBUG - initial learning rate: 0.5
+2017-11-07 20:17:51,272 - __main__.MLP2TaskRunner - DEBUG - training epochs: 2
+2017-11-07 20:17:51,272 - __main__.MLP2TaskRunner - DEBUG - validation size: 5000
+2017-11-07 20:17:51,272 - __main__.MLP2TaskRunner - DEBUG - lambda_l2: 1
+2017-11-07 20:17:51,273 - __main__.MLP2TaskRunner - DEBUG - lambda_l1: 1
+2017-11-07 20:17:51,273 - __main__.MLP2TaskRunner - DEBUG - Data dir: MNIST_data
+2017-11-07 20:17:51,273 - __main__.MLP2TaskRunner - DEBUG - Data seed: 0
+2017-11-07 20:17:51,273 - __main__.MLP2TaskRunner - DEBUG - No tf records prefix provided. Don't load data from tf records
+2017-11-07 20:17:51,273 - __main__.MLP2TaskRunner - DEBUG - Augment by rotation: Yes
+2017-11-07 20:17:51,273 - __main__.MLP2TaskRunner - DEBUG - Input noise std-dev: 0.000000
+2017-11-07 20:17:52,105 - __main__.MLP2TaskRunner - DEBUG - No. of training batches per epoch: 859
+2017-11-07 20:17:52,105 - __main__.MLP2TaskRunner - DEBUG - Validation data will not shift between epochs.
+2017-11-07 20:17:52,105 - __main__ - DEBUG - per_process_gpu_memory_fraction set to 1.000000
+2017-11-07 20:17:52,131 - __main__.MLP2TaskRunner - INFO - Define placeholder for ground truth. Dims: 10
+2017-11-07 20:17:52,177 - __main__.MLP2TaskRunner - DEBUG - L2 regularization for mlpvr/fc-0/w:0,mlpvr/fc-0-aux/w:0
+2017-11-07 20:17:52,178 - __main__.MLP2TaskRunner - DEBUG - L1 regularization for mlpvr/fc-0/w:0,mlpvr/fc-0-aux/w:0
+2017-11-07 20:17:52,284 - __main__.MLP2TaskRunner - DEBUG - initializing: [u'mlpvr/fc-0/w:0', u'mlpvr/fc-0-aux/w:0', u'mlpvr/fc-0/b:0', u'mlpvr/fc-0-aux/b:0']
+2017-11-07 20:17:52,300 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/train/cost
+2017-11-07 20:17:52,301 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/train/loss
+2017-11-07 20:17:52,351 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/validation/accuracy/value
+2017-11-07 20:17:52,365 - __main__.MLP2TaskRunner - INFO - Start  epoch 0, step 0
+2017-11-07 21:22:31,511 - __main__ - DEBUG - Found run directory ~/models/ae/mlp2t/pre0_t01
+2017-11-07 21:22:31,511 - __main__ - INFO - Starting run pre0_t01
+2017-11-07 21:22:31,511 - __main__ - DEBUG - Got 1 config files.
+2017-11-07 21:22:31,512 - __main__ - DEBUG - Loading config from ~/models/ae/mlpvr.yml
+2017-11-07 21:22:31,514 - __main__ - DEBUG - Write config mlpvr.yml to ~/models/ae/mlp2t/pre0_t01/config_0.yml
+2017-11-07 21:22:31,518 - __main__.MLP2TaskRunner - DEBUG - Runner prefix: 'mlpvr'
+2017-11-07 21:22:31,518 - __main__.MLP2TaskRunner - DEBUG - batch_size (training): 64
+2017-11-07 21:22:31,518 - __main__.MLP2TaskRunner - DEBUG - batch_size (validation): 100
+2017-11-07 21:22:31,518 - __main__.MLP2TaskRunner - DEBUG - initial learning rate: 0.5
+2017-11-07 21:22:31,518 - __main__.MLP2TaskRunner - DEBUG - training epochs: 2
+2017-11-07 21:22:31,518 - __main__.MLP2TaskRunner - DEBUG - validation size: 5000
+2017-11-07 21:22:31,518 - __main__.MLP2TaskRunner - DEBUG - lambda_l2: 1
+2017-11-07 21:22:31,519 - __main__.MLP2TaskRunner - DEBUG - lambda_l1: 1
+2017-11-07 21:22:31,519 - __main__.MLP2TaskRunner - DEBUG - Data dir: MNIST_data
+2017-11-07 21:22:31,519 - __main__.MLP2TaskRunner - DEBUG - Data seed: 0
+2017-11-07 21:22:31,519 - __main__.MLP2TaskRunner - DEBUG - No tf records prefix provided. Don't load data from tf records
+2017-11-07 21:22:31,519 - __main__.MLP2TaskRunner - DEBUG - Augment by rotation: Yes
+2017-11-07 21:22:31,519 - __main__.MLP2TaskRunner - DEBUG - Input noise std-dev: 0.000000
+2017-11-07 21:22:32,996 - __main__.MLP2TaskRunner - DEBUG - No. of training batches per epoch: 859
+2017-11-07 21:22:32,997 - __main__.MLP2TaskRunner - DEBUG - Validation data will not shift between epochs.
+2017-11-07 21:22:32,997 - __main__ - DEBUG - per_process_gpu_memory_fraction set to 1.000000
+2017-11-07 21:22:33,024 - __main__.MLP2TaskRunner - INFO - Define placeholder for ground truth. Dims: 10
+2017-11-07 21:22:33,068 - __main__.MLP2TaskRunner - DEBUG - L2 regularization for mlpvr/fc-0/w:0,mlpvr/fc-0-aux/w:0
+2017-11-07 21:22:33,070 - __main__.MLP2TaskRunner - DEBUG - L1 regularization for mlpvr/fc-0/w:0,mlpvr/fc-0-aux/w:0
+2017-11-07 21:22:33,180 - __main__.MLP2TaskRunner - DEBUG - initializing: [u'mlpvr/fc-0/w:0', u'mlpvr/fc-0-aux/w:0', u'mlpvr/fc-0/b:0', u'mlpvr/fc-0-aux/b:0']
+2017-11-07 21:22:33,194 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/train/cost
+2017-11-07 21:22:33,195 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/train/loss
+2017-11-07 21:22:33,244 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/validation/accuracy/value
+2017-11-07 21:22:33,258 - __main__.MLP2TaskRunner - INFO - Start  epoch 0, step 0
+2017-11-07 21:23:06,997 - __main__ - DEBUG - Found run directory ~/models/ae/mlp2t/pre0_t01
+2017-11-07 21:23:06,997 - __main__ - INFO - Starting run pre0_t01
+2017-11-07 21:23:06,997 - __main__ - DEBUG - Got 1 config files.
+2017-11-07 21:23:06,997 - __main__ - DEBUG - Loading config from ~/models/ae/mlpvr.yml
+2017-11-07 21:23:07,000 - __main__ - DEBUG - Write config mlpvr.yml to ~/models/ae/mlp2t/pre0_t01/config_0.yml
+2017-11-07 21:23:07,003 - __main__.MLP2TaskRunner - DEBUG - Runner prefix: 'mlpvr'
+2017-11-07 21:23:07,003 - __main__.MLP2TaskRunner - DEBUG - batch_size (training): 64
+2017-11-07 21:23:07,003 - __main__.MLP2TaskRunner - DEBUG - batch_size (validation): 100
+2017-11-07 21:23:07,004 - __main__.MLP2TaskRunner - DEBUG - initial learning rate: 0.5
+2017-11-07 21:23:07,004 - __main__.MLP2TaskRunner - DEBUG - training epochs: 2
+2017-11-07 21:23:07,004 - __main__.MLP2TaskRunner - DEBUG - validation size: 5000
+2017-11-07 21:23:07,004 - __main__.MLP2TaskRunner - DEBUG - lambda_l2: 1
+2017-11-07 21:23:07,004 - __main__.MLP2TaskRunner - DEBUG - lambda_l1: 1
+2017-11-07 21:23:07,004 - __main__.MLP2TaskRunner - DEBUG - Data dir: MNIST_data
+2017-11-07 21:23:07,004 - __main__.MLP2TaskRunner - DEBUG - Data seed: 0
+2017-11-07 21:23:07,004 - __main__.MLP2TaskRunner - DEBUG - No tf records prefix provided. Don't load data from tf records
+2017-11-07 21:23:07,004 - __main__.MLP2TaskRunner - DEBUG - Augment by rotation: Yes
+2017-11-07 21:23:07,004 - __main__.MLP2TaskRunner - DEBUG - Input noise std-dev: 0.000000
+2017-11-07 21:23:08,106 - __main__.MLP2TaskRunner - DEBUG - No. of training batches per epoch: 859
+2017-11-07 21:23:08,106 - __main__.MLP2TaskRunner - DEBUG - Validation data will not shift between epochs.
+2017-11-07 21:23:08,106 - __main__ - DEBUG - per_process_gpu_memory_fraction set to 1.000000
+2017-11-07 21:23:08,134 - __main__.MLP2TaskRunner - INFO - Define placeholder for ground truth. Dims: 10
+2017-11-07 21:23:08,213 - __main__.MLP2TaskRunner - DEBUG - L2 regularization for mlpvr/fc-0/w:0,mlpvr/fc-0-aux/w:0
+2017-11-07 21:23:08,215 - __main__.MLP2TaskRunner - DEBUG - L1 regularization for mlpvr/fc-0/w:0,mlpvr/fc-0-aux/w:0
+2017-11-07 21:23:08,347 - __main__.MLP2TaskRunner - DEBUG - initializing: [u'mlpvr/fc-0/w:0', u'mlpvr/fc-0-aux/w:0', u'mlpvr/fc-0/b:0', u'mlpvr/fc-0-aux/b:0']
+2017-11-07 21:23:08,364 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/train/cost
+2017-11-07 21:23:08,367 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/train/loss
+2017-11-07 21:23:08,438 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/validation/accuracy/value
+2017-11-07 21:23:08,458 - __main__.MLP2TaskRunner - INFO - Start  epoch 0, step 0
+2017-11-07 21:23:28,941 - __main__ - DEBUG - Found run directory ~/models/ae/mlp2t/pre0_t01
+2017-11-07 21:23:28,942 - __main__ - INFO - Starting run pre0_t01
+2017-11-07 21:23:28,942 - __main__ - DEBUG - Got 1 config files.
+2017-11-07 21:23:28,942 - __main__ - DEBUG - Loading config from ~/models/ae/mlpvr.yml
+2017-11-07 21:23:28,945 - __main__ - DEBUG - Write config mlpvr.yml to ~/models/ae/mlp2t/pre0_t01/config_0.yml
+2017-11-07 21:23:28,949 - __main__.MLP2TaskRunner - DEBUG - Runner prefix: 'mlpvr'
+2017-11-07 21:23:28,949 - __main__.MLP2TaskRunner - DEBUG - batch_size (training): 64
+2017-11-07 21:23:28,949 - __main__.MLP2TaskRunner - DEBUG - batch_size (validation): 100
+2017-11-07 21:23:28,949 - __main__.MLP2TaskRunner - DEBUG - initial learning rate: 0.5
+2017-11-07 21:23:28,949 - __main__.MLP2TaskRunner - DEBUG - training epochs: 2
+2017-11-07 21:23:28,949 - __main__.MLP2TaskRunner - DEBUG - validation size: 5000
+2017-11-07 21:23:28,950 - __main__.MLP2TaskRunner - DEBUG - lambda_l2: 1
+2017-11-07 21:23:28,950 - __main__.MLP2TaskRunner - DEBUG - lambda_l1: 1
+2017-11-07 21:23:28,950 - __main__.MLP2TaskRunner - DEBUG - Data dir: MNIST_data
+2017-11-07 21:23:28,950 - __main__.MLP2TaskRunner - DEBUG - Data seed: 0
+2017-11-07 21:23:28,950 - __main__.MLP2TaskRunner - DEBUG - No tf records prefix provided. Don't load data from tf records
+2017-11-07 21:23:28,950 - __main__.MLP2TaskRunner - DEBUG - Augment by rotation: Yes
+2017-11-07 21:23:28,950 - __main__.MLP2TaskRunner - DEBUG - Input noise std-dev: 0.000000
+2017-11-07 21:23:29,837 - __main__.MLP2TaskRunner - DEBUG - No. of training batches per epoch: 859
+2017-11-07 21:23:29,838 - __main__.MLP2TaskRunner - DEBUG - Validation data will not shift between epochs.
+2017-11-07 21:23:29,838 - __main__ - DEBUG - per_process_gpu_memory_fraction set to 1.000000
+2017-11-07 21:23:29,865 - __main__.MLP2TaskRunner - INFO - Define placeholder for ground truth. Dims: 10
+2017-11-07 21:23:29,909 - __main__.MLP2TaskRunner - DEBUG - L2 regularization for mlpvr/fc-0/w:0,mlpvr/fc-0-aux/w:0
+2017-11-07 21:23:29,911 - __main__.MLP2TaskRunner - DEBUG - L1 regularization for mlpvr/fc-0/w:0,mlpvr/fc-0-aux/w:0
+2017-11-07 21:23:30,016 - __main__.MLP2TaskRunner - DEBUG - initializing: [u'mlpvr/fc-0/w:0', u'mlpvr/fc-0-aux/w:0', u'mlpvr/fc-0/b:0', u'mlpvr/fc-0-aux/b:0']
+2017-11-07 21:23:30,034 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/train/cost
+2017-11-07 21:23:30,036 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/train/loss
+2017-11-07 21:23:30,092 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/validation/accuracy/value
+2017-11-07 21:23:30,109 - __main__.MLP2TaskRunner - INFO - Start  epoch 0, step 0
+2017-11-07 21:24:28,877 - __main__ - DEBUG - Found run directory ~/models/ae/mlp2t/pre0_t01
+2017-11-07 21:24:28,879 - __main__ - INFO - Starting run pre0_t01
+2017-11-07 21:24:28,879 - __main__ - DEBUG - Got 1 config files.
+2017-11-07 21:24:28,879 - __main__ - DEBUG - Loading config from ~/models/ae/mlpvr.yml
+2017-11-07 21:24:28,893 - __main__ - DEBUG - Write config mlpvr.yml to ~/models/ae/mlp2t/pre0_t01/config_0.yml
+2017-11-07 21:24:28,906 - __main__.MLP2TaskRunner - DEBUG - Runner prefix: 'mlpvr'
+2017-11-07 21:24:28,906 - __main__.MLP2TaskRunner - DEBUG - batch_size (training): 64
+2017-11-07 21:24:28,907 - __main__.MLP2TaskRunner - DEBUG - batch_size (validation): 100
+2017-11-07 21:24:28,907 - __main__.MLP2TaskRunner - DEBUG - initial learning rate: 0.5
+2017-11-07 21:24:28,908 - __main__.MLP2TaskRunner - DEBUG - training epochs: 2
+2017-11-07 21:24:28,908 - __main__.MLP2TaskRunner - DEBUG - validation size: 5000
+2017-11-07 21:24:28,909 - __main__.MLP2TaskRunner - DEBUG - lambda_l2: 1
+2017-11-07 21:24:28,909 - __main__.MLP2TaskRunner - DEBUG - lambda_l1: 1
+2017-11-07 21:24:28,910 - __main__.MLP2TaskRunner - DEBUG - Data dir: MNIST_data
+2017-11-07 21:24:28,910 - __main__.MLP2TaskRunner - DEBUG - Data seed: 0
+2017-11-07 21:24:28,911 - __main__.MLP2TaskRunner - DEBUG - No tf records prefix provided. Don't load data from tf records
+2017-11-07 21:24:28,911 - __main__.MLP2TaskRunner - DEBUG - Augment by rotation: Yes
+2017-11-07 21:24:28,912 - __main__.MLP2TaskRunner - DEBUG - Input noise std-dev: 0.000000
+2017-11-07 21:24:29,984 - __main__.MLP2TaskRunner - DEBUG - No. of training batches per epoch: 859
+2017-11-07 21:24:29,984 - __main__.MLP2TaskRunner - DEBUG - Validation data will not shift between epochs.
+2017-11-07 21:24:29,985 - __main__ - DEBUG - per_process_gpu_memory_fraction set to 1.000000
+2017-11-07 21:28:05,477 - __main__ - DEBUG - Found run directory ~/models/ae/mlp2t/pre0_t01
+2017-11-07 21:28:05,478 - __main__ - INFO - Starting run pre0_t01
+2017-11-07 21:28:05,478 - __main__ - DEBUG - Got 1 config files.
+2017-11-07 21:28:05,478 - __main__ - DEBUG - Loading config from ~/models/ae/mlpvr.yml
+2017-11-07 21:28:05,489 - __main__ - DEBUG - Write config mlpvr.yml to ~/models/ae/mlp2t/pre0_t01/config_0.yml
+2017-11-07 21:28:05,499 - __main__.MLP2TaskRunner - DEBUG - Runner prefix: 'mlpvr'
+2017-11-07 21:28:05,500 - __main__.MLP2TaskRunner - DEBUG - batch_size (training): 64
+2017-11-07 21:28:05,500 - __main__.MLP2TaskRunner - DEBUG - batch_size (validation): 100
+2017-11-07 21:28:05,500 - __main__.MLP2TaskRunner - DEBUG - initial learning rate: 0.5
+2017-11-07 21:28:05,501 - __main__.MLP2TaskRunner - DEBUG - training epochs: 2
+2017-11-07 21:28:05,501 - __main__.MLP2TaskRunner - DEBUG - validation size: 5000
+2017-11-07 21:28:05,501 - __main__.MLP2TaskRunner - DEBUG - lambda_l2: 1
+2017-11-07 21:28:05,502 - __main__.MLP2TaskRunner - DEBUG - lambda_l1: 1
+2017-11-07 21:28:05,502 - __main__.MLP2TaskRunner - DEBUG - Data dir: MNIST_data
+2017-11-07 21:28:05,502 - __main__.MLP2TaskRunner - DEBUG - Data seed: 0
+2017-11-07 21:28:05,503 - __main__.MLP2TaskRunner - DEBUG - No tf records prefix provided. Don't load data from tf records
+2017-11-07 21:28:05,503 - __main__.MLP2TaskRunner - DEBUG - Augment by rotation: Yes
+2017-11-07 21:28:05,503 - __main__.MLP2TaskRunner - DEBUG - Input noise std-dev: 0.000000
+2017-11-07 21:28:06,691 - __main__.MLP2TaskRunner - DEBUG - No. of training batches per epoch: 859
+2017-11-07 21:28:06,692 - __main__.MLP2TaskRunner - DEBUG - Validation data will not shift between epochs.
+2017-11-07 21:28:06,692 - __main__ - DEBUG - per_process_gpu_memory_fraction set to 1.000000
+2017-11-07 21:28:40,479 - __main__ - DEBUG - Found run directory ~/models/ae/mlp2t/pre0_t01
+2017-11-07 21:28:40,480 - __main__ - INFO - Starting run pre0_t01
+2017-11-07 21:28:40,480 - __main__ - DEBUG - Got 1 config files.
+2017-11-07 21:28:40,480 - __main__ - DEBUG - Loading config from ~/models/ae/mlpvr.yml
+2017-11-07 21:28:40,492 - __main__ - DEBUG - Write config mlpvr.yml to ~/models/ae/mlp2t/pre0_t01/config_0.yml
+2017-11-07 21:28:40,501 - __main__.MLP2TaskRunner - DEBUG - Runner prefix: 'mlpvr'
+2017-11-07 21:28:40,501 - __main__.MLP2TaskRunner - DEBUG - batch_size (training): 64
+2017-11-07 21:28:40,501 - __main__.MLP2TaskRunner - DEBUG - batch_size (validation): 100
+2017-11-07 21:28:40,502 - __main__.MLP2TaskRunner - DEBUG - initial learning rate: 0.5
+2017-11-07 21:28:40,502 - __main__.MLP2TaskRunner - DEBUG - training epochs: 2
+2017-11-07 21:28:40,502 - __main__.MLP2TaskRunner - DEBUG - validation size: 5000
+2017-11-07 21:28:40,503 - __main__.MLP2TaskRunner - DEBUG - lambda_l2: 1
+2017-11-07 21:28:40,503 - __main__.MLP2TaskRunner - DEBUG - lambda_l1: 1
+2017-11-07 21:28:40,503 - __main__.MLP2TaskRunner - DEBUG - Data dir: MNIST_data
+2017-11-07 21:28:40,504 - __main__.MLP2TaskRunner - DEBUG - Data seed: 0
+2017-11-07 21:28:40,504 - __main__.MLP2TaskRunner - DEBUG - No tf records prefix provided. Don't load data from tf records
+2017-11-07 21:28:40,504 - __main__.MLP2TaskRunner - DEBUG - Augment by rotation: Yes
+2017-11-07 21:28:40,504 - __main__.MLP2TaskRunner - DEBUG - Input noise std-dev: 0.000000
+2017-11-07 21:28:41,550 - __main__.MLP2TaskRunner - DEBUG - No. of training batches per epoch: 859
+2017-11-07 21:28:41,550 - __main__.MLP2TaskRunner - DEBUG - Validation data will not shift between epochs.
+2017-11-07 21:28:41,551 - __main__ - DEBUG - per_process_gpu_memory_fraction set to 1.000000
+2017-11-07 21:28:45,961 - __main__.MLP2TaskRunner - INFO - Define placeholder for ground truth. Dims: 10
+2017-11-07 21:28:52,438 - __main__.MLP2TaskRunner - DEBUG - L2 regularization for mlpvr/fc-0/w:0,mlpvr/fc-0-aux/w:0
+2017-11-07 21:28:52,444 - __main__.MLP2TaskRunner - DEBUG - L1 regularization for mlpvr/fc-0/w:0,mlpvr/fc-0-aux/w:0
+2017-11-07 21:28:52,801 - __main__.MLP2TaskRunner - DEBUG - initializing: [u'mlpvr/fc-0/w:0', u'mlpvr/fc-0-aux/w:0', u'mlpvr/fc-0/b:0', u'mlpvr/fc-0-aux/b:0']
+2017-11-07 21:28:52,823 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/train/cost
+2017-11-07 21:28:52,827 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/train/loss
+2017-11-07 21:28:52,947 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/validation/accuracy/value
+2017-11-07 21:28:52,981 - __main__.MLP2TaskRunner - INFO - Start  epoch 0, step 0
+2017-11-07 21:31:51,493 - __main__ - DEBUG - Found run directory ~/models/ae/mlp2t/pre0_t01
+2017-11-07 21:31:51,494 - __main__ - INFO - Starting run pre0_t01
+2017-11-07 21:31:51,494 - __main__ - DEBUG - Got 1 config files.
+2017-11-07 21:31:51,495 - __main__ - DEBUG - Loading config from ~/models/ae/mlpvr.yml
+2017-11-07 21:31:51,505 - __main__ - DEBUG - Write config mlpvr.yml to ~/models/ae/mlp2t/pre0_t01/config_0.yml
+2017-11-07 21:31:51,514 - __main__.MLP2TaskRunner - DEBUG - Runner prefix: 'mlpvr'
+2017-11-07 21:31:51,515 - __main__.MLP2TaskRunner - DEBUG - batch_size (training): 64
+2017-11-07 21:31:51,515 - __main__.MLP2TaskRunner - DEBUG - batch_size (validation): 100
+2017-11-07 21:31:51,515 - __main__.MLP2TaskRunner - DEBUG - initial learning rate: 0.5
+2017-11-07 21:31:51,516 - __main__.MLP2TaskRunner - DEBUG - training epochs: 2
+2017-11-07 21:31:51,516 - __main__.MLP2TaskRunner - DEBUG - validation size: 5000
+2017-11-07 21:31:51,516 - __main__.MLP2TaskRunner - DEBUG - lambda_l2: 1
+2017-11-07 21:31:51,517 - __main__.MLP2TaskRunner - DEBUG - lambda_l1: 1
+2017-11-07 21:31:51,517 - __main__.MLP2TaskRunner - DEBUG - Data dir: MNIST_data
+2017-11-07 21:31:51,517 - __main__.MLP2TaskRunner - DEBUG - Data seed: 0
+2017-11-07 21:31:51,518 - __main__.MLP2TaskRunner - DEBUG - No tf records prefix provided. Don't load data from tf records
+2017-11-07 21:31:51,518 - __main__.MLP2TaskRunner - DEBUG - Augment by rotation: Yes
+2017-11-07 21:31:51,518 - __main__.MLP2TaskRunner - DEBUG - Input noise std-dev: 0.000000
+2017-11-07 21:31:52,569 - __main__.MLP2TaskRunner - DEBUG - No. of training batches per epoch: 859
+2017-11-07 21:31:52,570 - __main__.MLP2TaskRunner - DEBUG - Validation data will not shift between epochs.
+2017-11-07 21:31:52,570 - __main__ - DEBUG - per_process_gpu_memory_fraction set to 1.000000
+2017-11-07 21:31:52,630 - __main__.MLP2TaskRunner - INFO - Define placeholder for ground truth. Dims: 10
+2017-11-07 21:31:52,751 - __main__.MLP2TaskRunner - DEBUG - L2 regularization for mlpvr/fc-0/w:0,mlpvr/fc-0-aux/w:0
+2017-11-07 21:31:52,758 - __main__.MLP2TaskRunner - DEBUG - L1 regularization for mlpvr/fc-0/w:0,mlpvr/fc-0-aux/w:0
+2017-11-07 21:31:53,047 - __main__.MLP2TaskRunner - DEBUG - initializing: [u'mlpvr/fc-0/w:0', u'mlpvr/fc-0-aux/w:0', u'mlpvr/fc-0/b:0', u'mlpvr/fc-0-aux/b:0']
+2017-11-07 21:31:53,068 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/train/cost
+2017-11-07 21:31:53,072 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/train/loss
+2017-11-07 21:31:53,171 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/validation/accuracy/value
+2017-11-07 21:31:53,204 - __main__.MLP2TaskRunner - INFO - Start  epoch 0, step 0
+2017-11-07 21:33:19,545 - __main__ - DEBUG - Found run directory ~/models/ae/mlp2t/pre0_t01
+2017-11-07 21:33:19,546 - __main__ - INFO - Starting run pre0_t01
+2017-11-07 21:33:19,546 - __main__ - DEBUG - Got 1 config files.
+2017-11-07 21:33:19,546 - __main__ - DEBUG - Loading config from ~/models/ae/mlpvr.yml
+2017-11-07 21:33:19,549 - __main__ - DEBUG - Write config mlpvr.yml to ~/models/ae/mlp2t/pre0_t01/config_0.yml
+2017-11-07 21:33:19,552 - __main__.MLP2TaskRunner - DEBUG - Runner prefix: 'mlpvr'
+2017-11-07 21:33:19,552 - __main__.MLP2TaskRunner - DEBUG - batch_size (training): 64
+2017-11-07 21:33:19,552 - __main__.MLP2TaskRunner - DEBUG - batch_size (validation): 100
+2017-11-07 21:33:19,552 - __main__.MLP2TaskRunner - DEBUG - initial learning rate: 0.5
+2017-11-07 21:33:19,552 - __main__.MLP2TaskRunner - DEBUG - training epochs: 2
+2017-11-07 21:33:19,552 - __main__.MLP2TaskRunner - DEBUG - validation size: 5000
+2017-11-07 21:33:19,553 - __main__.MLP2TaskRunner - DEBUG - lambda_l2: 1
+2017-11-07 21:33:19,553 - __main__.MLP2TaskRunner - DEBUG - lambda_l1: 1
+2017-11-07 21:33:19,553 - __main__.MLP2TaskRunner - DEBUG - Data dir: MNIST_data
+2017-11-07 21:33:19,553 - __main__.MLP2TaskRunner - DEBUG - Data seed: 0
+2017-11-07 21:33:19,553 - __main__.MLP2TaskRunner - DEBUG - No tf records prefix provided. Don't load data from tf records
+2017-11-07 21:33:19,553 - __main__.MLP2TaskRunner - DEBUG - Augment by rotation: Yes
+2017-11-07 21:33:19,553 - __main__.MLP2TaskRunner - DEBUG - Input noise std-dev: 0.000000
+2017-11-07 21:33:20,642 - __main__.MLP2TaskRunner - DEBUG - No. of training batches per epoch: 859
+2017-11-07 21:33:20,643 - __main__.MLP2TaskRunner - DEBUG - Validation data will not shift between epochs.
+2017-11-07 21:33:20,643 - __main__ - DEBUG - per_process_gpu_memory_fraction set to 1.000000
+2017-11-07 21:33:20,673 - __main__.MLP2TaskRunner - INFO - Define placeholder for ground truth. Dims: 10
+2017-11-07 21:33:20,733 - __main__.MLP2TaskRunner - DEBUG - L2 regularization for mlpvr/fc-0/w:0,mlpvr/fc-0-aux/w:0
+2017-11-07 21:33:20,734 - __main__.MLP2TaskRunner - DEBUG - L1 regularization for mlpvr/fc-0/w:0,mlpvr/fc-0-aux/w:0
+2017-11-07 21:33:20,873 - __main__.MLP2TaskRunner - DEBUG - initializing: [u'mlpvr/fc-0/w:0', u'mlpvr/fc-0-aux/w:0', u'mlpvr/fc-0/b:0', u'mlpvr/fc-0-aux/b:0']
+2017-11-07 21:33:20,891 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/train/cost
+2017-11-07 21:33:20,893 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/train/loss
+2017-11-07 21:33:20,957 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/validation/accuracy/value
+2017-11-07 21:33:20,980 - __main__.MLP2TaskRunner - INFO - Start  epoch 0, step 0
+2017-11-07 21:34:29,531 - __main__ - DEBUG - Found run directory ~/models/ae/mlp2t/pre0_t01
+2017-11-07 21:34:29,532 - __main__ - INFO - Starting run pre0_t01
+2017-11-07 21:34:29,532 - __main__ - DEBUG - Got 1 config files.
+2017-11-07 21:34:29,532 - __main__ - DEBUG - Loading config from ~/models/ae/mlpvr.yml
+2017-11-07 21:34:29,534 - __main__ - DEBUG - Write config mlpvr.yml to ~/models/ae/mlp2t/pre0_t01/config_0.yml
+2017-11-07 21:34:29,537 - __main__.MLP2TaskRunner - DEBUG - Runner prefix: 'mlpvr'
+2017-11-07 21:34:29,537 - __main__.MLP2TaskRunner - DEBUG - batch_size (training): 64
+2017-11-07 21:34:29,537 - __main__.MLP2TaskRunner - DEBUG - batch_size (validation): 100
+2017-11-07 21:34:29,538 - __main__.MLP2TaskRunner - DEBUG - initial learning rate: 0.5
+2017-11-07 21:34:29,538 - __main__.MLP2TaskRunner - DEBUG - training epochs: 2
+2017-11-07 21:34:29,538 - __main__.MLP2TaskRunner - DEBUG - validation size: 5000
+2017-11-07 21:34:29,538 - __main__.MLP2TaskRunner - DEBUG - lambda_l2: 1
+2017-11-07 21:34:29,538 - __main__.MLP2TaskRunner - DEBUG - lambda_l1: 1
+2017-11-07 21:34:29,538 - __main__.MLP2TaskRunner - DEBUG - Data dir: MNIST_data
+2017-11-07 21:34:29,538 - __main__.MLP2TaskRunner - DEBUG - Data seed: 0
+2017-11-07 21:34:29,538 - __main__.MLP2TaskRunner - DEBUG - No tf records prefix provided. Don't load data from tf records
+2017-11-07 21:34:29,538 - __main__.MLP2TaskRunner - DEBUG - Augment by rotation: Yes
+2017-11-07 21:34:29,538 - __main__.MLP2TaskRunner - DEBUG - Input noise std-dev: 0.000000
+2017-11-07 21:34:30,538 - __main__.MLP2TaskRunner - DEBUG - No. of training batches per epoch: 859
+2017-11-07 21:34:30,538 - __main__.MLP2TaskRunner - DEBUG - Validation data will not shift between epochs.
+2017-11-07 21:34:30,538 - __main__ - DEBUG - per_process_gpu_memory_fraction set to 1.000000
+2017-11-07 21:34:30,561 - __main__.MLP2TaskRunner - INFO - Define placeholder for ground truth. Dims: 10
+2017-11-07 21:34:30,612 - __main__.MLP2TaskRunner - DEBUG - L2 regularization for mlpvr/fc-0/w:0,mlpvr/fc-0-aux/w:0
+2017-11-07 21:34:30,614 - __main__.MLP2TaskRunner - DEBUG - L1 regularization for mlpvr/fc-0/w:0,mlpvr/fc-0-aux/w:0
+2017-11-07 21:34:30,737 - __main__.MLP2TaskRunner - DEBUG - initializing: [u'mlpvr/fc-0/w:0', u'mlpvr/fc-0-aux/w:0', u'mlpvr/fc-0/b:0', u'mlpvr/fc-0-aux/b:0']
+2017-11-07 21:34:30,756 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/train/cost
+2017-11-07 21:34:30,757 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/train/loss
+2017-11-07 21:34:30,811 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/validation/accuracy/value
+2017-11-07 21:34:30,834 - __main__.MLP2TaskRunner - INFO - Start  epoch 0, step 0
+2017-11-07 21:34:38,204 - __main__.MLP2TaskRunner - DEBUG - validation accuracy after  step 859: 0.147000
+2017-11-07 21:34:38,205 - __main__.MLP2TaskRunner - DEBUG - Save model at  step 859 to '/home/kashefy/models/ae/mlp2t/pre0_t01/mlpvr/train/saved_mlpvr'
+2017-11-07 21:34:38,390 - __main__.MLP2TaskRunner - INFO - Start  epoch 1, step 859
+2017-11-07 21:34:45,432 - __main__.MLP2TaskRunner - DEBUG - validation accuracy after  step 1718: 0.148200
+2017-11-07 21:34:45,432 - __main__.MLP2TaskRunner - DEBUG - Save model at  step 1718 to '/home/kashefy/models/ae/mlp2t/pre0_t01/mlpvr/train/saved_mlpvr'
+2017-11-07 21:34:45,522 - __main__.MLP2TaskRunner - INFO - Classification  Optimization Finished!
+2017-11-07 21:34:45,528 - __main__ - INFO - Finished run pre0_t01
+2017-11-07 21:40:54,847 - __main__ - DEBUG - Found run directory ~/models/ae/mlp2t/pre0_t01
+2017-11-07 21:40:54,848 - __main__ - INFO - Starting run pre0_t01
+2017-11-07 21:40:54,848 - __main__ - DEBUG - Got 1 config files.
+2017-11-07 21:40:54,848 - __main__ - DEBUG - Loading config from ~/models/ae/mlpvr.yml
+2017-11-07 21:40:54,851 - __main__ - DEBUG - Write config mlpvr.yml to ~/models/ae/mlp2t/pre0_t01/config_0.yml
+2017-11-07 21:40:54,855 - __main__.MLP2TaskRunner - DEBUG - Runner prefix: 'mlpvr'
+2017-11-07 21:40:54,855 - __main__.MLP2TaskRunner - DEBUG - batch_size (training): 64
+2017-11-07 21:40:54,855 - __main__.MLP2TaskRunner - DEBUG - batch_size (validation): 100
+2017-11-07 21:40:54,855 - __main__.MLP2TaskRunner - DEBUG - initial learning rate: 0.5
+2017-11-07 21:40:54,855 - __main__.MLP2TaskRunner - DEBUG - training epochs: 2
+2017-11-07 21:40:54,855 - __main__.MLP2TaskRunner - DEBUG - validation size: 5000
+2017-11-07 21:40:54,855 - __main__.MLP2TaskRunner - DEBUG - lambda_l2: 1
+2017-11-07 21:40:54,855 - __main__.MLP2TaskRunner - DEBUG - lambda_l1: 1
+2017-11-07 21:40:54,856 - __main__.MLP2TaskRunner - DEBUG - Data dir: MNIST_data
+2017-11-07 21:40:54,856 - __main__.MLP2TaskRunner - DEBUG - Data seed: 0
+2017-11-07 21:40:54,856 - __main__.MLP2TaskRunner - DEBUG - No tf records prefix provided. Don't load data from tf records
+2017-11-07 21:40:54,856 - __main__.MLP2TaskRunner - DEBUG - Augment by rotation: Yes
+2017-11-07 21:40:54,856 - __main__.MLP2TaskRunner - DEBUG - Input noise std-dev: 0.000000
+2017-11-07 21:40:55,865 - __main__.MLP2TaskRunner - DEBUG - No. of training batches per epoch: 859
+2017-11-07 21:40:55,866 - __main__.MLP2TaskRunner - DEBUG - Validation data will not shift between epochs.
+2017-11-07 21:40:55,866 - __main__ - DEBUG - per_process_gpu_memory_fraction set to 1.000000
+2017-11-07 21:40:55,898 - __main__.MLP2TaskRunner - INFO - Define placeholder for ground truth. Dims: 10
+2017-11-07 21:40:55,966 - __main__.MLP2TaskRunner - DEBUG - L2 regularization for mlpvr/fc-0/w:0,mlpvr/fc-0-aux/w:0
+2017-11-07 21:40:55,969 - __main__.MLP2TaskRunner - DEBUG - L1 regularization for mlpvr/fc-0/w:0,mlpvr/fc-0-aux/w:0
+2017-11-07 21:40:56,129 - __main__.MLP2TaskRunner - DEBUG - initializing: [u'mlpvr/fc-0/w:0', u'mlpvr/fc-0-aux/w:0', u'mlpvr/fc-0/b:0', u'mlpvr/fc-0-aux/b:0']
+2017-11-07 21:40:56,150 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/train/cost
+2017-11-07 21:40:56,152 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/train/loss
+2017-11-07 21:40:56,221 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/validation/accuracy/value
+2017-11-07 21:40:56,223 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/validation_1/accuracy/value
+2017-11-07 21:40:56,243 - __main__.MLP2TaskRunner - INFO - Start  epoch 0, step 0
+2017-11-07 21:42:21,930 - __main__ - DEBUG - Found run directory ~/models/ae/mlp2t/pre0_t01
+2017-11-07 21:42:21,931 - __main__ - INFO - Starting run pre0_t01
+2017-11-07 21:42:21,932 - __main__ - DEBUG - Got 1 config files.
+2017-11-07 21:42:21,932 - __main__ - DEBUG - Loading config from ~/models/ae/mlpvr.yml
+2017-11-07 21:42:21,943 - __main__ - DEBUG - Write config mlpvr.yml to ~/models/ae/mlp2t/pre0_t01/config_0.yml
+2017-11-07 21:42:21,952 - __main__.MLP2TaskRunner - DEBUG - Runner prefix: 'mlpvr'
+2017-11-07 21:42:21,952 - __main__.MLP2TaskRunner - DEBUG - batch_size (training): 64
+2017-11-07 21:42:21,952 - __main__.MLP2TaskRunner - DEBUG - batch_size (validation): 100
+2017-11-07 21:42:21,952 - __main__.MLP2TaskRunner - DEBUG - initial learning rate: 0.5
+2017-11-07 21:42:21,953 - __main__.MLP2TaskRunner - DEBUG - training epochs: 2
+2017-11-07 21:42:21,953 - __main__.MLP2TaskRunner - DEBUG - validation size: 5000
+2017-11-07 21:42:21,953 - __main__.MLP2TaskRunner - DEBUG - lambda_l2: 1
+2017-11-07 21:42:21,954 - __main__.MLP2TaskRunner - DEBUG - lambda_l1: 1
+2017-11-07 21:42:21,954 - __main__.MLP2TaskRunner - DEBUG - Data dir: MNIST_data
+2017-11-07 21:42:21,954 - __main__.MLP2TaskRunner - DEBUG - Data seed: 0
+2017-11-07 21:42:21,955 - __main__.MLP2TaskRunner - DEBUG - No tf records prefix provided. Don't load data from tf records
+2017-11-07 21:42:21,955 - __main__.MLP2TaskRunner - DEBUG - Augment by rotation: Yes
+2017-11-07 21:42:21,955 - __main__.MLP2TaskRunner - DEBUG - Input noise std-dev: 0.000000
+2017-11-07 21:42:22,943 - __main__.MLP2TaskRunner - DEBUG - No. of training batches per epoch: 859
+2017-11-07 21:42:22,943 - __main__.MLP2TaskRunner - DEBUG - Validation data will not shift between epochs.
+2017-11-07 21:42:22,944 - __main__ - DEBUG - per_process_gpu_memory_fraction set to 1.000000
+2017-11-07 21:42:23,003 - __main__.MLP2TaskRunner - INFO - Define placeholder for ground truth. Dims: 10
+2017-11-07 21:42:23,134 - __main__.MLP2TaskRunner - DEBUG - L2 regularization for mlpvr/fc-0/w:0,mlpvr/fc-0-aux/w:0
+2017-11-07 21:42:23,139 - __main__.MLP2TaskRunner - DEBUG - L1 regularization for mlpvr/fc-0/w:0,mlpvr/fc-0-aux/w:0
+2017-11-07 21:42:23,441 - __main__.MLP2TaskRunner - DEBUG - initializing: [u'mlpvr/fc-0/w:0', u'mlpvr/fc-0-aux/w:0', u'mlpvr/fc-0/b:0', u'mlpvr/fc-0-aux/b:0']
+2017-11-07 21:42:23,461 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/train/cost
+2017-11-07 21:42:23,464 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/train/loss
+2017-11-07 21:42:23,574 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/validation/accuracy/value
+2017-11-07 21:42:23,581 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/validation_1/accuracy/value
+2017-11-07 21:42:23,614 - __main__.MLP2TaskRunner - INFO - Start  epoch 0, step 0
+2017-11-07 21:44:28,013 - __main__ - DEBUG - Found run directory ~/models/ae/mlp2t/pre0_t01
+2017-11-07 21:44:28,013 - __main__ - INFO - Starting run pre0_t01
+2017-11-07 21:44:28,013 - __main__ - DEBUG - Got 1 config files.
+2017-11-07 21:44:28,013 - __main__ - DEBUG - Loading config from ~/models/ae/mlpvr.yml
+2017-11-07 21:44:28,016 - __main__ - DEBUG - Write config mlpvr.yml to ~/models/ae/mlp2t/pre0_t01/config_0.yml
+2017-11-07 21:44:28,020 - __main__.MLP2TaskRunner - DEBUG - Runner prefix: 'mlpvr'
+2017-11-07 21:44:28,020 - __main__.MLP2TaskRunner - DEBUG - batch_size (training): 64
+2017-11-07 21:44:28,020 - __main__.MLP2TaskRunner - DEBUG - batch_size (validation): 100
+2017-11-07 21:44:28,020 - __main__.MLP2TaskRunner - DEBUG - initial learning rate: 0.5
+2017-11-07 21:44:28,020 - __main__.MLP2TaskRunner - DEBUG - training epochs: 2
+2017-11-07 21:44:28,020 - __main__.MLP2TaskRunner - DEBUG - validation size: 5000
+2017-11-07 21:44:28,020 - __main__.MLP2TaskRunner - DEBUG - lambda_l2: 1
+2017-11-07 21:44:28,021 - __main__.MLP2TaskRunner - DEBUG - lambda_l1: 1
+2017-11-07 21:44:28,021 - __main__.MLP2TaskRunner - DEBUG - Data dir: MNIST_data
+2017-11-07 21:44:28,021 - __main__.MLP2TaskRunner - DEBUG - Data seed: 0
+2017-11-07 21:44:28,021 - __main__.MLP2TaskRunner - DEBUG - No tf records prefix provided. Don't load data from tf records
+2017-11-07 21:44:28,021 - __main__.MLP2TaskRunner - DEBUG - Augment by rotation: Yes
+2017-11-07 21:44:28,021 - __main__.MLP2TaskRunner - DEBUG - Input noise std-dev: 0.000000
+2017-11-07 21:44:29,060 - __main__.MLP2TaskRunner - DEBUG - No. of training batches per epoch: 859
+2017-11-07 21:44:29,061 - __main__.MLP2TaskRunner - DEBUG - Validation data will not shift between epochs.
+2017-11-07 21:44:29,061 - __main__ - DEBUG - per_process_gpu_memory_fraction set to 1.000000
+2017-11-07 21:44:29,087 - __main__.MLP2TaskRunner - INFO - Define placeholder for ground truth. Dims: 10
+2017-11-07 21:44:29,146 - __main__.MLP2TaskRunner - DEBUG - L2 regularization for mlpvr/fc-0/w:0,mlpvr/fc-0-aux/w:0
+2017-11-07 21:44:29,148 - __main__.MLP2TaskRunner - DEBUG - L1 regularization for mlpvr/fc-0/w:0,mlpvr/fc-0-aux/w:0
+2017-11-07 21:44:29,270 - __main__.MLP2TaskRunner - DEBUG - initializing: [u'mlpvr/fc-0/w:0', u'mlpvr/fc-0-aux/w:0', u'mlpvr/fc-0/b:0', u'mlpvr/fc-0-aux/b:0']
+2017-11-07 21:44:29,286 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/train/cost
+2017-11-07 21:44:29,288 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/train/loss
+2017-11-07 21:44:29,342 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/validation/accuracy/value
+2017-11-07 21:44:29,344 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/validation_1/accuracy/value
+2017-11-07 21:44:29,358 - __main__.MLP2TaskRunner - INFO - Start  epoch 0, step 0
+2017-11-07 21:44:36,810 - __main__.MLP2TaskRunner - DEBUG - validation accuracy after  step 859: 0.166400
+2017-11-07 21:44:36,811 - __main__.MLP2TaskRunner - DEBUG - validation orientation accuracy after  step 859: 0.123200
+2017-11-07 21:44:36,811 - __main__.MLP2TaskRunner - DEBUG - Save model at  step 859 to '/home/kashefy/models/ae/mlp2t/pre0_t01/mlpvr/train/saved_mlpvr'
+2017-11-07 21:44:54,210 - __main__ - DEBUG - Found run directory ~/models/ae/mlp2t/pre0_t01
+2017-11-07 21:44:54,210 - __main__ - INFO - Starting run pre0_t01
+2017-11-07 21:44:54,210 - __main__ - DEBUG - Got 1 config files.
+2017-11-07 21:44:54,210 - __main__ - DEBUG - Loading config from ~/models/ae/mlpvr.yml
+2017-11-07 21:44:54,213 - __main__ - DEBUG - Write config mlpvr.yml to ~/models/ae/mlp2t/pre0_t01/config_0.yml
+2017-11-07 21:44:54,216 - __main__.MLP2TaskRunner - DEBUG - Runner prefix: 'mlpvr'
+2017-11-07 21:44:54,216 - __main__.MLP2TaskRunner - DEBUG - batch_size (training): 64
+2017-11-07 21:44:54,216 - __main__.MLP2TaskRunner - DEBUG - batch_size (validation): 100
+2017-11-07 21:44:54,216 - __main__.MLP2TaskRunner - DEBUG - initial learning rate: 0.5
+2017-11-07 21:44:54,216 - __main__.MLP2TaskRunner - DEBUG - training epochs: 2
+2017-11-07 21:44:54,216 - __main__.MLP2TaskRunner - DEBUG - validation size: 5000
+2017-11-07 21:44:54,216 - __main__.MLP2TaskRunner - DEBUG - lambda_l2: 1
+2017-11-07 21:44:54,217 - __main__.MLP2TaskRunner - DEBUG - lambda_l1: 1
+2017-11-07 21:44:54,217 - __main__.MLP2TaskRunner - DEBUG - Data dir: MNIST_data
+2017-11-07 21:44:54,217 - __main__.MLP2TaskRunner - DEBUG - Data seed: 0
+2017-11-07 21:44:54,217 - __main__.MLP2TaskRunner - DEBUG - No tf records prefix provided. Don't load data from tf records
+2017-11-07 21:44:54,217 - __main__.MLP2TaskRunner - DEBUG - Augment by rotation: Yes
+2017-11-07 21:44:54,217 - __main__.MLP2TaskRunner - DEBUG - Input noise std-dev: 0.000000
+2017-11-07 21:44:55,253 - __main__.MLP2TaskRunner - DEBUG - No. of training batches per epoch: 859
+2017-11-07 21:44:55,253 - __main__.MLP2TaskRunner - DEBUG - Validation data will not shift between epochs.
+2017-11-07 21:44:55,254 - __main__ - DEBUG - per_process_gpu_memory_fraction set to 1.000000
+2017-11-07 21:44:55,284 - __main__.MLP2TaskRunner - INFO - Define placeholder for ground truth. Dims: 10
+2017-11-07 21:44:55,356 - __main__.MLP2TaskRunner - DEBUG - L2 regularization for mlpvr/fc-0/w:0,mlpvr/fc-0-aux/w:0
+2017-11-07 21:44:55,358 - __main__.MLP2TaskRunner - DEBUG - L1 regularization for mlpvr/fc-0/w:0,mlpvr/fc-0-aux/w:0
+2017-11-07 21:44:55,481 - __main__.MLP2TaskRunner - DEBUG - initializing: [u'mlpvr/fc-0/w:0', u'mlpvr/fc-0-aux/w:0', u'mlpvr/fc-0/b:0', u'mlpvr/fc-0-aux/b:0']
+2017-11-07 21:44:55,497 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/train/cost
+2017-11-07 21:44:55,499 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/train/loss
+2017-11-07 21:44:55,554 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/validation/accuracy/value
+2017-11-07 21:44:55,556 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/validation_1/accuracy/value
+2017-11-07 21:44:55,570 - __main__.MLP2TaskRunner - INFO - Start  epoch 0, step 0
+2017-11-07 21:45:03,099 - __main__.MLP2TaskRunner - DEBUG - validation accuracy after  step 859: 0.140200
+2017-11-07 21:45:03,099 - __main__.MLP2TaskRunner - DEBUG - validation orientation accuracy after  step 859: 0.129400
+2017-11-07 21:45:03,099 - __main__.MLP2TaskRunner - DEBUG - Save model at  step 859 to '/home/kashefy/models/ae/mlp2t/pre0_t01/mlpvr/train/saved_mlpvr'
+2017-11-07 21:45:03,282 - __main__.MLP2TaskRunner - INFO - Start  epoch 1, step 859
+2017-11-07 21:45:10,360 - __main__.MLP2TaskRunner - DEBUG - validation accuracy after  step 1718: 0.133600
+2017-11-07 21:45:10,360 - __main__.MLP2TaskRunner - DEBUG - validation orientation accuracy after  step 1718: 0.113600
+2017-11-07 21:45:10,360 - __main__.MLP2TaskRunner - DEBUG - Save model at  step 1718 to '/home/kashefy/models/ae/mlp2t/pre0_t01/mlpvr/train/saved_mlpvr'
+2017-11-07 21:45:10,450 - __main__.MLP2TaskRunner - INFO - Classification  Optimization Finished!
+2017-11-07 21:45:10,456 - __main__ - INFO - Finished run pre0_t01
+2017-11-07 21:45:38,504 - __main__ - DEBUG - Found run directory ~/models/ae/mlp2t/pre0_t01
+2017-11-07 21:45:38,504 - __main__ - INFO - Starting run pre0_t01
+2017-11-07 21:45:38,505 - __main__ - DEBUG - Got 1 config files.
+2017-11-07 21:45:38,505 - __main__ - DEBUG - Loading config from ~/models/ae/mlpvr.yml
+2017-11-07 21:45:38,507 - __main__ - DEBUG - Write config mlpvr.yml to ~/models/ae/mlp2t/pre0_t01/config_0.yml
+2017-11-07 21:45:38,510 - __main__.MLP2TaskRunner - DEBUG - Runner prefix: 'mlpvr'
+2017-11-07 21:45:38,510 - __main__.MLP2TaskRunner - DEBUG - batch_size (training): 64
+2017-11-07 21:45:38,510 - __main__.MLP2TaskRunner - DEBUG - batch_size (validation): 100
+2017-11-07 21:45:38,510 - __main__.MLP2TaskRunner - DEBUG - initial learning rate: 0.5
+2017-11-07 21:45:38,510 - __main__.MLP2TaskRunner - DEBUG - training epochs: 2
+2017-11-07 21:45:38,511 - __main__.MLP2TaskRunner - DEBUG - validation size: 5000
+2017-11-07 21:45:38,511 - __main__.MLP2TaskRunner - DEBUG - lambda_l2: 1
+2017-11-07 21:45:38,511 - __main__.MLP2TaskRunner - DEBUG - lambda_l1: 1
+2017-11-07 21:45:38,511 - __main__.MLP2TaskRunner - DEBUG - Data dir: MNIST_data
+2017-11-07 21:45:38,511 - __main__.MLP2TaskRunner - DEBUG - Data seed: 0
+2017-11-07 21:45:38,511 - __main__.MLP2TaskRunner - DEBUG - No tf records prefix provided. Don't load data from tf records
+2017-11-07 21:45:38,511 - __main__.MLP2TaskRunner - DEBUG - Augment by rotation: Yes
+2017-11-07 21:45:38,511 - __main__.MLP2TaskRunner - DEBUG - Input noise std-dev: 0.000000
+2017-11-07 21:45:39,517 - __main__.MLP2TaskRunner - DEBUG - No. of training batches per epoch: 859
+2017-11-07 21:45:39,517 - __main__.MLP2TaskRunner - DEBUG - Validation data will not shift between epochs.
+2017-11-07 21:45:39,517 - __main__ - DEBUG - per_process_gpu_memory_fraction set to 1.000000
+2017-11-07 21:45:39,549 - __main__.MLP2TaskRunner - INFO - Define placeholder for ground truth. Dims: 10
+2017-11-07 21:45:39,624 - __main__.MLP2TaskRunner - DEBUG - L2 regularization for mlpvr/fc-0/w:0,mlpvr/fc-0-aux/w:0
+2017-11-07 21:45:39,626 - __main__.MLP2TaskRunner - DEBUG - L1 regularization for mlpvr/fc-0/w:0,mlpvr/fc-0-aux/w:0
+2017-11-07 21:45:39,802 - __main__.MLP2TaskRunner - DEBUG - initializing: [u'mlpvr/fc-0/w:0', u'mlpvr/fc-0-aux/w:0', u'mlpvr/fc-0/b:0', u'mlpvr/fc-0-aux/b:0']
+2017-11-07 21:45:39,819 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/train/cost
+2017-11-07 21:45:39,821 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/train/loss
+2017-11-07 21:45:39,877 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/validation/accuracy/value
+2017-11-07 21:45:39,878 - __main__.MLP2TaskRunner - DEBUG - log scalar: mlpvr/validation_1/accuracy/value
+2017-11-07 21:45:39,893 - __main__.MLP2TaskRunner - INFO - Start  epoch 0, step 0
+2017-11-07 21:45:47,347 - __main__.MLP2TaskRunner - DEBUG - validation accuracy after  step 859: 0.135800
+2017-11-07 21:45:47,347 - __main__.MLP2TaskRunner - DEBUG - validation orientation accuracy after  step 859: 0.113600
+2017-11-07 21:45:47,347 - __main__.MLP2TaskRunner - DEBUG - Save model at  step 859 to '/home/kashefy/models/ae/mlp2t/pre0_t01/mlpvr/train/saved_mlpvr'
+2017-11-07 21:45:47,539 - __main__.MLP2TaskRunner - INFO - Start  epoch 1, step 859
+2017-11-07 21:45:54,590 - __main__.MLP2TaskRunner - DEBUG - validation accuracy after  step 1718: 0.158000
+2017-11-07 21:45:54,591 - __main__.MLP2TaskRunner - DEBUG - validation orientation accuracy after  step 1718: 0.140400
+2017-11-07 21:45:54,591 - __main__.MLP2TaskRunner - DEBUG - Save model at  step 1718 to '/home/kashefy/models/ae/mlp2t/pre0_t01/mlpvr/train/saved_mlpvr'
+2017-11-07 21:45:54,682 - __main__.MLP2TaskRunner - INFO - Classification  Optimization Finished!
+2017-11-07 21:45:54,688 - __main__ - INFO - Finished run pre0_t01
+2017-11-07 21:46:22,386 - __main__ - DEBUG - Found run directory ~/models/ae/mlp2t/pre0_t01
+2017-11-07 21:46:22,387 - __main__ - INFO - Starting run pre0_t01
+2017-11-07 21:46:22,387 - __main__ - DEBUG - Got 1 config files.
+2017-11-07 21:46:22,387 - __main__ - DEBUG - Loading config from ~/models/ae/mlpvr.yml
+2017-11-07 21:46:22,392 - __main__ - DEBUG - Write config mlpvr.yml to ~/models/ae/mlp2t/pre0_t01/config_0.yml
+2017-11-07 21:46:22,397 - __main__.MLP2TaskRunner - DEBUG - Runner prefix: 'mlpvr'
+2017-11-07 21:46:22,397 - __main__.MLP2TaskRunner - DEBUG - batch_size (training): 64
+2017-11-07 21:46:22,398 - __main__.MLP2TaskRunner - DEBUG - batch_size (validation): 100
+2017-11-07 21:46:22,398 - __main__.MLP2TaskRunner - DEBUG - initial learning rate: 0.5
+2017-11-07 21:46:22,398 - __main__.MLP2TaskRunner - DEBUG - training epochs: 2
+2017-11-07 21:46:22,399 - __main__.MLP2TaskRunner - DEBUG - validation size: 5000
+2017-11-07 21:46:22,399 - __main__.MLP2TaskRunner - DEBUG - lambda_l2: 1
+2017-11-07 21:46:22,399 - __main__.MLP2TaskRunner - DEBUG - lambda_l1: 1
+2017-11-07 21:46:22,399 - __main__.MLP2TaskRunner - DEBUG - Data dir: MNIST_data
+2017-11-07 21:46:22,399 - __main__.MLP2TaskRunner - DEBUG - Data seed: 0
+2017-11-07 21:46:22,400 - __main__.MLP2TaskRunner - DEBUG - No tf records prefix provided. Don't load data from tf records
+2017-11-07 21:46:22,400 - __main__.MLP2TaskRunner - DEBUG - Augment by rotation: Yes
+2017-11-07 21:46:22,400 - __main__.MLP2TaskRunner - DEBUG - Input noise std-dev: 0.000000

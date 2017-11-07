@@ -163,6 +163,8 @@ def run(run_name, args):
                     'in_op'     : in_op,
                     'reuse'     : reuse,
                     'prefix'    : cfg['prefix'],
+                    'do_denoising'      : cfg['do_denoising'],
+                    'input_noise_std'   : cfg['input_noise_std'],
                     }
         ae_runner.model = SAE(sae_params)
         cfg = cfg_list[1]

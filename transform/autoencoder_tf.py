@@ -6,6 +6,7 @@ Created on May 26, 2017
 from __future__ import division, print_function, absolute_import
 from nideep.nets.abstract_net_tf import AbstractNetTF
 import tensorflow as tf
+from transform.augmentation import gaussian_noise_op
 
 class Autoencoder(AbstractNetTF):
     '''
@@ -77,7 +78,11 @@ class Autoencoder(AbstractNetTF):
         for idx in xrange(len(self.n_nodes)):
             with tf.name_scope(self.name_scope + 'encode'):
                 if idx == 0:
-                    encoder_op = self._encoder_op(self.x, idx)
+                    enc_in = self.x
+                    if self.do_denoising:
+                        enc_in = self.gaussian_noise_op(enc_in)
+                        self.enc_in = enc_in
+                    encoder_op = self._encoder_op(enc_in, idx)
                 else:
                     encoder_op = self._encoder_op(encoder_op, idx)
         self._representation_op = encoder_op
@@ -90,6 +95,9 @@ class Autoencoder(AbstractNetTF):
                     self.p, self._decoder_logits_op = \
                         self._decoder_op(self.p, idx)
         self.logits = self._decoder_logits_op
+        
+    def gaussian_noise_op(self, in_):
+        return gaussian_noise_op(in_, self.input_noise_std)
     
     def cost_euclidean(self, y_true, name=None):
         with tf.name_scope(self.name_scope):
@@ -117,6 +125,10 @@ class Autoencoder(AbstractNetTF):
         self.n_nodes = params['n_nodes']  # 1st layer num features
         self._cost_op = None
         super(Autoencoder, self).__init__(params)
+        self.do_denoising = params.get('do_denoising', False)
+        self.input_noise_std = params.get('input_noise_std', 0.)
+        if self.input_noise_std == 0.:
+            self.do_denoising = False
         
             
         
