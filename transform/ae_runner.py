@@ -62,8 +62,8 @@ class AERunner(AbstractRunner):
 #                                              -90, 90, 15,
 #                                              self.batch_size_train)
 #                self.model.x = augment_op
-            if self.do_reconstruct_original:
-                self.model.y_true = tf.placeholder("float", self.x.get_shape())
+#            if self.do_reconstruct_original:
+#                self.model.y_true = tf.placeholder("float", self.x.get_shape())
             cost, loss = self._cost_loss(self.dirname('train'))
             result.name = loss.name
             vars_new = self.model.vars_new()
@@ -120,31 +120,30 @@ class AERunner(AbstractRunner):
                     batch_xs_in = batch_xs
 #                    print(len(sess.graph.get_operations()))
                     if self.do_augment_rot:
-                        augment_op = self.rotation_ops_multiset_train(3)
+                        augment_op, _ = self.rotation_ops_multiset_train(3)
                         batch_xs_in = sess.run(augment_op, feed_dict={self.x : batch_xs})
 #                        print(len(sess.graph.get_operations()))
 #                    print(len(sess.graph.get_operations()))
 #                    _, c, sess_summary = sess.run([optimizer, cost, summaries_merged_train],
 #                                                  feed_dict={self.x: batch_xs})
                     fd = {self.x: batch_xs_in}
-                    if self.do_reconstruct_original:
-                        fd[self.model.y_true] = batch_xs
+#                    if self.do_reconstruct_original:
+#                        fd[self.model.y_true] = batch_xs
                     _, c, nn, sess_summary = sess.run([optimizer, cost, self.model.enc_in, summaries_merged_train],
                                                   feed_dict=fd)
                     if self.is_time_to_track_train(itr_exp):
                         summary_writer_train.add_summary(sess_summary, itr_exp)
                     itr_exp += 1
                     itr_depth += 1
-                    
-                    import matplotlib.pyplot as plt
-                    f, a = plt.subplots(3, 10, figsize=(10, 2))
-                    for i in xrange(10):
-                        a[0][i].imshow(np.squeeze(batch_xs[i]).reshape(28,28))
-                        a[1][i].imshow(np.squeeze(batch_xs_in[i]).reshape(28,28))
-                        a[2][i].imshow(np.squeeze(nn[i]).reshape(28,28))
-                    f.show()
-                    plt.draw()
-                    plt.waitforbuttonpress()
+#                    import matplotlib.pyplot as plt
+#                    f, a = plt.subplots(3, 10, figsize=(10, 2))
+#                    for i in xrange(10):
+#                        a[0][i].imshow(np.squeeze(batch_xs[i]).reshape(28,28))
+#                        a[1][i].imshow(np.squeeze(batch_xs_in[i]).reshape(28,28))
+#                        a[2][i].imshow(np.squeeze(nn[i]).reshape(28,28))
+#                    f.show()
+#                    plt.draw()
+#                    plt.waitforbuttonpress()
                     # run metric op one more time, data in feed dict is dummy data, does not influence metric
 #                if self.tf_record_prefix is None: # TODO extend to tfr
 #                    _, sess_summary = sess.run([cost, summaries_merged_val],
@@ -193,11 +192,11 @@ class AERunner(AbstractRunner):
                 batch_xs, _, _ = sess.run([batch_xs_op, batch_ys_op, batch_os_op])
             batch_xs_in = batch_xs
             if self.do_augment_rot:
-                augment_op = self.rotation_ops_multiset_val(3)
+                augment_op, _ = self.rotation_ops_multiset_val(3)
                 batch_xs_in = sess.run(augment_op, feed_dict={self.x : batch_xs})
             fd = {self.x: batch_xs_in}
-            if self.do_reconstruct_original:
-                fd[self.model.y_true] = batch_xs
+#            if self.do_reconstruct_original:
+#                fd[self.model.y_true] = batch_xs
             l = sess.run([loss], feed_dict=fd)
         if self.tf_record_prefix is not None:
             coord.request_stop()
@@ -238,10 +237,9 @@ class AERunner(AbstractRunner):
         self.stack_dims = params['stack_dims']
         self.logger.debug("Dims to stack: %s" % self.stack_dims)
         if self.tf_record_prefix is None:
-            self.batch_viz_xs, self.batch_viz_ys = self.data.validation.next_batch(self.batch_size_val,
-                                                                                   shuffle=False)
-        
-        self.do_reconstruct_original = params['do_reconstruct_original']
-        self.logger.debug("Reconstruct origingal input: %s" % (['No', 'Yes'][self.do_reconstruct_original],))
+            self.batch_viz_xs, self.batch_viz_ys = \
+            self.data.validation.next_batch(self.batch_size_val, shuffle=False)
+#        self.do_reconstruct_original = params['do_reconstruct_original']
+#        self.logger.debug("Reconstruct original input: %s" % (['No', 'Yes'][self.do_reconstruct_original],))
         self._vars_added = []
         
