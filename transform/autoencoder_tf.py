@@ -82,6 +82,8 @@ class Autoencoder(AbstractNetTF):
                     if self.do_denoising:
                         enc_in = self.gaussian_noise_op(enc_in)
                         self.enc_in = enc_in
+                    else:
+                        self.enc_in = self.x
                     encoder_op = self._encoder_op(enc_in, idx)
                 else:
                     encoder_op = self._encoder_op(encoder_op, idx)
