@@ -86,7 +86,7 @@ class MLPRunner(AbstractRunner):
 #                f = sess.run([augment_op], feed_dict={xx:batch_xs})
                 batch_xs_in = batch_xs
                 if self.do_augment_rot:
-                    augment_op = self.rotation_ops_multiset_train(3)
+                    augment_op, _ = self.rotation_ops_multiset_train(3)
                     batch_xs_in = sess.run(augment_op, feed_dict={self.x : batch_xs})
                 _, _, sess_summary = sess.run([optimizer,
                                                cost,
@@ -150,7 +150,7 @@ class MLPRunner(AbstractRunner):
                 batch_xs, batch_ys, batch_os = sess.run([batch_xs_op, batch_ys_op, batch_os_op])
             batch_xs_in = batch_xs
             if self.do_augment_rot:
-                augment_op = self.rotation_ops_multiset_val(3)
+                augment_op, _ = self.rotation_ops_multiset_val(3)
                 batch_xs_in = sess.run(augment_op, feed_dict={self.x : batch_xs})
             _, _ = sess.run(\
                             [self._acc_ops.metric, self._acc_ops.update,
