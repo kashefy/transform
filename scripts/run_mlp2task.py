@@ -64,6 +64,11 @@ def run(run_name, args):
 
     # Launch the graph
     result = None
+    tasks = []
+    if mlp_runner.do_task_recognition:
+        tasks.append('recognition')
+    if mlp_runner.do_task_orientation:
+        tasks.append('orientation')
     config = tf.ConfigProto()
     logger.debug('per_process_gpu_memory_fraction set to %f' % args.per_process_gpu_memory_fraction)
     config.gpu_options.per_process_gpu_memory_fraction = args.per_process_gpu_memory_fraction
@@ -90,8 +95,7 @@ def run(run_name, args):
             result, result_orient = mlp_runner.learn(sess)
         logger.info("Finished run %s" % run_name)
     lu.close_logging(logger)
-    print(result, result_orient)
-    return result, result_orient
+    return result, result_orient, tasks
     
 def handleArgs(args=None):
     parser = argparse.ArgumentParser()
