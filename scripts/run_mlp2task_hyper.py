@@ -111,8 +111,9 @@ def objective(params):
         result["performance"]       = result_rec_run.max
         if 'recognition' in tasks:
             result["loss"] = -result_rec_run.max
-    pp = pprint.PrettyPrinter(indent=4, width=100)
-    pp.pprint(result)
+    if result_orient_run is not None and result_orient_run is not None:
+        if 'recognition' in tasks and 'orientation' in tasks:
+            result["loss"] = -(result_rec_run.max+result_orient_run.max)/2.0
     return result
     
 def add_space(space_base, space_dir):
