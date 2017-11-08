@@ -105,7 +105,7 @@ def objective(params):
         result["name_orient"] = result_orient_run.name,
         result["performance_orient"] = result_orient_run.max
         if tasks == ['orientation']:
-            result["loss"] = -result_orient_run.max, 
+            result["loss"] = -result_orient_run.max
     if result_rec_run is not None:
         result['tasks'].append('recognition')
         result["performance"]       = result_rec_run.max
