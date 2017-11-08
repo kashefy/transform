@@ -91,50 +91,27 @@ def objective(params):
         status = STATUS_FAIL
     if status == STATUS_FAIL:
         logger.error("fmin failed with params: %s" % params)
-    if result_rec_run is not None and result_orient_run is None:
-        result = {
+    result = {
             "name"      : result_rec_run.name,
-            "loss"      : -result_rec_run.max, 
-            "performance" : result_rec_run.max, 
             "status"    : status,
             "space"     : cfg,
-            "name_orient"      : result_orient_run.name,
-            "performance_orient" : result_orient_run.max,
-            "tasks"     : ['recognition', 'orientation']
-        }
-    elif result_rec_run is None and result_orient_run is not None:
-        result = {
-            "name"      : result_orient_run.name,
-            "loss"      : -result_orient_run.max, 
-            "performance" : result_orient_run.max, 
-            "status"    : status,
-            "space"     : cfg,
-            "name_orient"      : result_orient_run.name,
-            "performance_orient" : result_orient_run.max,
-            "tasks"     : ['orientation']
-        }
-    elif result_rec_run is not None and result_orient_run is None:
-        result = {
-            "name"      : result_rec_run.name,
-            "loss"      : -result_rec_run.max, 
-            "performance" : result_rec_run.max, 
-            "status"    : status,
-            "space"     : cfg,
-            "name_orient"      : None,
+            "tasks"     : [],
+            "performance" : -999,
             "performance_orient" : -999,
-            "tasks"     : ['recognition']
-        }
-    else:
-        result = {
-            "name"      : None,
-            "loss"      : -999, 
-            "performance" : -999, 
-            "status"    : status,
-            "space"     : cfg,
-            "name_orient"      : None,
-            "performance_orient" : -999,
-            "tasks"     : []
-        }
+            "name_orient" : None,
+            }
+    if result_orient_run is not None:
+        result['tasks'].append('orientation')
+        result["name_orient"] = result_orient_run.name,
+        result["performance"]       = result_orient_run.max
+        result["performance_orient"] = result_orient_run.max
+        result["loss"] = -result_orient_run.max, 
+    if result_rec_run is not None:
+        result['tasks'].append('recognition')
+        result["performance"]       = result_rec_run.max
+        result["loss"] = -result_rec_run.max
+    pp = pprint.PrettyPrinter(indent=4, width=100)
+    pp.pprint(result)
     return result
     
 def add_space(space_base, space_dir):

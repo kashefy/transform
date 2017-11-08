@@ -90,6 +90,7 @@ def run(run_name, args):
             result, result_orient = mlp_runner.learn(sess)
         logger.info("Finished run %s" % run_name)
     lu.close_logging(logger)
+    print(result, result_orient)
     return result, result_orient
     
 def handleArgs(args=None):
