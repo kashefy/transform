@@ -134,8 +134,8 @@ class MLP2TaskRunner(AbstractRunner):
             result.max = max(result.max, result.last)
             result.history.append(result.last)
             result_orient.last = acc_orient
-            result_orient.max = max(result.max, result.last)
-            result_orient.history.append(result.last)
+            result_orient.max = max(result_orient.max, result_orient.last)
+            result_orient.history.append(result_orient.last)
             if self.do_task_recognition:
                 if len(result.history) == result.history.maxlen and np.absolute(np.mean(result.history)-result.last) < 1e-5:
                     self.logger.debug("Validation accuracy not changing anymore. Stop iterating.")
@@ -266,7 +266,7 @@ class MLP2TaskRunner(AbstractRunner):
         self._acc_orient_ops = None
         self.do_finetune = False
         self.do_task_recognition = params['do_task_recognition']
-        self.logger.debug("Target recogniitin: %s" % (['No', 'Yes'][self.do_task_recognition],))
+        self.logger.debug("Target recognition: %s" % (['No', 'Yes'][self.do_task_recognition],))
         self.do_task_orientation = params['do_task_orientation']
         self.logger.debug("Target orientation: %s" % (['No', 'Yes'][self.do_task_orientation],))
         assert(self.do_task_recognition or self.do_task_orientation)

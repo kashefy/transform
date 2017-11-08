@@ -110,8 +110,8 @@ def objective(params):
         result['tasks'].append('recognition')
         result["performance"]       = result_rec_run.max
         result["loss"] = -result_rec_run.max
-    pp = pprint.PrettyPrinter(indent=4, width=100)
-    pp.pprint(result)
+#    pp = pprint.PrettyPrinter(indent=4, width=100)
+#    pp.pprint(result)
     return result
     
 def add_space(space_base, space_dir):
