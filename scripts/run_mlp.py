@@ -96,6 +96,7 @@ def handleArgs(args=None):
                         dest="fpath_cfg_list", type=str, required=True,
                         help="Paths to config files")
     parser.add_argument("--log_dir", dest="log_dir", type=str,
+                        default=os.path.abspath(os.path.expanduser(os.getcwd())),
                         help="Set parent log directory for all runs")
     parser.add_argument("--logger_name", dest="logger_name", type=str,
                         default=__name__,
