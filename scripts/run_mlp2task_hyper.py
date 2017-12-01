@@ -20,7 +20,6 @@ import json
 import tempfile
 import pprint
 import yaml
-import numpy as np
 from hyperopt import hp, fmin, tpe, space_eval, Trials
 from hyperopt import STATUS_OK, STATUS_FAIL
 from hyperopt import pyll
