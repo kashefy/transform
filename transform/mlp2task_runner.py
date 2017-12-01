@@ -204,10 +204,10 @@ class MLP2TaskRunner(AbstractRunner):
     def _cost_loss(self, prefix):
         loss_c = None
         if self.do_task_recognition:
-            loss_c = self.lambda_recognition * self.model.cost(self.y_, name=prefix + '/loss_classification')
+            loss_c = self.lambda_c_recognition * self.model.cost(self.y_, name=prefix + '/loss_classification')
             loss = loss_c
         if self.do_task_orientation:
-            loss_o = self.lambda_orientation * self.model.cost_o(self.orient_, name=prefix + '/loss_orientation')
+            loss_o = self.lambda_c_orientation * self.model.cost_o(self.orient_, name=prefix + '/loss_orientation')
             if loss_c is not None:
                 loss = tf.add(loss_c, loss_o, name=prefix + '/loss')
             else:
