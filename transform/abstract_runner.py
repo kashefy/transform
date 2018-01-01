@@ -254,11 +254,11 @@ class AbstractRunner(object):
         Constructor
         '''
         params = Bunch(params)
-        self.run_name = params.run_name
         logger_name = self.__class__.__name__
         if params.logger_name is not None:
             logger_name = '.'.join([params.logger_name, logger_name])
         self.logger = logging.getLogger(logger_name)
+        self.run_name = params.run_name
         self.run_dir = params.run_dir
         
         self.prefix = params.prefix
