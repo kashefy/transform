@@ -81,7 +81,7 @@ def run(run_name, args):
                 'n_nodes'       : cfg['n_nodes'],
                 'n_input'       : n_input,
                 'prefix'        : cfg['prefix'],
-                'branch'        : cfg['branch'],
+                'branch'        : cfg.get('branch', len(cfg['n_nodes'])-1),
                 'logger_name'   : cfg['logger_name'],
                 }
             net = MLP(classifier_params)
