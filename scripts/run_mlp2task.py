@@ -78,9 +78,11 @@ def run(run_name, args):
             n_classes = mlp_runner.data.train.labels.shape[-1]
             cfg['n_nodes'].append(n_classes)
             classifier_params = {
-                'n_nodes'   : cfg['n_nodes'],
-                'n_input'   : n_input,
-                'prefix'    : cfg['prefix'],
+                'n_nodes'       : cfg['n_nodes'],
+                'n_input'       : n_input,
+                'prefix'        : cfg['prefix'],
+                'branch'        : cfg.get('branch', len(cfg['n_nodes'])-2), # substract additional because of decision layer
+                'logger_name'   : cfg['logger_name'],
                 }
             net = MLP(classifier_params)
             in_ = tf.placeholder("float", [None, n_input])

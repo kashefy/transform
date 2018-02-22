@@ -54,7 +54,12 @@ def update_cfg(base, params):
     excl = ['base', 'run_dir', 'run_name', 'log_dir', 'pass_on_args']
     items_new = []
     for key, value in params.items():
-        if key not in excl:
+        if 'nested' in key:
+            for key_nest, value_nest in value.items():
+                if key_nest not in excl:
+                    base[key_nest] = value_nest
+                    items_new.append([key_nest, value_nest])
+        elif key not in excl:
             base[key] = value
             items_new.append([key, value])
     for key, value in base.items():
@@ -167,16 +172,8 @@ def run(run_name, args):
         logger.debug("Created run directory %s", run_dir)
     fpath_trials = os.path.join(run_dir, "trials.pkl")
     trials = init_trials(fpath_trials, force_fresh=args.force_fresh_trials)
-    max_evals = args.nb_evals
-    try:
-        trials = pickle.load(open(fpath_trials, "rb"))
-        logger.info("Loading saved trials from %s" % fpath_trials)
-        max_evals += len(trials.trials)
-        logger.debug("Rerunning from {} trials to add more.".format(
-            len(trials.trials)))
-    except:
-        trials = Trials()
-        logger.info("Starting trials from scratch.")
+    trials = init_trials(fpath_trials, force_fresh=args.force_fresh_trials)
+    max_evals = args.nb_evals + len(trials.trials)
     
     cfg = load_config(args.fpath_cfg, logger)
     space = {

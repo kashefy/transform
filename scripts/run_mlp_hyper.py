@@ -152,16 +152,7 @@ def run(run_name, args):
         logger.debug("Created run directory %s", run_dir)
     fpath_trials = os.path.join(run_dir, "trials.pkl")
     trials = init_trials(fpath_trials, force_fresh=args.force_fresh_trials)
-    max_evals = args.nb_evals
-    try:
-        trials = pickle.load(open(fpath_trials, "rb"))
-        logger.info("Loading saved trials from %s" % fpath_trials)
-        max_evals += len(trials.trials)
-        logger.debug("Rerunning from {} trials to add more.".format(
-            len(trials.trials)))
-    except:
-        trials = Trials()
-        logger.info("Starting trials from scratch.")
+    max_evals = args.nb_evals + len(trials.trials)
     
     cfg = load_config(args.fpath_cfg, logger)
     space = {
