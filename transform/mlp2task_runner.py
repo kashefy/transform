@@ -277,3 +277,4 @@ class MLP2TaskRunner(AbstractRunner):
         self.lambda_c_orientation = params['lambda_c_orientation']
         self.logger.debug("Lambda for orientation #1: %f" % self.lambda_c_orientation)
         
+        
