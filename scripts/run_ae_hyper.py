@@ -102,20 +102,66 @@ def objective(params):
         logger.debug("Passing on %s %s" % (k, str(v)))
         ch_args_in.extend([k, str(v)])
     args_ch = script.handleArgs(args=ch_args_in)
-    result_ae, result_mlp, result_mlp_fine = \
+    result_ae,\
+    result_rec_run, result_orient_run,\
+    result_rec_run_fine, result_orient_run_fine,\
+    tasks = \
         script.run(args_ch.run_name,
            args_ch
            )
     if result_ae is None:
+        logger.error("fmin failed at pre-training with params: %s" % params)
         status = STATUS_FAIL
+    if result_rec_run is None and result_orient_run is None:
+        logger.error("fmin failed at transfer learning with params: %s" % params)
+        status = STATUS_FAIL
+    if result_rec_run_fine is None and result_orient_run_fine is None:
+        logger.error("fmin failed at finetuning with params: %s" % params)
+        status = STATUS_FAIL
+    if status == STATUS_FAIL:
         logger.error("fmin failed with params: %s" % params)
-    result = {
-        "name"      : result_mlp_fine.name,
-        "loss"      : -result_mlp_fine.max, 
-        "performance" : result_mlp_fine.max, 
+    result_legacy = {
+        "name"      : result_rec_run_fine.name,
+        "loss"      : -result_rec_run_fine.max, 
+        "performance" : result_rec_run_fine.max, 
         "status"    : status,
         "space"     : cfg,
     }
+    def update_result(result, result_rec_run, result_orient_run):
+        if result_orient_run is not None:
+            result['tasks'].append('orientation')
+            result["name_orient"] = result_orient_run.name,
+            result["performance_orient"] = result_orient_run.max
+            if tasks == ['orientation']:
+                result["loss"] = -result_orient_run.max
+        if result_rec_run is not None:
+            result['tasks'].append('recognition')
+            result["performance"]       = result_rec_run.max
+            if 'recognition' in tasks:
+                result["loss"] = -result_rec_run.max
+        if result_orient_run is not None and result_orient_run is not None:
+            if 'recognition' in tasks and 'orientation' in tasks:
+                result["loss"] = -(result_rec_run.max+result_orient_run.max)/2.0
+    result = {
+            "name"      : result_rec_run_fine.name,
+            "status"    : status,
+            "space"     : cfg,
+            "tasks"     : [],
+            "performance" : -999,
+            "performance_orient" : -999,
+            "name_orient" : None,
+            "result_legacy" : result_legacy,
+            "result_transfer" : {'tasks':[]},
+            "result_finetune" : {'tasks':[]},
+            }
+    update_result(result['result_transfer'], result_rec_run, result_orient_run)
+    update_result(result['result_finetune'], result_rec_run_fine, result_orient_run_fine)
+    if params['do_finetune']:
+        result_src = 'result_finetune'
+    else:
+        result_src = 'result_transfer'
+    for k in result[result_src].keys():
+        result[k] = result[result_src][k]
     return result
     
 def add_space(space_base, space_dir, do_reload=False):
@@ -261,6 +307,9 @@ def handleArgs(args=None):
     parser.add_argument("--force_fresh_trials",  action='store_true',
                         dest="force_fresh_trials",
                         help="Force to start new set of trials and not resume existing ones.")
+    parser.add_argument("--do_finetune",  action='store_true',
+                        dest="do_finetune",
+                        help="Finetune weights after pre-training/transfer learning.")
     return parser.parse_args(args=args)
 
 if __name__ == '__main__':

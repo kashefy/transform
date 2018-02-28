@@ -172,7 +172,7 @@ def run(run_name, args):
         logger.debug("Created run directory %s", run_dir)
     fpath_trials = os.path.join(run_dir, "trials.pkl")
     trials = init_trials(fpath_trials, force_fresh=args.force_fresh_trials)
-    trials = init_trials(fpath_trials, force_fresh=args.force_fresh_trials)
+#    trials = init_trials(fpath_trials, force_fresh=args.force_fresh_trials)
     max_evals = args.nb_evals + len(trials.trials)
     
     cfg = load_config(args.fpath_cfg, logger)
