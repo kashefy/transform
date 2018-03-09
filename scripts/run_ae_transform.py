@@ -17,7 +17,7 @@ import shutil
 from datetime import datetime
 import yaml
 import tensorflow as tf
-from transform.ae_trf_runner import AETRFRunner
+from transform.ae_runner import AETRFRunner
 from transform.mlp_runner import MLPRunner
 from transform.autoencoder_tf import Autoencoder as AE
 from nideep.nets.mlp_tf import MLP

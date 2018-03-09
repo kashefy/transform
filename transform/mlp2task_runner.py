@@ -74,7 +74,8 @@ class MLP2TaskRunner(AbstractRunner):
                                                     )
             coord = tf.train.Coordinator()
             threads = tf.train.start_queue_runners(sess=sess, coord=coord)
-
+        if self.do_augment_rot:
+            rots = rotation_rad(-60, 60, 15)
         self._init_saver()
         itr_exp = 0
         result = collections.namedtuple('Result', ['max', 'last', 'name', 'history'])
@@ -98,10 +99,8 @@ class MLP2TaskRunner(AbstractRunner):
                 if self.do_augment_rot:
                     augment_op, batch_os2 = self.rotation_ops_multiset_train(3)
                     batch_xs_in = sess.run(augment_op, feed_dict={self.x : batch_xs})
-                    rots = rotation_rad(-60,60,15)
-                    num_orients = len(rots)
                     orients_dense = np.array([rots.index(o) for o in batch_os2])
-                    batch_os_one_hot = dense_to_one_hot(orients_dense, num_orients)
+                    batch_os_one_hot = dense_to_one_hot(orients_dense, len(rots))
                 _, _, sess_summary = sess.run([optimizer,
                                                cost,
                                                summaries_merged_train],

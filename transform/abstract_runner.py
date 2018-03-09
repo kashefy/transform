@@ -191,7 +191,6 @@ class AbstractRunner(object):
             tf_record_descr = {'data_seed'  : self.data_seed,
                                'one_hot'    : True,
                                'orientations' : sorted(np.rad2deg(rotation_rad(-60,60,15))),
-#                               'orientations' : sorted(range(-60, 75, 15)),
                                'validation_size' : self.validation_size
                                }
             descr_str = '_'.join(['-'.join([k, str(tf_record_descr[k])])
@@ -306,5 +305,3 @@ class AbstractRunner(object):
         self.augment_ops_train = None
         self.augment_ops_val = None
         self.gaussian_noise_ops = {}
-        
-        

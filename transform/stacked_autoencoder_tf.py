@@ -47,7 +47,6 @@ class StackedAutoencoder(AbstractNetTF):
         self.sae.append(ae)
         if len(self.sae) == 1:
             self.enc_in = self.sae[0].enc_in
-            
         # Targets (Labels) are the input data.
         self._y_true = self.sae[-1].x
     
@@ -109,4 +108,3 @@ class StackedAutoencoder(AbstractNetTF):
         self.input_noise_std = params.get('input_noise_std', 0.)
         if self.input_noise_std == 0.:
             self.do_denoising = False
-        

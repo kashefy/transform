@@ -13,10 +13,7 @@ from __future__ import division, print_function, absolute_import
 
 import argparse
 import os
-import shutil
 from datetime import datetime
-import numpy as np
-import matplotlib.pyplot as plt
 import yaml
 import tensorflow as tf
 from transform.ae_runner import AERunner
@@ -29,78 +26,6 @@ from transform.cfg_utils import load_config
 from transform.augmentation import rotation_rad
 logger = None
 
-def finetune(args, sess, runner):
-    logger.info("Finetuning!")
-#    print('encoder_1', sess.run(sae.sae[0].w['encoder_1/w'][10,5:10]))
-#    print('encoder_2',sess.run(sae.sae[1].w['encoder_2/w'][10,5:10]))
-    vars_old = [var.name for var in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)]
-    with tf.name_scope('finetune'):
-        cost = sae.sae[0].cost_cross_entropy(sae.y_pred, name='cost_finetune')
-        optimizer = setup_optimizer_op(cost, args.learning_rate)
-    vars_new = [var for var in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES) if var.name not in vars_old]
-    vars_new_2 = vars_old - tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
-    
-    logging.debug("Initializing %s" % [var.name for var in vars_new])
-    init_op = tf.variables_initializer(vars_new)
-    sess.run(init_op)
-    summary_writer = tf.summary.FileWriter(os.path.join(args.log_dir, run_dir), sess.graph)
-    
-    total_batch = int(mnist.train.num_examples/args.batch_size)
-    # Training cycle
-    encode_decode = sess.run(
-        sae.y_pred, feed_dict={sae.x: mnist.test.images[:args.examples_to_show]})
-        # Compare original images with their reconstructions
-    f, a = plt.subplots(2, 10, figsize=(10, 2))
-    for i in xrange(args.examples_to_show):
-        a[0][i].imshow(np.reshape(mnist.test.images[i], (28, 28)), clim=(0.0, 1.0))
-        a[1][i].imshow(np.reshape(encode_decode[i], (28, 28)), clim=(0.0, 1.0))
-    f.show()
-#    sess = tf_debug.LocalCLIDebugWrapperSession(sess)
-#    for epoch in xrange(args.training_epochs):
-    for epoch in xrange(1):
-        # Loop over all batches
-        for itr in xrange(total_batch):
-            batch_xs, _ = mnist.train.next_batch(args.batch_size)
-            _, c, rec = sess.run([optimizer, cost, sae.y_pred], feed_dict={sae.x: batch_xs})
-            logging.info("%d/%d, cost=%.9f" % (itr, total_batch, c))
-#            if c < 0.08:
-            if itr % 10 == 0:
-                encode_decode = sess.run(
-                    sae.y_pred, feed_dict={sae.x: mnist.test.images[:args.examples_to_show]})
-                f, a = plt.subplots(4, 10, figsize=(10, 2))
-                for i in xrange(args.examples_to_show):
-                    a[0][i].imshow(np.reshape(batch_xs[i], (28, 28)), clim=(0.0, 1.0))
-                    a[1][i].imshow(np.reshape(rec[i], (28, 28)), clim=(0.0, 1.0))
-                    a[2][i].imshow(np.reshape(mnist.test.images[i], (28, 28)), clim=(0.0, 1.0))
-                    a[3][i].imshow(np.reshape(encode_decode[i], (28, 28)), clim=(0.0, 1.0))
-    #            f.show()
-                f.savefig("/home/kashefy/models/ae/out/%04d_%04d_%.9f.png" % (itr, total_batch, c))
-                plt.clf()
-        # Display logs per epoch step
-        if epoch % args.display_step == 0:
-            logging.info("Epoch: %04d, cost=%.9f" % (epoch+1, c))
-        if epoch == 0:
-            encode_decode = sess.run(
-                sae.y_pred, feed_dict={sae.x: mnist.test.images[:args.examples_to_show]})
-            f, a = plt.subplots(2, 10, figsize=(10, 2))
-            for i in xrange(args.examples_to_show):
-                a[0][i].imshow(np.reshape(mnist.test.images[i], (28, 28)), clim=(0.0, 1.0))
-                a[1][i].imshow(np.reshape(encode_decode[i], (28, 28)), clim=(0.0, 1.0))
-            f.show()
-
-    print("Finetuning Finished!")
-#    
-#    print('encoder_1', sess.run(sae.sae[0].w['encoder_1/w'])[10,5:10])
-#    print('encoder_2',sess.run(sae.sae[1].w['encoder_2/w'][10,5:10]))
-    # Applying encode and decode over test set
-    encode_decode = sess.run(
-        sae.y_pred, feed_dict={sae.x: mnist.test.images[:args.examples_to_show]})
-    # Compare original images with their reconstructions
-    f, a = plt.subplots(2, 10, figsize=(10, 2))
-    for i in xrange(args.examples_to_show):
-        a[0][i].imshow(np.reshape(mnist.test.images[i], (28, 28)), clim=(0.0, 1.0))
-        a[1][i].imshow(np.reshape(encode_decode[i], (28, 28)), clim=(0.0, 1.0))
-  
 def run(run_name, args):
     if args.run_dir is None:
         run_dir = os.path.join(args.log_dir, run_name)
@@ -127,9 +52,9 @@ def run(run_name, args):
         cfg['log_dir'] = os.path.expanduser(args.log_dir)
         cfg['run_name'] = run_name
         cfg['run_dir'] = os.path.expanduser(run_dir)
-        fname_cfg = os.path.basename(fpath_cfg)
         fpath_cfg_dst = os.path.join(run_dir, 'config_%d.yml' % cidx)
-        logger.debug("Write config %s to %s" % (fname_cfg, fpath_cfg_dst))
+        logger.debug("Write config %s to %s" % (os.path.basename(fpath_cfg),
+                                                fpath_cfg_dst))
         with open(fpath_cfg_dst, 'w') as h:
             h.write(yaml.dump(cfg))
         cfg_list.append(cfg)
@@ -145,21 +70,6 @@ def run(run_name, args):
     grph = tf.Graph()
     with grph.as_default() as g:
         in_op = tf.placeholder("float", [None, n_input])
-#        if cfg['do_augment_rot']:
-#            augment_op = augment_rotation(in_op,
-#                                          -60, 60, 30,,
-#                                          cfg['batch_size_train'])
-#            sae_params = {
-#                    'in_op'     : augment_op,
-#                    'prefix'    : cfg['prefix'],
-#                    'reuse'     : reuse,
-#                    }
-#        else:
-#            sae_params = {
-#                    'in_op'     : in_op,
-#                    'reuse'     : reuse,
-#                    'prefix'    : cfg['prefix'],
-#                    }
         sae_params = {
                     'in_op'     : in_op,
                     'reuse'     : reuse,
@@ -184,17 +94,13 @@ def run(run_name, args):
         with tf.Session(graph=g, config=config) as sess:
             if args.fpath_meta is not None and args.dir_checkpoints is not None:
                 trained_model.restore(sess, tf.train.latest_checkpoint(args.dir_checkpoints))
-            #logger.debug('encoder-0: %s' % sess.run(ae_runner.model.sae[0].w['encoder-0/w'][10,5:10]))
-            #saver = tf.train.import_meta_graph('/home/kashefy/models/ae/log_simple_stats/pre0_2017-08-30_12-39-52/reconstruction/train/saved_sae0-1718.meta')
-            #saver.restore(sess, tf.train.latest_checkpoint('/home/kashefy/models/ae/log_simple_stats/pre0_2017-08-30_12-39-52/reconstruction/train/'))
-            #print(sess.run('sae0-1/encoder-0/w:0')[10,5:10])
             result_ae = ae_runner.learn(sess)
             n_classes = mlp_runner.data.train.labels.shape[-1]
             classifier_params = {
                 'n_nodes'   : [n_classes],
                 'n_input'   : ae_runner.model.representation.get_shape()[-1].value,
                 'prefix'    : cfg['prefix'],
-                'branch'        : cfg.get('branch', len(cfg['n_nodes'])-2), # substract additional because of decision layer
+                'branch'        : cfg.get('branch', len(cfg['n_nodes'])), # substract additional because of decision layer
                 'logger_name'   : cfg['logger_name'],
                 }
             net = MLP(classifier_params)
