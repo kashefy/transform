@@ -110,11 +110,9 @@ def run(run_name, args):
             mlp_runner.orient_ = tf.placeholder("float", shape=[None, len(rotation_rad(-60,60,15))])
             mlp_runner.model = net
             result_mlp, result_mlp_orient = mlp_runner.learn(sess)
-#            logger.debug('encoder-0: %s' % sess.run(ae_runner.model.sae[0].w['encoder-0/w'][10,5:10]))
             mlp_runner.do_finetune = True
 #            result_mlp_fine = mlp_runner.learn(sess)
             result_mlp_fine, result_mlp_fine_orient = mlp_runner.learn(sess)
-#            logger.debug('encoder-0: %s' % sess.run(ae_runner.model.sae[0].w['encoder-0/w'][10,5:10]))
     logger.info("Finished run %s" % run_name)
     lu.close_logging(logger)
     return result_ae,\
