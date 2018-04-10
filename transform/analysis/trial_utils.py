@@ -39,18 +39,31 @@ def trials2DataFrame(fpath_list,
     for p in fpath_list:
         df = pd.DataFrame({})
         t = load_trials(p)
+        run_name = os.path.basename(os.path.dirname(p))
         print('%s: %d trials.' %(p, len(t)))
-    #     print(t.trials[0].keys())
-    #     print(t.trials[0]['result']['space'].keys())
+#         print(t.trials[0].keys())
+#         print(t.trials[0]['result']['space'].keys())
     #     print([x['result']['performance'] for x in t.trials])
     #     print([x['book_time'] for x in t.trials[:10]])
     #     print([x['book_time'] for x in t.trials[:-10]])
-        df['performance'] = [x['result']['performance'] for x in t.trials]
-        perf_orient = [x['result']['performance_orient'] for x in t.trials if 'performance_orient' in x['result']]
-        if len(perf_orient) == 0:
-            perf_orient = [np.nan]*len(t.trials)
-        df['performance_orient'] = perf_orient
-    #     print(df)
+        for perf_name in ['performance', 'performance_orient']:
+            perf = [x['result'][perf_name] for x in t.trials if perf_name in x['result']]
+            if len(perf) == 0:
+                perf = [np.nan]*len(t.trials)
+            df[perf_name] = perf
+        df['run_name'] = [run_name]*len(t.trials)
+        df['task_recognition'] = [x['result']['space']['do_task_recognition'] if 'do_task_recognition' in x['result']['space']
+         else 'recognition' in x['result']['space']['tasks'] if 'tasks' in x['result']['space']
+         else not run_name.endswith('_o') or run_name.endswith('_rm')
+                                  for x in t.trials]
+        df['task_orientation'] = [x['result']['space']['do_task_orientation'] if 'do_task_orientation' in x['result']['space']
+         else 'orientation' in x['result']['space']['tasks'] if 'tasks' in x['result']['space']
+         else run_name.endswith('_o') or run_name.endswith('_ro')
+                                  for x in t.trials]
+        is_augmented = run_name.endswith('ar') or 'rm_' in run_name
+        df['is_augmented'] = [is_augmented]*len(t.trials)
+        is_pretrained = run_name.endswith('ar') or 'a' in run_name
+        df['is_pretrained'] = [is_pretrained]*len(t.trials)
         for dname in space_dim_names:
     #         print(dname)
             if 'lambda_c_' in dname:
@@ -68,16 +81,6 @@ def trials2DataFrame(fpath_list,
             df[dname] = x
     #         print(dname, x, [os.path.basename(os.path.dirname(p))]*3, len(x))
             assert(len(x))
-            run_name = os.path.basename(os.path.dirname(p))
-            df['run_name'] = [run_name]*len(x)
-            is_recognition = not run_name.endswith('_o') or run_name.endswith('_rm')
-            df['task_recognition'] = [is_recognition]*len(x)
-            is_orientation = run_name.endswith('_o') or run_name.endswith('_ro')
-            df['task_orientation'] = [is_orientation]*len(x)
-            is_augmented = run_name.endswith('ar') or 'rm_' in run_name
-            df['is_augmented'] = [is_augmented]*len(x)
-            is_pretrained = run_name.endswith('ar') or 'a' in run_name
-            df['is_pretrained'] = [is_pretrained]*len(x)
         # handle case of categorical n_nodes
         df['n_nodes'] = df['n_nodes'].apply(lambda x: str([int(a) for a in str(x).replace(' ', '').replace('(', '').replace(')', '').replace('[', '').replace(']', '').split(',')]))
         if 'n_nodes' in df and 'num_weights' not in df:
