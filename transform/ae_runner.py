@@ -24,7 +24,6 @@ class AERunner(AbstractRunner):
         itr_exp = 0
         result = collections.namedtuple('Result', ['max', 'last', 'name'])
         result.max = 0
-        
 
 #        saver = tf.train.import_meta_graph('/home/kashefy/models/ae/log_simple_stats/pre0_t00/reconstruction/train/saved_sae0-20.meta')
 #        saver.restore(sess, tf.train.latest_checkpoint('/home/kashefy/models/ae/log_simple_stats/pre0_t00/reconstruction/train/'))
@@ -52,7 +51,7 @@ class AERunner(AbstractRunner):
                                                     )
             coord = tf.train.Coordinator()
             threads = tf.train.start_queue_runners(sess=sess, coord=coord)
-        for dim in self.stack_dims:
+        for dim_idx, dim in enumerate(self.stack_dims):
             itr_depth = 0
             self.logger.debug('Stacking %s nodes.' % str(dim))
             self.model.stack(dim)
@@ -62,8 +61,8 @@ class AERunner(AbstractRunner):
 #                                              -90, 90, 15,
 #                                              self.batch_size_train)
 #                self.model.x = augment_op
-#            if self.do_reconstruct_original:
-#                self.model.y_true = tf.placeholder("float", self.x.get_shape())
+                if self.do_reconstruct_original:
+                    self.model.y_true = tf.placeholder("float", self.x.get_shape())
             cost, loss = self._cost_loss(self.dirname('train'))
             result.name = loss.name
             vars_new = self.model.vars_new()
@@ -121,16 +120,16 @@ class AERunner(AbstractRunner):
 #                    print(len(sess.graph.get_operations()))
                     if self.do_augment_rot:
                         augment_op, _ = self.rotation_ops_multiset_train(3)
-                        batch_xs_in = sess.run(augment_op, feed_dict={self.x : batch_xs})
+                        batch_xs_in = sess.run(augment_op, feed_dict={self.x: batch_xs})
 #                        print(len(sess.graph.get_operations()))
 #                    print(len(sess.graph.get_operations()))
 #                    _, c, sess_summary = sess.run([optimizer, cost, summaries_merged_train],
 #                                                  feed_dict={self.x: batch_xs})
                     fd = {self.x: batch_xs_in}
-#                    if self.do_reconstruct_original:
-#                        fd[self.model.y_true] = batch_xs
+                    if self.do_reconstruct_original and dim_idx < 1:
+                        fd[self.model.y_true] = batch_xs
                     _, c, nn, sess_summary = sess.run([optimizer, cost, self.model.enc_in, summaries_merged_train],
-                                                  feed_dict=fd)
+                                                      feed_dict=fd)
                     if self.is_time_to_track_train(itr_exp):
                         summary_writer_train.add_summary(sess_summary, itr_exp)
                     itr_exp += 1
@@ -157,7 +156,7 @@ class AERunner(AbstractRunner):
                 fpath_save = os.path.join(dir_train, self._get_save_name())
                 self.logger.debug("Save model at step %d to '%s'" % (itr_exp, fpath_save))
                 self.saver.save(sess, fpath_save, global_step=itr_exp)
-                l = self.validate(sess, loss)[0]
+                l = self.validate(sess, loss, dim_idx < 1)[0]
                 self.logger.debug("validation loss after step %d: %f" % (itr_exp, l))
                 result.last = l
                 result.max = max(result.max, result.last)
@@ -168,7 +167,7 @@ class AERunner(AbstractRunner):
         self.logger.info("Optimization Finished!")
         return result
 
-    def validate(self, sess, loss):
+    def validate(self, sess, loss, do_reconstruct_original=True):
         num_batches_val = int(self.data.validation.num_examples/self.batch_size_val)
         if self.tf_record_prefix is not None:
 #            tmp = sum(1 for _ in tf.python_io.tf_record_iterator(self.data.validation.path))
@@ -193,10 +192,10 @@ class AERunner(AbstractRunner):
             batch_xs_in = batch_xs
             if self.do_augment_rot:
                 augment_op, _ = self.rotation_ops_multiset_val(3)
-                batch_xs_in = sess.run(augment_op, feed_dict={self.x : batch_xs})
+                batch_xs_in = sess.run(augment_op, feed_dict={self.x: batch_xs})
             fd = {self.x: batch_xs_in}
-#            if self.do_reconstruct_original:
-#                fd[self.model.y_true] = batch_xs
+            if do_reconstruct_original:
+                fd[self.model.y_true] = batch_xs
             l = sess.run([loss], feed_dict=fd)
         if self.tf_record_prefix is not None:
             coord.request_stop()
@@ -238,8 +237,9 @@ class AERunner(AbstractRunner):
         self.logger.debug("Dims to stack: %s" % self.stack_dims)
         if self.tf_record_prefix is None:
             self.batch_viz_xs, self.batch_viz_ys = \
-            self.data.validation.next_batch(self.batch_size_val, shuffle=False)
-#        self.do_reconstruct_original = params['do_reconstruct_original']
-#        self.logger.debug("Reconstruct original input: %s" % (['No', 'Yes'][self.do_reconstruct_original],))
+                self.data.validation.next_batch(self.batch_size_val,
+                                                shuffle=False)
+        self.do_reconstruct_original = params['do_reconstruct_original']
+        self.logger.debug("Reconstruct original input: %s" % (['No', 'Yes'][self.do_reconstruct_original],))
         self._vars_added = []
-        
+        self.x = None

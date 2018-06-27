@@ -75,17 +75,14 @@ class Autoencoder(AbstractNetTF):
 
     def _init_ops(self):
         # Construct model
-        self.enc_in = self.x
+        encoder_op = self.x
         for idx in xrange(len(self.n_nodes)):
             with tf.name_scope(self.name_scope + 'encode'):
+                if self.do_denoising:
+                    encoder_op = self.gaussian_noise_op(encoder_op)
                 if idx == 0:
-                    enc_in = self.x
-                    if self.do_denoising:
-                        enc_in = self.gaussian_noise_op(enc_in)
-                    self.enc_in = enc_in
-                    encoder_op = self._encoder_op(enc_in, idx)
-                else:
-                    encoder_op = self._encoder_op(encoder_op, idx)
+                    self.enc_in = encoder_op
+                encoder_op = self._encoder_op(encoder_op, idx)
         self._representation_op = encoder_op
         for idx in xrange(len(self.n_nodes)-1, -1, -1):
             with tf.name_scope(self.name_scope + 'decode'):
@@ -122,14 +119,11 @@ class Autoencoder(AbstractNetTF):
         Constructor
         '''
         # Network Parameters
+        super(Autoencoder, self).__init__(params)
         self.n_input = params['n_input'] # MNIST data input (img shape: 28*28)
         self.n_nodes = params['n_nodes']  # 1st layer num features
         self._cost_op = None
-        super(Autoencoder, self).__init__(params)
         self.do_denoising = params.get('do_denoising', False)
         self.input_noise_std = params.get('input_noise_std', 0.)
         if self.input_noise_std == 0.:
             self.do_denoising = False
-        
-            
-        

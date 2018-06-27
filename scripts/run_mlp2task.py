@@ -81,19 +81,15 @@ def run(run_name, args):
                 'n_nodes'       : cfg['n_nodes'],
                 'n_input'       : n_input,
                 'prefix'        : cfg['prefix'],
-                'branch'        : cfg.get('branch', len(cfg['n_nodes'])-2), # substract additional because of decision layer
+                'branch'        : cfg.get('branch', len(cfg['n_nodes'])-1), # subtract additional because of decision layer
                 'logger_name'   : cfg['logger_name'],
                 }
             net = MLP(classifier_params)
-            in_ = tf.placeholder("float", [None, n_input])
-#            net.x = augment_rotation(in_,
-#                                            -90, 90, 15,
-#                                            cfg['batch_size_train'])
-            net.x = in_
+            net.x = tf.placeholder("float", [None, n_input])
             net.build()
-            mlp_runner.x = in_
-            mlp_runner.orient_ = tf.placeholder("float", shape=[None, len(rotation_rad(-60,60,15))])
             mlp_runner.model = net
+            mlp_runner.x = net.x
+            mlp_runner.orient_ = tf.placeholder("float", shape=[None, len(rotation_rad(-60,60,15))])
             result, result_orient = mlp_runner.learn(sess)
         logger.info("Finished run %s" % run_name)
     lu.close_logging(logger)
