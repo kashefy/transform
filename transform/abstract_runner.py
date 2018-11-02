@@ -237,6 +237,30 @@ class AbstractRunner(object):
                 self.augment_ops_val.append((augment_op, rotations))
         augment_op = self.augment_ops_val[np.random.randint(count)]
         return augment_op
+
+    def scale_ops_multiset_train(self, count):
+        if self.augment_ops_scale_train is None:
+            self.augment_ops_scale_train = []
+            for _ in range(count):
+                augment_op, scales = scale_ops(self.x, -60, 60, 15,
+                                                     self.batch_size_train,
+                                                     self.prefix)
+                self.augment_ops_train.append((augment_op, rotations))
+        augment_op = self.augment_ops_scale_train[np.random.randint(count)]
+        return augment_op
+
+    def scale_ops_multiset_val(self,
+                                  count):
+        if self.augment_ops_val is None:
+            self.augment_ops_val = []
+            for _ in range(count):
+                augment_op, rotations = rotation_ops(self.x,
+                                                     -60, 60, 15,
+                                                     self.batch_size_val,
+                                                     self.prefix)
+                self.augment_ops_val.append((augment_op, rotations))
+        augment_op = self.augment_ops_val[np.random.randint(count)]
+        return augment_op
     
     def gaussian_noise_op(self, in_):
         op_name = '_'.join([in_.name, 'noise_add'])

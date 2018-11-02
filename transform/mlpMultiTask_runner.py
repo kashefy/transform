@@ -65,19 +65,6 @@ class MLPMultiTaskRunner(AbstractRunner):
 #                                      -90, 90, 15,
 #                                      self.batch_size_train)
 #        self.model.x = augment_op
-        if self.tf_record_prefix is not None:
-            img, label, label_orient = MNIST.read_and_decode_ops(\
-                                self.data.train.path,
-                                one_hot=self.data.train.one_hot,
-                                num_orientations=len(self.data.train.orientations))
-            batch_xs_op, batch_ys_op, batch_os_op = tf.train.shuffle_batch([img, label, label_orient],
-                                                    batch_size=self.batch_size_train,
-                                                    capacity=2000,
-                                                    min_after_dequeue=1000,
-                                                    num_threads=8
-                                                    )
-            coord = tf.train.Coordinator()
-            threads = tf.train.start_queue_runners(sess=sess, coord=coord)
         if self.do_augment_rot:
             rots = rotation_rad(-60, 60, 15)
         self._init_saver()
@@ -96,8 +83,6 @@ class MLPMultiTaskRunner(AbstractRunner):
             for itr_epoch in xrange(self.num_batches_train):
                 if self.tf_record_prefix is None:
                     batch_xs, batch_ys = self.data.train.next_batch(self.batch_size_train)
-                else:
-                    batch_xs, batch_ys, batch_os = sess.run([batch_xs_op, batch_ys_op, batch_os_op])
 #                f = sess.run([augment_op], feed_dict={xx:batch_xs})
                 batch_xs_in = batch_xs
                 if self.do_augment_rot:
@@ -161,21 +146,6 @@ class MLPMultiTaskRunner(AbstractRunner):
         sess.run(self._acc_ops.reset)
         sess.run(self._acc_orient_ops.reset)
         num_batches_val = int(self.data.validation.num_examples/self.batch_size_val)
-        if self.tf_record_prefix is not None:
-#            tmp = sum(1 for _ in tf.python_io.tf_record_iterator(self.data.validation.path))
-#            assert(num_batches_val == tmp)
-            img, label, label_orient = MNIST.read_and_decode_ops(\
-                                self.data.validation.path,
-                                one_hot=self.data.validation.one_hot,
-                                num_orientations=len(self.data.validation.orientations))
-            batch_xs_op, batch_ys_op, batch_os_op = tf.train.batch([img, label, label_orient],
-                                                    batch_size=self.batch_size_val,
-                                                    capacity=2000,
-                                                    num_threads=8
-                                                    )
-            coord = tf.train.Coordinator()
-            threads = tf.train.start_queue_runners(sess=sess, coord=coord)
-            
         for _ in xrange(num_batches_val):
             if self.tf_record_prefix is None:
                 batch_xs, batch_ys = self.data.validation.next_batch(self.batch_size_val,
@@ -200,27 +170,10 @@ class MLPMultiTaskRunner(AbstractRunner):
                                        self.orient_ : batch_os_one_hot,
                                        }
                             )
-        if self.tf_record_prefix is not None:
-            coord.request_stop()
-            coord.join(threads)
         
     def _cost_loss(self, prefix):
-        loss = None
-        for task_name in self.do_task.keys():
-            cost_task = self._cost_task_op(task_name, prefix + '/loss_%s' % task_name)
-            if loss is None:
-                loss = cost_task
-            else:
-                loss = tf.add(loss_c, loss_o, name=prefix + '/loss')
-        if self.do_task_recognition:
-            loss_c = self.lambda_c_recognition * self.model.cost(self.y_task['recognition'], name=prefix + '/loss_recognition')
-            loss = loss_c
-        if self.do_task_orientation:
-            loss_o = self.lambda_c_orientation * self.model.cost_aux(self.y_task['orientation'], name=prefix + '/loss_orientation')
-            if loss_c is not None:
-                loss = tf.add(loss_c, loss_o, name=prefix + '/loss')
-            else:
-                loss = loss_o
+        loss = tf.add_n([self.lambda_c_task[k] * self._cost_task_op(k, prefix + '/loss_%s' % k) for k in self.do_task.keys()],
+                        name=prefix + '/loss')
         regularization_l2 = None
         if self.lambda_l2 != 0:
             regularization_l2 = self._regularization(name=prefix + '/regularization_l2')
@@ -239,6 +192,18 @@ class MLPMultiTaskRunner(AbstractRunner):
             cost = tf.add(loss, self.lambda_l1 * regularization_l1 + self.lambda_l2 * regularization_l2,
                   name=prefix + '/cost')
         return cost, loss
+
+    def _cost_task_op(self, task_name, op_name):
+        if task_name == 'recognition':
+            return self.model.cost(self.y_task['recognition'], name=op_name)
+        elif task_name == 'orientation':
+            return self.model.cost_aux(self.y_task['orientation'], name=op_name)
+        elif task_name == 'scale':
+            return self.model.cost_aux(self.y_task['scale'], name=op_name)
+        elif task_name == 'flipx':
+            return self.model.cost_aux(self.y_task['flipx'], name=op_name)
+        elif task_name == 'flipy':
+            return self.model.cost_aux(self.y_task['flipy'], name=op_name)
 
     def _init_acc_task_ops(self, task_name, name='acc'):
         if task_name == 'recognition':

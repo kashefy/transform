@@ -32,7 +32,10 @@ def load_config(fpath, logger):
                      'do_reconstruct_original'  : True, # for ae only
                      'input_noise_std'  : 0.0,
                      'lambda_c_recognition' : 1., # weight for recognition task
-                     'lambda_c_orientation' : 1., # weight for orientation task                     }
+                     'lambda_c_orientation' : 1., # weight for orientation task
+                     'lambda_c_scale' : 1., # weight for scaling task
+                     'lambda_c_flipx' : 1., # weight for vertical flipping task Up-down mirroring
+                     'lambda_c_flipy' : 1., # weight for horizontal flipping task LR mirroring
                      }
     for k in default_items.keys():
         cfg[k] = cfg.get(k, default_items[k])
