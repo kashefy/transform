@@ -28,15 +28,19 @@ def scale_ops(x,
                  name,
                  target_shape=[-1, 28, 28, 1]):
     reshape_op = tf.reshape(x, target_shape)
-    _, height, width, _ = target_shape
+    _, height, width, num_channels = target_shape
     scales = np.arange(min_scale, max_scale+delta_scale, delta_scale)
-    new_dims = [[max(1, s*height), max(1, s*width)] for s in scales]
+    new_dims = [[max(1, int(s*height)), max(1, int(s*width))] for s in scales]
     max_height, max_width = np.max(new_dims, axis=0)
-    scales_idx_cur = np.random.choice(np.arange(len(new_dims)), batch_sz)
+    scales_idx_cur = np.random.choice(np.arange(len(scales)), batch_sz)
+    print(scales, new_dims, scales_idx_cur)
     scale_ops = [tf.image.resize_images(tf.gather(reshape_op, tf.constant(img_idx)), new_dims[sc_idx]) for img_idx, sc_idx in enumerate(scales_idx_cur)]
-    padding = [[max_height-new_dims[sc_idx][0]/2, max_width-new_dims[sc_idx][1]/2,] for sc_idx in scales_idx_cur]
-    pad_ops = [tf.pad(op, tf.constant([[ph,ph],[pw,pw]]), mode="REFLECT") for op, (int(ph), int(pw)) in zip(scale_ops, padding)]
-    flatten_op = tf.reshape(pad_ops, [-1, x.get_shape()[-1].value],
+    print('p', len(scale_ops), max_height, new_dims[0][0])
+    padding = [[int((max_height-new_dims[sc_idx][0])/2), int((max_width-new_dims[sc_idx][1])/2)] for sc_idx in scales_idx_cur]
+    print("padding", padding)
+    pad_ops = [tf.pad(op, tf.constant([[ph,ph],[pw,pw], [0,0]]), mode="CONSTANT", constant_values=0) for op, (ph, pw) in zip(scale_ops, padding)]
+    #pad_ops = scale_ops
+    flatten_op = tf.reshape(pad_ops, [-1, max_height*max_width*num_channels],
                             name=name+'/flatten_scale')
     return flatten_op, [new_dims[s_idx] for s_idx in scales_idx_cur]
 
