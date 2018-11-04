@@ -6,7 +6,7 @@ from nose.tools import assert_equals, assert_true, assert_false,     assert_list
 from mock import patch
 from nideep.datasets.mnist.mnist_tf import MNIST
 import numpy as np
-from transform.augmentation import scale_ops
+import transform.augmentation as aug
 
 
 import tensorflow as tf
@@ -16,15 +16,18 @@ with grph.as_default() as g:
     with tf.Session(graph=g) as sess:
 
         data = MNIST.read_data_sets('MNIST_data', one_hot=True)
-        min_scale = 1
-        max_scale = 2
-        delta_scale = 1
-        batch_sz = 4
+        min_scale = 0.5
+        max_scale = 2.5
+        delta_scale = 0.3
+        batch_sz = 10
         name = 'scale'
         batch_size_train = batch_sz
+        new_dims = aug.scaled_dims(28, 28, min_scale, max_scale, delta_scale)
+        print("new_dims", new_dims)
 
         x = tf.placeholder(tf.float32, [None, 784])
-        augment_op, conds = scale_ops(x, min_scale, max_scale, delta_scale, batch_sz, name, target_shape=[-1, 28, 28, 1])
+        augment_op, conds, bbox_top_left = aug.scale_translate_ops(x, new_dims,
+            batch_sz, name, target_shape=[-1, 28, 28, 1])
         num_conds = len(conds)
         print("conds", conds)
         max_height, max_width = np.max(np.array(conds), axis=0)
