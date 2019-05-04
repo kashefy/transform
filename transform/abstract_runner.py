@@ -125,7 +125,7 @@ class AbstractRunner(object):
     def _get_save_name(self):
         return '_'.join(['saved', self.model.prefix]).rstrip('_')
     
-    def _regularization(self, name=None):
+    def _regularization_l2(self, name=None):
         if self.lambda_l2 != 0:
             weights = self.model.w
             w_names = [weights[k].name for k in weights.keys()]
@@ -147,7 +147,7 @@ class AbstractRunner(object):
         else:
             return None
         
-    def _regularization(self, name=None):
+    def _regularization_l2(self, name=None):
         if self.lambda_l2 != 0:
             weights = self.model.w
             w_names = [weights[k].name for k in weights.keys()]

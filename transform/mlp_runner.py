@@ -167,7 +167,7 @@ class MLPRunner(AbstractRunner):
         loss = self.model.cost(self.y_, name=prefix + '/loss_classification')
         regularization_l2 = None
         if self.lambda_l2 != 0:
-            regularization_l2 = self._regularization(name=prefix + '/regularization_l2')
+            regularization_l2 = self._regularization_l2(name=prefix + '/regularization_l2')
         regularization_l1 = None
         if self.lambda_l1 != 0:
             regularization_l1 = self._regularization_l1(name=prefix + '/regularization_l1')
