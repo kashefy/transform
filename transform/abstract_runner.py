@@ -130,7 +130,7 @@ class AbstractRunner(object):
             weights = self.model.w
             w_names = [weights[k].name for k in weights.keys()]
             self.logger.debug("L2 regularization for %s" % ','.join(w_names))
-            losses = [tf.nn.l2_loss(weights[k]) for k in weights.keys()]
+            losses = [tf.nn.l2_loss(weights[k]) / tf.size(weights[k], out_type=weights[k].dtype)  for k in weights.keys()]
             regularizers = tf.add_n(losses, name=name)
             return regularizers
         else:
@@ -141,7 +141,7 @@ class AbstractRunner(object):
             weights = self.model.w
             w_names = [weights[k].name for k in weights.keys()]
             self.logger.debug("L1 regularization for %s" % ','.join(w_names))
-            losses = [tf.norm(weights[k], ord=1) for k in weights.keys()]
+            losses = [tf.norm(weights[k], ord=1) / tf.size(weights[k], out_type=weights[k].dtype) for k in weights.keys()]
             regularizers = tf.add_n(losses, name=name)
             return regularizers
         else:
