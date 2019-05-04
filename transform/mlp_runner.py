@@ -71,7 +71,7 @@ class MLPRunner(AbstractRunner):
 
         self._init_saver()
         itr_exp = 0
-        result = collections.namedtuple('Result', ['max', 'last', 'name', 'history'])
+        result = collections.namedtuple('Result', ['max', 'last', 'name', 'history', 'epoch_last'])
         result.name = self._acc_ops.metric.name
         result.max = 0
         result.history = collections.deque(maxlen=3)
@@ -111,6 +111,7 @@ class MLPRunner(AbstractRunner):
             self.logger.debug("Save model at %s step %d to '%s'" % (suffix, itr_exp, fpath_save))
             self.saver.save(sess, fpath_save, global_step=itr_exp)
             result.last = acc
+            result.epoch_last = epoch
             result.max = max(result.max, result.last)
             result.history.append(result.last)
             if len(result.history) == result.history.maxlen and np.absolute(np.mean(result.history)-result.last) < 1e-5:
