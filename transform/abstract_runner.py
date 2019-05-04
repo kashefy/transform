@@ -146,17 +146,6 @@ class AbstractRunner(object):
             return regularizers
         else:
             return None
-        
-    def _regularization_l2(self, name=None):
-        if self.lambda_l2 != 0:
-            weights = self.model.w
-            w_names = [weights[k].name for k in weights.keys()]
-            self.logger.debug("L2 regularization for %s" % ','.join(w_names))
-            losses = [tf.nn.l2_loss(weights[k]) for k in weights.keys()]
-            regularizers = tf.add_n(losses, name=name)
-            return regularizers
-        else:
-            return None
     
     def _check_validation_batch_size(self):
         num_batches_val_real = self.data.validation.num_examples/float(self.batch_size_val)
