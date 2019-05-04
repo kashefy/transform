@@ -75,6 +75,7 @@ class MLP2TaskRunner(AbstractRunner):
             coord = tf.train.Coordinator()
             threads = tf.train.start_queue_runners(sess=sess, coord=coord)
         if self.do_augment_rot:
+            #TODO remove hardcoded init
             rots = rotation_rad(-60, 60, 15)
         self._init_saver()
         itr_exp = 0
@@ -101,6 +102,10 @@ class MLP2TaskRunner(AbstractRunner):
                     batch_xs_in = sess.run(augment_op, feed_dict={self.x : batch_xs})
                     orients_dense = np.array([rots.index(o) for o in batch_os2])
                     batch_os_one_hot = dense_to_one_hot(orients_dense, len(rots))
+                else:
+                    #TODO remove hardcoded init
+                    rots = rotation_rad(-60, 60, 15)
+                    batch_os_one_hot = dense_to_one_hot(np.zeros((self.batch_size_train,), dtype=int)+(len(rots)/2), len(rots))
                 _, _, sess_summary = sess.run([optimizer,
                                                cost,
                                                summaries_merged_train],
@@ -183,11 +188,16 @@ class MLP2TaskRunner(AbstractRunner):
             batch_xs_in = batch_xs
             if self.do_augment_rot:
                 augment_op, batch_os2 = self.rotation_ops_multiset_val(3)
+                #TODO remove hardcoded init
                 rots = rotation_rad(-60,60,15)
                 num_orients = len(rots)
                 orients_dense = np.array([rots.index(o) for o in batch_os2])
                 batch_os_one_hot = dense_to_one_hot(orients_dense, num_orients)
                 batch_xs_in = sess.run(augment_op, feed_dict={self.x : batch_xs})
+            else:
+                #TODO remove hardcoded init
+                rots = rotation_rad(-60, 60, 15)
+                batch_os_one_hot = dense_to_one_hot(np.zeros((self.batch_size_val,), dtype=int)+(len(rots)/2), len(rots))
             _, _, _, _ = sess.run(\
                             [self._acc_ops.metric, self._acc_ops.update,
                              self._acc_orient_ops.metric, self._acc_orient_ops.update,
