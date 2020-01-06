@@ -32,7 +32,8 @@ def trials2DataFrame(fpath_list,
                      space_dim_names = [
                          'learning_rate',
                          'lambda_l2', 'lambda_l1',
-                         'n_nodes', 'lambda_c_orientation', 'lambda_c_recognition'
+                         'n_nodes', 'lambda_c_orientation', 'lambda_c_recognition',
+                         'branch',
                       ]
                     ):
     frames = []
@@ -65,25 +66,20 @@ def trials2DataFrame(fpath_list,
         is_pretrained = run_name.endswith('ar') or 'a' in run_name
         df['is_pretrained'] = [is_pretrained]*len(t.trials)
         for dname in space_dim_names:
-    #         print(dname)
             if 'lambda_c_' in dname:
                 x = [x['result']['space'].get(dname, 1.) for x in t.trials]
             else:
-    #             x = [x['result']['space'].get(dname, np.nan) for x in t.trials]
                 x = [x['result']['space'][dname] for x in t.trials]
             x = [str(a) if isinstance(a, (list, tuple)) and not isinstance(a, basestring) and len(a) > 0 else a for a in x]
-    #         if dname == 'n_nodes':
-    #             print(x)
             if dname == 'n_nodes' and (len(x) == 0 or (len(x) > 0 and x == [[]]*len(x))):
                 x = [x['result']['space']['stack_dims'] for x in t.trials]
-    #             print(t.trials[0])
                 x = [str(a) if isinstance(a, (list, tuple)) and not isinstance(a, basestring) else a for a in x]
             df[dname] = x
-    #         print(dname, x, [os.path.basename(os.path.dirname(p))]*3, len(x))
             assert(len(x))
         # handle case of categorical n_nodes
         df['n_nodes'] = df['n_nodes'].apply(lambda x: str([int(a) for a in str(x).replace(' ', '').replace('(', '').replace(')', '').replace('[', '').replace(']', '').split(',')]))
-        if 'n_nodes' in df and 'num_weights' not in df:
+        df['depth'] = df['n_nodes'].apply(lambda x: len([int(a) for a in re.sub('[\[\]]', '', x).split(',')]))
+        if 'num_weights' not in df:
             def count_weights(a):
     #             print(a)
                 a = [int(x.strip()) for x in a.replace('(', '').replace(')', '').replace('[', '').replace(']', ',').split(',') if len(x) > 0]
