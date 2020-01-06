@@ -103,16 +103,19 @@ def objective(params):
             "performance" : -999,
             "performance_orient" : -999,
             "name_orient" : None,
+            "epoch_last" : None,
             }
     if result_orient_run is not None:
         result['tasks'].append('orientation')
         result["name_orient"] = result_orient_run.name,
         result["performance_orient"] = result_orient_run.max
+        result["epoch_last"] = result_orient_run.epoch_last
         if tasks == ['orientation']:
             result["loss"] = -result_orient_run.max
     if result_rec_run is not None:
         result['tasks'].append('recognition')
         result["performance"]       = result_rec_run.max
+        result["epoch_last"] = result_rec_run.epoch_last
         if 'recognition' in tasks:
             result["loss"] = -result_rec_run.max
     if result_orient_run is not None and result_orient_run is not None:

@@ -71,7 +71,7 @@ class MLPRunner(AbstractRunner):
 
         self._init_saver()
         itr_exp = 0
-        result = collections.namedtuple('Result', ['max', 'last', 'name', 'history'])
+        result = collections.namedtuple('Result', ['max', 'last', 'name', 'history', 'epoch_last'])
         result.name = self._acc_ops.metric.name
         result.max = 0
         result.history = collections.deque(maxlen=3)
@@ -111,6 +111,7 @@ class MLPRunner(AbstractRunner):
             self.logger.debug("Save model at %s step %d to '%s'" % (suffix, itr_exp, fpath_save))
             self.saver.save(sess, fpath_save, global_step=itr_exp)
             result.last = acc
+            result.epoch_last = epoch
             result.max = max(result.max, result.last)
             result.history.append(result.last)
             if len(result.history) == result.history.maxlen and np.absolute(np.mean(result.history)-result.last) < 1e-5:
@@ -167,7 +168,7 @@ class MLPRunner(AbstractRunner):
         loss = self.model.cost(self.y_, name=prefix + '/loss_classification')
         regularization_l2 = None
         if self.lambda_l2 != 0:
-            regularization_l2 = self._regularization(name=prefix + '/regularization_l2')
+            regularization_l2 = self._regularization_l2(name=prefix + '/regularization_l2')
         regularization_l1 = None
         if self.lambda_l1 != 0:
             regularization_l1 = self._regularization_l1(name=prefix + '/regularization_l1')
