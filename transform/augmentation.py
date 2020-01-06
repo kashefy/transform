@@ -34,8 +34,8 @@ def scale_ops(x,
     max_height, max_width = np.max(new_dims, axis=0)
     scales_idx_cur = np.random.choice(np.arange(len(new_dims)), batch_sz)
     scale_ops = [tf.image.resize_images(tf.gather(reshape_op, tf.constant(img_idx)), new_dims[sc_idx]) for img_idx, sc_idx in enumerate(scales_idx_cur)]
-    padding = [[max_height-new_dims[sc_idx][0]/2, max_width-new_dims[sc_idx][1]/2,] for sc_idx in scales_idx_cur]
-    pad_ops = [tf.pad(op, tf.constant([[ph,ph],[pw,pw]]), mode="REFLECT") for op, (int(ph), int(pw)) in zip(scale_ops, padding)]
+    padding = [[int(max_height-new_dims[sc_idx][0]/2), int(max_width-new_dims[sc_idx][1]/2)] for sc_idx in scales_idx_cur]
+    pad_ops = [tf.pad(op, tf.constant([[ph,ph],[pw,pw]]), mode="REFLECT") for op, (ph, pw) in zip(scale_ops, padding)]
     flatten_op = tf.reshape(pad_ops, [-1, x.get_shape()[-1].value],
                             name=name+'/flatten_scale')
     return flatten_op, [new_dims[s_idx] for s_idx in scales_idx_cur]
