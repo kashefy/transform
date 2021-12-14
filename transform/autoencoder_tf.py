@@ -76,7 +76,7 @@ class Autoencoder(AbstractNetTF):
     def _init_ops(self):
         # Construct model
         encoder_op = self.x
-        for idx in xrange(len(self.n_nodes)):
+        for idx in range(len(self.n_nodes)):
             with tf.name_scope(self.name_scope + 'encode'):
                 if self.do_denoising:
                     encoder_op = self.gaussian_noise_op(encoder_op)
@@ -84,7 +84,7 @@ class Autoencoder(AbstractNetTF):
                     self.enc_in = encoder_op
                 encoder_op = self._encoder_op(encoder_op, idx)
         self._representation_op = encoder_op
-        for idx in xrange(len(self.n_nodes)-1, -1, -1):
+        for idx in range(len(self.n_nodes)-1, -1, -1):
             with tf.name_scope(self.name_scope + 'decode'):
                 if idx == len(self.n_nodes)-1:
                     self.p, self._decoder_logits_op = \

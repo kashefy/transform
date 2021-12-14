@@ -75,10 +75,10 @@ class MLPRunner(AbstractRunner):
         result.name = self._acc_ops.metric.name
         result.max = 0
         result.history = collections.deque(maxlen=3)
-        for epoch in xrange(self.training_epochs):
+        for epoch in range(self.training_epochs):
             self.logger.info("Start %s epoch %d, step %d" % (suffix, epoch, itr_exp))
             # Loop over all batches
-            for itr_epoch in xrange(self.num_batches_train):
+            for itr_epoch in range(self.num_batches_train):
                 if self.tf_record_prefix is None:
                     batch_xs, batch_ys = self.data.train.next_batch(self.batch_size_train)
                 else:
@@ -143,7 +143,7 @@ class MLPRunner(AbstractRunner):
             coord = tf.train.Coordinator()
             threads = tf.train.start_queue_runners(sess=sess, coord=coord)
             
-        for _ in xrange(num_batches_val):
+        for _ in range(num_batches_val):
             if self.tf_record_prefix is None:
                 batch_xs, batch_ys = self.data.validation.next_batch(self.batch_size_val,
                                                                      shuffle=False)

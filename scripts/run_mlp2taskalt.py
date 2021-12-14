@@ -15,14 +15,16 @@ import argparse
 import os
 from datetime import datetime
 import yaml
-from functools import reduce
 import tensorflow as tf
-from transform.mlp_runner import MLPRunner
+from transform.mlp2task_runner import MLP2TaskRunner
 from nideep.nets.mlp_tf import MLP
 import transform.logging_utils as lu
 from transform.cfg_utils import load_config
+from transform.augmentation import rotation_rad
+
 logger = None
-  
+
+
 def run(run_name, args):
     if args.run_dir is None:
         run_dir = os.path.join(args.log_dir, run_name)
@@ -41,7 +43,7 @@ def run(run_name, args):
     else:
         logger.debug("Created run directory %s", run_dir)
     logger.info("Starting run %s" % run_name)
-    
+
     cfg_list = []
     logger.debug("Got %d config files." % len(args.fpath_cfg_list))
     for cidx, fpath_cfg in enumerate(args.fpath_cfg_list):
@@ -56,14 +58,19 @@ def run(run_name, args):
         with open(fpath_cfg_dst, 'w') as h:
             h.write(yaml.dump(cfg))
         cfg_list.append(cfg)
-    
+
     cfg = cfg_list[0]
-    mlp_runner = MLPRunner(cfg)
-#    n_input = mlp_runner.data.train.images.shape[-1]
+    mlp_runner = MLP2TaskRunner(cfg)
+    #    n_input = mlp_runner.data.train.images.shape[-1]
     n_input = reduce(lambda x, y: x * y, mlp_runner.data.train.images.shape[1:], 1)
 
     # Launch the graph
     result = None
+    tasks = []
+    if mlp_runner.do_task_recognition:
+        tasks.append('recognition')
+    if mlp_runner.do_task_orientation:
+        tasks.append('orientation')
     config = tf.ConfigProto()
     logger.debug('per_process_gpu_memory_fraction set to %f' % args.per_process_gpu_memory_fraction)
     config.gpu_options.per_process_gpu_memory_fraction = args.per_process_gpu_memory_fraction
@@ -73,31 +80,30 @@ def run(run_name, args):
             n_classes = mlp_runner.data.train.labels.shape[-1]
             cfg['n_nodes'].append(n_classes)
             classifier_params = {
-                'n_nodes'   : cfg['n_nodes'],
-                'n_input'   : n_input,
-                'prefix'    : cfg['prefix'],
-                }
+                'n_nodes': cfg['n_nodes'],
+                'n_input': n_input,
+                'prefix': cfg['prefix'],
+                'branch': cfg.get('branch', len(cfg['n_nodes']) - 1),  # subtract additional because of decision layer
+                'logger_name': cfg['logger_name'],
+            }
             net = MLP(classifier_params)
-            in_ = tf.placeholder("float", [None, n_input])
-#            net.x = augment_rotation(in_,
-#                                            -90, 90, 15,
-#                                            cfg['batch_size_train'])
-            net.x = in_
+            net.x = tf.placeholder("float", [None, n_input])
             net.build()
-            mlp_runner.x = in_
             mlp_runner.model = net
-            result = mlp_runner.learn(sess)
+            mlp_runner.x = net.x
+            mlp_runner.orient_ = tf.placeholder("float", shape=[None, len(rotation_rad(-60, 60, 15))])
+            result, result_orient = mlp_runner.learn(sess)
         logger.info("Finished run %s" % run_name)
     lu.close_logging(logger)
-    return result
-    
+    return result, result_orient, tasks
+
+
 def handleArgs(args=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--config", action='append',
                         dest="fpath_cfg_list", type=str, required=True,
                         help="Paths to config files")
     parser.add_argument("--log_dir", dest="log_dir", type=str,
-                        default=os.path.abspath(os.path.expanduser(os.getcwd())),
                         help="Set parent log directory for all runs")
     parser.add_argument("--logger_name", dest="logger_name", type=str,
                         default=__name__,
@@ -122,6 +128,7 @@ def handleArgs(args=None):
                         default=None,
                         help="seed for data generation")
     return parser.parse_args(args=args)
+
 
 if __name__ == '__main__':
     args = handleArgs()

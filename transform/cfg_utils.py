@@ -36,6 +36,7 @@ def load_config(fpath, logger):
                      'lambda_c_scale' : 1., # weight for scaling task
                      'lambda_c_flipx' : 1., # weight for vertical flipping task Up-down mirroring
                      'lambda_c_flipy' : 1., # weight for horizontal flipping task LR mirroring
+                     'do_calc_activations': True # to calculate activations after every validation on test set
                      }
     for k in default_items.keys():
         cfg[k] = cfg.get(k, default_items[k])
