@@ -91,10 +91,10 @@ class AERunner(AbstractRunner):
             self.logger.debug("Save model at step %d to '%s'" % (itr_exp, fpath_save))
             self.saver.save(sess, fpath_save, global_step=itr_exp)   
             
-            for epoch in xrange(self.training_epochs):
+            for epoch in range(self.training_epochs):
                 self.logger.info("Start epoch %d, step %d" % (epoch, itr_exp))
                 # Loop over all batches
-                for itr_epoch in xrange(self.num_batches_train):
+                for itr_epoch in range(self.num_batches_train):
                     if self.tf_record_prefix is None:
                         batch_xs, _ = self.data.train.next_batch(self.batch_size_train)
                     else:
@@ -109,7 +109,7 @@ class AERunner(AbstractRunner):
         #                sess.run([batch_xs_as_img, batch_xs_as_img_rot],
         #                         feed_dict={ae1.x: batch_xs})
         #            f, a = plt.subplots(2, 10, figsize=(10, 2))
-        #            for i in xrange(examples_to_show):
+        #            for i in range(examples_to_show):
         #                print (batch_xs_as_img[i].shape, np.rad2deg(rots_cur)[i])
         #                a[0][i].imshow(np.squeeze(batch_xs_as_img[i]))
         #                a[1][i].imshow(np.squeeze(batch_xs_as_img_rot[i]))
@@ -136,7 +136,7 @@ class AERunner(AbstractRunner):
                     itr_depth += 1
 #                    import matplotlib.pyplot as plt
 #                    f, a = plt.subplots(3, 10, figsize=(10, 2))
-#                    for i in xrange(10):
+#                    for i in range(10):
 #                        a[0][i].imshow(np.squeeze(batch_xs[i]).reshape(28,28))
 #                        a[1][i].imshow(np.squeeze(batch_xs_in[i]).reshape(28,28))
 #                        a[2][i].imshow(np.squeeze(nn[i]).reshape(28,28))
@@ -183,7 +183,7 @@ class AERunner(AbstractRunner):
                                                     )
             coord = tf.train.Coordinator()
             threads = tf.train.start_queue_runners(sess=sess, coord=coord)
-        for _ in xrange(num_batches_val):
+        for _ in range(num_batches_val):
             if self.tf_record_prefix is None:
                 batch_xs, _ = self.data.validation.next_batch(self.batch_size_val,
                                                               shuffle=False)

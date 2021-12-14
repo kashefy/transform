@@ -15,6 +15,7 @@ import argparse
 import os
 from datetime import datetime
 import yaml
+from functools import reduce
 import tensorflow as tf
 from transform.mlp_runner import MLPRunner
 from nideep.nets.mlp_tf import MLP
