@@ -46,14 +46,18 @@ class MLP2TaskRunner(AbstractRunner):
             self.init_vars(sess, vars_new)
         summaries_merged_train = self._merge_summaries_scalars([cost, loss])
         
-        if self._acc_ops is None:
+        summaries_scalars_ops = []
+        if self._acc_ops is None and self.do_task_recognition:
             self._acc_ops =  self._init_acc_ops()
-        sess.run(self._acc_ops.reset)
-        if self._acc_orient_ops is None:
+        if self.do_task_recognition:
+            sess.run(self._acc_ops.reset)
+            summaries_scalars_ops.append(self._acc_ops.metric)
+        if self._acc_orient_ops is None and self.do_task_orientation:
             self._acc_orient_ops =  self._init_acc_orient_ops()
-        sess.run(self._acc_orient_ops.reset)
-        summaries_merged_val = self._merge_summaries_scalars([self._acc_ops.metric,
-                                                              self._acc_orient_ops.metric])
+        if self.do_task_orientation:
+            sess.run(self._acc_orient_ops.reset)
+            summaries_scalars_ops.append(self._acc_orient_ops.metric)
+        summaries_merged_val = self._merge_summaries_scalars(summaries_scalars_ops)
 #        
 #        in_ = self.model.x
 #        xx = tf.placeholder("float", [None, 784])
@@ -81,16 +85,18 @@ class MLP2TaskRunner(AbstractRunner):
         itr_exp = 0
         result = collections.namedtuple('Result', ['max', 'last', 'name', 'history', 'epoch_last'])
         result_orient = collections.namedtuple('Result', ['max', 'last', 'name', 'history', 'epoch_last'])
-        result.name = self._acc_ops.metric.name
-        result.max = 0
-        result.history = collections.deque(maxlen=3)
-        result_orient.name = self._acc_orient_ops.metric.name
-        result_orient.max = 0
-        result_orient.history = collections.deque(maxlen=3)
-        for epoch in xrange(self.training_epochs):
+        if self.do_task_recognition:
+            result.name = self._acc_ops.metric.name
+            result.max = 0
+            result.history = collections.deque(maxlen=3)
+        if self.do_task_orientation:
+            result_orient.name = self._acc_orient_ops.metric.name
+            result_orient.max = 0
+            result_orient.history = collections.deque(maxlen=3)
+        for epoch in range(self.training_epochs):
             self.logger.info("Start %s epoch %d, step %d" % (suffix, epoch, itr_exp))
             # Loop over all batches
-            for itr_epoch in xrange(self.num_batches_train):
+            for itr_epoch in range(self.num_batches_train):
                 if self.tf_record_prefix is None:
                     batch_xs, batch_ys = self.data.train.next_batch(self.batch_size_train)
                 else:
@@ -102,46 +108,87 @@ class MLP2TaskRunner(AbstractRunner):
                     batch_xs_in = sess.run(augment_op, feed_dict={self.x : batch_xs})
                     orients_dense = np.array([rots.index(o) for o in batch_os2])
                     batch_os_one_hot = dense_to_one_hot(orients_dense, len(rots))
-                else:
-                    #TODO remove hardcoded init
-                    rots = rotation_rad(-60, 60, 15)
-                    batch_os_one_hot = dense_to_one_hot(np.zeros((self.batch_size_train,), dtype=int)+(len(rots)/2), len(rots))
-                _, _, sess_summary = sess.run([optimizer,
-                                               cost,
-                                               summaries_merged_train],
-                                               feed_dict={self.x : batch_xs_in,
-                                                          self.y_: batch_ys,
-                                                          self.orient_ : batch_os_one_hot}
-                                              )
+# TODO still need this?                    
+#                else:
+#                    #TODO remove hardcoded init
+#                    rots = rotation_rad(-60, 60, 15)
+#                    batch_os_one_hot = dense_to_one_hot(np.zeros((self.batch_size_train,), dtype=int)+(len(rots)/2), len(rots))
+                if self.do_task_recognition and self.do_task_orientation:
+                    acc, acc_orient, sess_summary = sess.run([
+                                                self._acc_ops.metric,
+                                                self._acc_orient_ops.metric,
+                                                summaries_merged_val],
+                                                feed_dict={self.x  : batch_xs,
+                                                            self.y_ : batch_ys,
+                                                            self.orient_ : batch_os_one_hot}
+                                                 )
+                elif self.do_task_recognition and not self.do_task_orientation:
+                    _, _, sess_summary = sess.run([optimizer,
+                                                   cost,
+                                                   summaries_merged_train],
+                                                   feed_dict={self.x : batch_xs_in,
+                                                              self.y_: batch_ys}
+                                                  )
+                elif not self.do_task_recognition and self.do_task_orientation:
+                    _, _, sess_summary = sess.run([optimizer,
+                                                   cost,
+                                                   summaries_merged_train],
+                                                   feed_dict={self.x : batch_xs_in,
+                                                              self.y_: batch_ys,
+                                                              self.orient_ : batch_os_one_hot}
+                                                  )
                 if self.is_time_to_track_train(itr_exp):
                     summary_writer_train.add_summary(sess_summary, itr_exp)
 #                self.logger.debug("training batch loss after step %d: %f" % (itr_exp, loss_batch))
                 itr_exp += 1
             self.validate(sess)
             # run metric op one more time, data in feed dict is dummy data, does not influence metric
-            acc, acc_orient, sess_summary = sess.run([
-                                        self._acc_ops.metric,
-                                        self._acc_orient_ops.metric,
-                                        summaries_merged_val],
-                                        feed_dict={self.x  : batch_xs,
-                                                    self.y_ : batch_ys,
-                                                    self.orient_ : batch_os_one_hot}
-                                         )
+            if self.do_task_recognition and self.do_task_orientation:
+                acc, acc_orient, sess_summary = sess.run([
+                                            self._acc_ops.metric,
+                                            self._acc_orient_ops.metric,
+                                            summaries_merged_val],
+                                            feed_dict={self.x  : batch_xs,
+                                                        self.y_ : batch_ys,
+                                                        self.orient_ : batch_os_one_hot}
+                                             )
+            elif self.do_task_recognition and not self.do_task_orientation:
+                acc, sess_summary = sess.run([
+                                            self._acc_ops.metric,
+                                            #self._acc_orient_ops.metric,
+                                            summaries_merged_val],
+                                            feed_dict={self.x  : batch_xs,
+                                                        self.y_ : batch_ys}
+                                             )
+            elif not self.do_task_recognition and self.do_task_orientation:
+                acc_orient, sess_summary = sess.run([
+                                            #self._acc_ops.metric,
+                                            self._acc_orient_ops.metric,
+                                            summaries_merged_val],
+                                            feed_dict={self.x  : batch_xs,
+                                                        self.y_ : batch_ys,
+                                                        self.orient_ : batch_os_one_hot}
+                                             )
             if self.is_time_to_track_val(itr_exp):
                 summary_writer_val.add_summary(sess_summary, itr_exp)
-            self.logger.debug("validation accuracy after %s step %d: %f" % (suffix, itr_exp, acc))
-            self.logger.debug("validation orientation accuracy after %s step %d: %f" % (suffix, itr_exp, acc_orient))
+            if self.do_task_recognition:
+                self.logger.debug("validation accuracy after %s step %d: %f" % (suffix, itr_exp, acc))
+            if self.do_task_orientation:
+                self.logger.debug("validation orientation accuracy after %s step %d: %f" % (suffix, itr_exp, acc_orient))
             fpath_save = os.path.join(dir_train, self._get_save_name())
             self.logger.debug("Save model at %s step %d to '%s'" % (suffix, itr_exp, fpath_save))
             self.saver.save(sess, fpath_save, global_step=itr_exp)
-            result.last = acc
-            result.epoch_last = epoch
-            result.max = max(result.max, result.last)
-            result.history.append(result.last)
-            result_orient.last = acc_orient
-            result_orient.max = max(result_orient.max, result_orient.last)
-            result_orient.history.append(result_orient.last)
-            result_orient.epoch_last = epoch
+            if self.do_task_recognition:
+                result.last = acc
+                result.epoch_last = epoch
+                result.max = max(result.max, result.last)
+                result.history.append(result.last)
+            if self.do_task_orientation:
+                result_orient.last = acc_orient
+                result_orient.max = max(result_orient.max, result_orient.last)
+                result_orient.history.append(result_orient.last)
+                result_orient.epoch_last = epoch
+            # TODO: fix by adding condition with both true
             if self.do_task_recognition:
                 if len(result.history) == result.history.maxlen and np.absolute(np.mean(result.history)-result.last) < 1e-5:
                     self.logger.debug("Validation accuracy not changing anymore. Stop iterating.")
@@ -157,12 +204,14 @@ class MLP2TaskRunner(AbstractRunner):
         return result, result_orient
         
     def validate(self, sess):
-        if self._acc_ops is None:
+        if self._acc_ops is None and self.do_task_recognition:
             self._acc_ops =  self._init_acc_ops()
-        if self._acc_orient_ops is None:
+        if self._acc_orient_ops is None and self.do_task_orientation:
             self._acc_orient_ops =  self._init_acc_orient_ops()
-        sess.run(self._acc_ops.reset)
-        sess.run(self._acc_orient_ops.reset)
+        if self.do_task_recognition:
+            sess.run(self._acc_ops.reset)
+        if self.do_task_orientation:
+            sess.run(self._acc_orient_ops.reset)
         num_batches_val = int(self.data.validation.num_examples/self.batch_size_val)
         if self.tf_record_prefix is not None:
 #            tmp = sum(1 for _ in tf.python_io.tf_record_iterator(self.data.validation.path))
@@ -171,6 +220,7 @@ class MLP2TaskRunner(AbstractRunner):
                                 self.data.validation.path,
                                 one_hot=self.data.validation.one_hot,
                                 num_orientations=len(self.data.validation.orientations))
+            # TODO: Should this be tf.train?
             batch_xs_op, batch_ys_op, batch_os_op = tf.train.batch([img, label, label_orient],
                                                     batch_size=self.batch_size_val,
                                                     capacity=2000,
@@ -179,7 +229,7 @@ class MLP2TaskRunner(AbstractRunner):
             coord = tf.train.Coordinator()
             threads = tf.train.start_queue_runners(sess=sess, coord=coord)
             
-        for _ in xrange(num_batches_val):
+        for _ in range(num_batches_val):
             if self.tf_record_prefix is None:
                 batch_xs, batch_ys = self.data.validation.next_batch(self.batch_size_val,
                                                                      shuffle=False)
@@ -194,12 +244,34 @@ class MLP2TaskRunner(AbstractRunner):
                 orients_dense = np.array([rots.index(o) for o in batch_os2])
                 batch_os_one_hot = dense_to_one_hot(orients_dense, num_orients)
                 batch_xs_in = sess.run(augment_op, feed_dict={self.x : batch_xs})
-            else:
-                #TODO remove hardcoded init
-                rots = rotation_rad(-60, 60, 15)
-                batch_os_one_hot = dense_to_one_hot(np.zeros((self.batch_size_val,), dtype=int)+(len(rots)/2), len(rots))
-            _, _, _, _ = sess.run(\
+# TODO Still need this?
+#            else:
+#                #TODO remove hardcoded init
+#                rots = rotation_rad(-60, 60, 15)
+#                batch_os_one_hot = dense_to_one_hot(np.zeros((self.batch_size_val,), dtype=int)+(len(rots)/2), len(rots))
+            if self.do_task_recognition and self.do_task_orientation:
+                _, _, _, _ = sess.run(\
+                                [self._acc_ops.metric, self._acc_ops.update,
+                                 self._acc_orient_ops.metric, self._acc_orient_ops.update,
+    #                             tf.argmax(self.model.p,1), tf.argmax(self.y_,1),
+                                 ],
+                                feed_dict={self.x: batch_xs_in,
+                                           self.y_: batch_ys,
+                                           self.orient_ : batch_os_one_hot,
+                                           }
+                                )
+            elif self.do_task_recognition and not self.do_task_orientation:
+                _, _,  = sess.run(\
                             [self._acc_ops.metric, self._acc_ops.update,
+#                             tf.argmax(self.model.p,1), tf.argmax(self.y_,1),
+                             ],
+                            feed_dict={self.x: batch_xs_in,
+                                       self.y_: batch_ys
+                                       }
+                            )
+            elif not self.do_task_recognition and self.do_task_orientation:            
+                _, _ = sess.run(\
+                            [
                              self._acc_orient_ops.metric, self._acc_orient_ops.update,
 #                             tf.argmax(self.model.p,1), tf.argmax(self.y_,1),
                              ],
@@ -208,10 +280,93 @@ class MLP2TaskRunner(AbstractRunner):
                                        self.orient_ : batch_os_one_hot,
                                        }
                             )
+
         if self.tf_record_prefix is not None:
             coord.request_stop()
             coord.join(threads)
         
+    def calc_activations_test(self, sess):
+        if self._acc_ops is None and self.do_task_recognition:
+            self._acc_ops =  self._init_acc_ops()
+        if self._acc_orient_ops is None and self.do_task_orientation:
+            self._acc_orient_ops =  self._init_acc_orient_ops()
+        if self.do_task_recognition:
+            sess.run(self._acc_ops.reset)
+        if self.do_task_orientation:
+            sess.run(self._acc_orient_ops.reset)
+        num_batches_val = int(self.data.validation.num_examples/self.batch_size_val)
+        if self.tf_record_prefix is not None:
+#            tmp = sum(1 for _ in tf.python_io.tf_record_iterator(self.data.validation.path))
+#            assert(num_batches_val == tmp)
+            img, label, label_orient = MNIST.read_and_decode_ops(\
+                                self.data.test.path,
+                                one_hot=self.data.test.one_hot,
+                                num_orientations=len(self.data.test.orientations))
+            # TODO: Should this be tf.train?
+            batch_xs_op, batch_ys_op, batch_os_op = tf.train.batch([img, label, label_orient],
+                                                    batch_size=self.batch_size_val,
+                                                    capacity=2000,
+                                                    num_threads=8
+                                                    )
+            coord = tf.train.Coordinator()
+            threads = tf.train.start_queue_runners(sess=sess, coord=coord)
+            
+        for _ in range(num_batches_val):
+            if self.tf_record_prefix is None:
+                batch_xs, batch_ys = self.data.test.next_batch(self.batch_size_val,
+                                                                     shuffle=False)
+            else:
+                batch_xs, batch_ys, batch_os = sess.run([batch_xs_op, batch_ys_op, batch_os_op])
+            batch_xs_in = batch_xs
+            if self.do_augment_rot:
+                augment_op, batch_os2 = self.rotation_ops_multiset_val(3)
+                #TODO remove hardcoded init
+                rots = rotation_rad(-60,60,15)
+                num_orients = len(rots)
+                orients_dense = np.array([rots.index(o) for o in batch_os2])
+                batch_os_one_hot = dense_to_one_hot(orients_dense, num_orients)
+                batch_xs_in = sess.run(augment_op, feed_dict={self.x : batch_xs})
+# TODO Still need this?
+#            else:
+#                #TODO remove hardcoded init
+#                rots = rotation_rad(-60, 60, 15)
+#                batch_os_one_hot = dense_to_one_hot(np.zeros((self.batch_size_val,), dtype=int)+(len(rots)/2), len(rots))
+            if self.do_task_recognition and self.do_task_orientation:
+                _, _, _, _ = sess.run(\
+                                [self._acc_ops.metric, self._acc_ops.update,
+                                 self._acc_orient_ops.metric, self._acc_orient_ops.update,
+    #                             tf.argmax(self.model.p,1), tf.argmax(self.y_,1),
+                                 ],
+                                feed_dict={self.x: batch_xs_in,
+                                           self.y_: batch_ys,
+                                           self.orient_ : batch_os_one_hot,
+                                           }
+                                )
+            elif self.do_task_recognition and not self.do_task_orientation:
+                _, _,  = sess.run(\
+                            [self._acc_ops.metric, self._acc_ops.update,
+#                             tf.argmax(self.model.p,1), tf.argmax(self.y_,1),
+                             ],
+                            feed_dict={self.x: batch_xs_in,
+                                       self.y_: batch_ys
+                                       }
+                            )
+            elif not self.do_task_recognition and self.do_task_orientation:            
+                _, _ = sess.run(\
+                            [
+                             self._acc_orient_ops.metric, self._acc_orient_ops.update,
+#                             tf.argmax(self.model.p,1), tf.argmax(self.y_,1),
+                             ],
+                            feed_dict={self.x: batch_xs_in,
+                                       self.y_: batch_ys,
+                                       self.orient_ : batch_os_one_hot,
+                                       }
+                            )
+
+        if self.tf_record_prefix is not None:
+            coord.request_stop()
+            coord.join(threads)
+            
     def _cost_loss(self, prefix):
         loss_c = None
         if self.do_task_recognition:
@@ -287,5 +442,6 @@ class MLP2TaskRunner(AbstractRunner):
         self.logger.debug("Lambda for recognition: %f" % self.lambda_c_recognition)
         self.lambda_c_orientation = params['lambda_c_orientation']
         self.logger.debug("Lambda for orientation #1: %f" % self.lambda_c_orientation)
+        self.do_calc_activations = params['do_calc_activations']
         
         
